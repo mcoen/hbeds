@@ -3,2586 +3,3448 @@
     "code": "11205",
     "name": "Adventist Health And Rideout",
     "county": "Yuba",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12881",
     "name": "Adventist Health Bakersfield",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10247",
     "name": "Adventist Health Clearlake",
     "county": "Lake",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12765",
     "name": "Adventist Health Delano",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11668",
     "name": "Adventist Health Glendale",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18194",
     "name": "Adventist Health Hanford",
     "county": "Kings",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18198",
     "name": "Adventist Health Howard Memorial",
     "county": "Mendocino",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10743",
     "name": "Adventist Health Lodi Memorial",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10301",
     "name": "Adventist Health Mendocino Coast",
     "county": "Mendocino",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10162",
     "name": "Adventist Health Reedley",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10160",
     "name": "Adventist Health Selma",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10778",
     "name": "Adventist Health Sierra Vista",
     "county": "San Luis Obispo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11177",
     "name": "Adventist Health Simi Valley",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11151",
     "name": "Adventist Health Sonora",
     "county": "Tuolumne",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18163",
     "name": "Adventist Health Sonora",
     "county": "Tuolumne",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17358",
     "name": "Adventist Health Specialty Bakersfield",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10366",
     "name": "Adventist Health St. Helena",
     "county": "Napa",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18202",
     "name": "Adventist Health Tehachapi Valley",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11145",
     "name": "Adventist Health Tulare",
     "county": "Tulare",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13999",
     "name": "Adventist Health Twin Cities",
     "county": "San Luis Obispo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14560",
     "name": "Adventist Health Ukiah Valley",
     "county": "Mendocino",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12198",
     "name": "Adventist Health White Memorial",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11441",
     "name": "Adventist Health White Memorial Montebello",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10382",
     "name": "AHMC Anaheim Regional Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10801",
     "name": "AHMC Seton Medical Center",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12678",
     "name": "AHMC Seton Medical Center Coastside",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11210",
     "name": "Alameda Hospital",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11386",
     "name": "Alhambra Hospital Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11322",
     "name": "Alta Bates Summit Medical Center",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11338",
     "name": "Alta Bates Summit Medical Center - Summit Campus",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11214",
     "name": "Alta Bates Summit Medical Center-Alta Bates Campus",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10381",
     "name": "Anaheim Community Hospital  LLC",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13061",
     "name": "Anaheim Global Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11399",
     "name": "Antelope Valley Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17282",
     "name": "Arrowhead Regional Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10207",
     "name": "Bakersfield Memorial Hospital",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16877",
     "name": "Ballard Rehabilitation Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17940",
     "name": "Banner Lassen Medical Center",
     "county": "Lassen",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11417",
     "name": "Barlow Respiratory Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18197",
     "name": "Barstow Community Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10109",
     "name": "Barton Memorial Hospital",
     "county": "El Dorado",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13035",
     "name": "Bear Valley Community Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11480",
     "name": "California Hospital Medical Center - Los Angeles",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10027",
     "name": "California Northstate University Medical Center",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12416",
     "name": "California Pacific Medical Center - Davies Campus Hospital",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18188",
     "name": "California Pacific Medical Center - Mission Bernal Campus",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18165",
     "name": "California Pacific Medical Center - Van Ness Campus",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12874",
     "name": "California Rehabilitation Institute  LLC",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11496",
     "name": "Casa Colina Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11410",
     "name": "Catalina Island Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10095",
     "name": "Catalina Island Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12744",
     "name": "Cedars-Sinai Marina Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11891",
     "name": "Cedars-Sinai Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11510",
     "name": "Centinela Hospital Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10820",
     "name": "Central California Rehabilitation Hospital",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11098",
     "name": "Central Valley Specialty Hospital",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10400",
     "name": "Chapman Global Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16713",
     "name": "Children's Healthcare Organization of Northern California - Pediatric Hospital",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10922",
     "name": "Children's Hospital at Mission",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11525",
     "name": "Children's Hospital Los Angeles",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14370",
     "name": "Children's Hospital of Orange County",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14621",
     "name": "Chinese Hospital",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13072",
     "name": "Chino Valley Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11527",
     "name": "City Of Hope Helford Clinical Research Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10036",
     "name": "City of Hope Orange County Cancer Specialty Hospital",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16116",
     "name": "Clovis Community Medical Center",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10122",
     "name": "Coalinga Regional Medical Center",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12088",
     "name": "Coast Plaza Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10405",
     "name": "College Hospital Costa Mesa",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11927",
     "name": "College Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10684",
     "name": "Colorado River Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10032",
     "name": "Colusa Medical Center",
     "county": "Colusa",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11549",
     "name": "Community Hospital Of Huntington Park",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10697",
     "name": "Community Hospital of San Bernardino",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10330",
     "name": "Community Hospital of the Monterey Peninsula",
     "county": "Monterey",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11169",
     "name": "Community Memorial Hospital - Ojai",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11159",
     "name": "Community Memorial Hospital - San Buenaventura",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10127",
     "name": "Community Regional Medical Center",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10049",
     "name": "Contra Costa Regional Medical Center",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10526",
     "name": "Corona Regional Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10529",
     "name": "Corona Regional Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17662",
     "name": "Cottage Rehabilitation Hospital",
     "county": "Santa Barbara",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10729",
     "name": "Dameron Hospital",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10537",
     "name": "Desert Regional Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12763",
     "name": "Desert Valley Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10054",
     "name": "Dignity Health Central Coast Rehabilitation Hospital",
     "county": "San Luis Obispo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12024",
     "name": "Docs Surgical Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10745",
     "name": "Doctors Hospital of Manteca",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10554",
     "name": "Doctors Hospital Of Riverside",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11085",
     "name": "Doctors Medical Center",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10972",
     "name": "Dominican Hospital",
     "county": "Santa Cruz",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11598",
     "name": "East Los Angeles Doctors Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10514",
     "name": "Eastern Plumas Hospital-Portola Campus",
     "county": "Plumas",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18180",
     "name": "Eden Medical Center",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12662",
     "name": "Eisenhower Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10883",
     "name": "El Camino Health",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10874",
     "name": "El Camino Hospital Los Gatos",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10042",
     "name": "El Camino Rehabilitation Hospital",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10190",
     "name": "El Centro Regional Medical Center",
     "county": "Imperial",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13093",
     "name": "Emanate Health Foothill Presbyterian Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11748",
     "name": "Emanate Health Inter-Community Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11971",
     "name": "Emanate Health Queen Of The Valley Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11090",
     "name": "Emanuel Medical Center",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11621",
     "name": "Encino Hospital Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16245",
     "name": "Encompass Health Rehabilitation Hospital of Bakersfield",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18204",
     "name": "Encompass Health Rehabilitation Hospital Of Modesto",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18213",
     "name": "Encompass Health Rehabilitation Hospital of Murrieta",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18226",
     "name": "Encompass Health Rehabilitation Hospital of Tustin",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10013",
     "name": "Enloe Health",
     "county": "Butte",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10009",
     "name": "Enloe Medical Center - Cohasset",
     "county": "Butte",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16464",
     "name": "Enloe Rehabilitation Center",
     "county": "Butte",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14900",
     "name": "Fairchild Medical Center",
     "county": "Siskiyou",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11268",
     "name": "Fairmont Hospital",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12573",
     "name": "Foothill Regional Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12964",
     "name": "French Hospital Medical Center",
     "county": "San Luis Obispo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17938",
     "name": "Fresno Heart And Surgical Hospital",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16878",
     "name": "Fresno Surgical Hospital",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10450",
     "name": "Garden Grove Hospital and Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11658",
     "name": "Garfield Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10338",
     "name": "George L. Mee Memorial Hospital",
     "county": "Monterey",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11844",
     "name": "Glendale Memorial Hospital and Health Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10175",
     "name": "Glenn Medical Center",
     "county": "Glenn",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10831",
     "name": "Goleta Valley Cottage Hospital",
     "county": "Santa Barbara",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10890",
     "name": "Good Samaritan Hospital",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10219",
     "name": "Good Samaritan Hospital",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13224",
     "name": "Greater El Monte Community Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12322",
     "name": "Grossmont Hospital",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10040",
     "name": "Harvest Medical Complex",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10640",
     "name": "Hazel Hawkins Memorial Hospital",
     "county": "San Benito",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12823",
     "name": "Healdsburg Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10075",
     "name": "HealthBridge Central Valley Children’s Center",
     "county": "Madera",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17438",
     "name": "Healthbridge Children's Hospital-Orange",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10541",
     "name": "Hemet Global Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13333",
     "name": "Henry Mayo Newhall Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "33832",
     "name": "HH-CSHS TERRI  JERRY KOHL MEDICAL PAVIL",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14100",
     "name": "Hi-Desert Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11288",
     "name": "Highland Hospital",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16319",
     "name": "Hoag Hospital Irvine",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10428",
     "name": "Hoag Memorial Hospital Presbyterian",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18193",
     "name": "Hoag Orthopedic Institute",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11722",
     "name": "Hollywood Presbyterian Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10431",
     "name": "Huntington Beach Hospital",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11733",
     "name": "Huntington Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10186",
     "name": "Jerold Phelps Community Hospital",
     "county": "Humboldt",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10287",
     "name": "John C. Fremont Healthcare District",
     "county": "Mariposa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10545",
     "name": "John F. Kennedy Memorial Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10048",
     "name": "John Muir Medical Center-Concord Campus",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10081",
     "name": "John Muir Medical Center-Walnut Creek Campus",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18153",
     "name": "Kaiser Foundation Hospital - Antioch",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17207",
     "name": "Kaiser Foundation Hospital - Baldwin Park",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17919",
     "name": "Kaiser Foundation Hospital - Downey",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10670",
     "name": "Kaiser Foundation Hospital - Fontana",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14509",
     "name": "Kaiser Foundation Hospital - Fremont",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13018",
     "name": "Kaiser Foundation Hospital - Fresno",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11760",
     "name": "Kaiser Foundation Hospital - Los Angeles",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16324",
     "name": "Kaiser Foundation Hospital - Manteca",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16325",
     "name": "Kaiser Foundation Hospital - Moreno Valley",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18206",
     "name": "Kaiser Foundation Hospital - Oakland/Richmond",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17905",
     "name": "Kaiser Foundation Hospital - Ontario",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18178",
     "name": "Kaiser Foundation Hospital - Orange County - Anaheim",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18152",
     "name": "Kaiser Foundation Hospital - Orange County - Irvine",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11759",
     "name": "Kaiser Foundation Hospital - Panorama City",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18219",
     "name": "Kaiser Foundation Hospital - Redwood City",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13142",
     "name": "Kaiser Foundation Hospital  Rehab Center - Vallejo",
     "county": "Solano",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17749",
     "name": "Kaiser Foundation Hospital - Richmond Campus",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16164",
     "name": "Kaiser Foundation Hospital - Riverside",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14214",
     "name": "Kaiser Foundation Hospital - Roseville",
     "county": "Placer",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10604",
     "name": "Kaiser Foundation Hospital - Sacramento",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18199",
     "name": "Kaiser Foundation Hospital - San Diego",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12430",
     "name": "Kaiser Foundation Hospital - San Francisco",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10044",
     "name": "Kaiser Foundation Hospital - San Jose",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18186",
     "name": "Kaiser Foundation Hospital - San Leandro",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10028",
     "name": "Kaiser Foundation Hospital - San Marcos",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10268",
     "name": "Kaiser Foundation Hospital - San Rafael",
     "county": "Marin",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16242",
     "name": "Kaiser Foundation Hospital - Santa Rosa",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11758",
     "name": "Kaiser Foundation Hospital - South Bay",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15570",
     "name": "Kaiser Foundation Hospital - South Sacramento",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13086",
     "name": "Kaiser Foundation Hospital - South San Francisco",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18164",
     "name": "Kaiser Foundation Hospital - Vacaville",
     "county": "Solano",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10072",
     "name": "Kaiser Foundation Hospital - Walnut Creek",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15666",
     "name": "Kaiser Foundation Hospital - Woodland Hills",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13111",
     "name": "Kaiser Foundation Hospital - Zion",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18151",
     "name": "Kaiser Foundation Hospital Modesto",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10022",
     "name": "Kaiser Foundation Hospital Sacramento",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12952",
     "name": "Kaiser Foundation Hospital-San Jose",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17668",
     "name": "Kaiser Foundation Hospital-Santa Clara",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12875",
     "name": "Kaiser Foundation Hospital-West LA",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12601",
     "name": "Kaweah Health Medical Center",
     "county": "Tulare",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18179",
     "name": "Kaweah Health Medical Center D/P SNF",
     "county": "Tulare",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16483",
     "name": "Keck Hospital of USC",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10261",
     "name": "Kentfield Hospital",
     "county": "Marin",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18227",
     "name": "Kentfield Hospital San Francisco",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10208",
     "name": "Kern Medical Center",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10210",
     "name": "Kern Valley Healthcare District",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11768",
     "name": "Kindred Hospital - La Mirada",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11414",
     "name": "Kindred Hospital - Los Angeles",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12328",
     "name": "Kindred Hospital - San Diego",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11321",
     "name": "Kindred Hospital - San Francisco Bay Area",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11776",
     "name": "Kindred Hospital - San Gabriel Valley",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10407",
     "name": "Kindred Hospital - Santa Ana",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11704",
     "name": "Kindred Hospital Baldwin Park",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13068",
     "name": "Kindred Hospital Brea",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10685",
     "name": "Kindred Hospital Ontario",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12787",
     "name": "Kindred Hospital Paramount",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14102",
     "name": "Kindred Hospital Rancho",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13030",
     "name": "Kindred Hospital Riverside",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11547",
     "name": "Kindred Hospital South Bay",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10476",
     "name": "Kindred Hospital Westminster",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13225",
     "name": "L.A. Downtown Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13019",
     "name": "La Palma Intercommunity Hospital",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11809",
     "name": "LAC/Harbor-UCLA Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15801",
     "name": "LAC/Olive View-UCLA Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11976",
     "name": "LAC/Rancho Los Amigos National Rehabilitation Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12432",
     "name": "Laguna Honda Hospital  Rehabilitation Center",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10101",
     "name": "Loma Linda Rehabilitation Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18220",
     "name": "Loma Linda University Children's Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10677",
     "name": "Loma Linda University Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18175",
     "name": "Loma Linda University Medical Center - Murrieta",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13073",
     "name": "Loma Linda University Medical Center East Campus Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18161",
     "name": "Loma Linda University Surgical Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10836",
     "name": "Lompoc Valley Medical Center",
     "county": "Santa Barbara",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11545",
     "name": "Los Angeles Community Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11428",
     "name": "Los Angeles Community Hospital at Bellflower",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11810",
     "name": "Los Angeles General Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11164",
     "name": "Los Robles Hospital  Medical Center",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16244",
     "name": "Los Robles Hospital  Medical Center - East Campus",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16477",
     "name": "Lucile Packard Children's Hospital Stanford",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13087",
     "name": "Mad River Community Hospital",
     "county": "Humboldt",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10257",
     "name": "Madera Community Hospital",
     "county": "Madera",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14304",
     "name": "Mammoth Hospital",
     "county": "Mono",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10838",
     "name": "Marian Regional Medical Center",
     "county": "Santa Barbara",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10766",
     "name": "Marian Regional Medical Center  Arroyo Grande",
     "county": "San Luis Obispo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10273",
     "name": "Marinhealth Medical Center",
     "county": "Marin",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10029",
     "name": "Mark Twain Medical Center",
     "county": "Calaveras",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10112",
     "name": "Marshall Medical Center",
     "county": "El Dorado",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12259",
     "name": "Martin Luther King  Jr. Community Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11000",
     "name": "Mayers Memorial Hospital",
     "county": "Shasta",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10309",
     "name": "Memorial Hospital Los Banos",
     "county": "Merced",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11843",
     "name": "Memorial Hospital of Gardena",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11111",
     "name": "Memorial Medical Center",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11846",
     "name": "Memorialcare Long Beach Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17572",
     "name": "Memorialcare Miller Children's  Women's Hospital Long Beach",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15630",
     "name": "Memorialcare Orange Coast Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12755",
     "name": "Memorialcare Saddleback Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16148",
     "name": "Menifee Global Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10606",
     "name": "Mercy General Hospital",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10214",
     "name": "Mercy Hospital",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16150",
     "name": "Mercy Hospital Of Folsom",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10315",
     "name": "Mercy Medical Center",
     "county": "Merced",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13812",
     "name": "Mercy Medical Center Mt. Shasta",
     "county": "Siskiyou",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11002",
     "name": "Mercy Medical Center Redding",
     "county": "Shasta",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10607",
     "name": "Mercy San Juan Medical Center",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17632",
     "name": "Mercy Southwest Hospital",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13012",
     "name": "Methodist Hospital of Sacramento",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10804",
     "name": "Mills-Peninsula Medical Center",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11847",
     "name": "Mission Community Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10878",
     "name": "Mission Oaks Hospital",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18231",
     "name": "Modoc Medical Center",
     "county": "Modoc",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11874",
     "name": "Monrovia Memorial Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12992",
     "name": "Montclair Hospital Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12878",
     "name": "Monterey Park Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10681",
     "name": "Mountains Community Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17353",
     "name": "Natividad Medical Center",
     "county": "Monterey",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11019",
     "name": "Northbay Medical Center",
     "county": "Solano",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15807",
     "name": "NorthBay VacaValley Hospital",
     "county": "Solano",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10200",
     "name": "Northern Inyo Hospital",
     "county": "Inyo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11906",
     "name": "Northridge Hospital Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11910",
     "name": "Norwalk Community Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17672",
     "name": "Novato Community Hospital",
     "county": "Marin",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13110",
     "name": "Oak Valley Hospital District",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10919",
     "name": "O'Connor Hospital",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11863",
     "name": "Olympia Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18007",
     "name": "Orange County Global Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10006",
     "name": "Orchard Hospital",
     "county": "Butte",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10019",
     "name": "Oroville Hospital",
     "county": "Butte",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12841",
     "name": "Pacific Gardens Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12042",
     "name": "Pacifica Hospital of the Valley",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18141",
     "name": "Palmdale Regional Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10553",
     "name": "Palo Verde Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18173",
     "name": "Palomar Medical Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14190",
     "name": "Palomar Medical Center Poway",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18230",
     "name": "Palomar Rehabilitation Institute",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12348",
     "name": "Paradise Valley Hospital",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16679",
     "name": "Patients' Hospital of Redding",
     "county": "Shasta",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14568",
     "name": "Petaluma Valley Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11731",
     "name": "PIH Health Good Samaritan Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12235",
     "name": "PIH Health Hospital - Downey",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11968",
     "name": "PIH Health Whittier Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10192",
     "name": "Pioneers Memorial Hospital",
     "county": "Imperial",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10512",
     "name": "Plumas District Hospital",
     "county": "Plumas",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11966",
     "name": "Pomona Valley Hospital Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12463",
     "name": "Priscilla Chan And Mark Zuckerberg San Francisco General Hospital And Trauma Center",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13085",
     "name": "Providence Cedars-Sinai Tarzana Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11726",
     "name": "Providence Holy Cross Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12023",
     "name": "Providence Little Company Of Mary Medical Center San Pedro",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11787",
     "name": "Providence Little Company of Mary Medical Center Torrance",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12804",
     "name": "Providence Mission Hospital",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10468",
     "name": "Providence Mission Hospital - Laguna Beach",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10362",
     "name": "Providence Queen Of The Valley Medical Center",
     "county": "Napa",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10183",
     "name": "Providence Redwood Memorial Hospital",
     "county": "Humboldt",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12008",
     "name": "Providence Saint Joseph Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11054",
     "name": "Providence Santa Rosa Memorial Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11059",
     "name": "Providence Santa Rosa Memorial Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10184",
     "name": "Providence St. Joseph Hospital",
     "county": "Humboldt",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10457",
     "name": "Providence St. Joseph Hospital",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10458",
     "name": "Providence St. Jude Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10695",
     "name": "Providence St. Mary Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12285",
     "name": "Rady Children's Hospital San Diego",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10691",
     "name": "Redlands Community Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10856",
     "name": "Regional Medical Center of San Jose",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18162",
     "name": "Rehabilitation Hospital Of Southern California",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10220",
     "name": "Ridgecrest Regional Hospital",
     "county": "Kern",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10556",
     "name": "Riverside Community Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15007",
     "name": "Riverside University Health System - Medical Center",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12127",
     "name": "Ronald Reagan UCLA Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11326",
     "name": "Sacramento Rehabilitation Hospital",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10155",
     "name": "Saint Agnes Medical Center",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12006",
     "name": "Saint John's Health Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10348",
     "name": "Salinas Valley Health Medical Center",
     "county": "Monterey",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10696",
     "name": "San Antonio Regional Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13084",
     "name": "San Dimas Community Hospital",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11548",
     "name": "San Gabriel Valley Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10559",
     "name": "San Gorgonio Memorial Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10753",
     "name": "San Joaquin General Hospital",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16404",
     "name": "San Joaquin Valley Rehabilitation Hospital",
     "county": "Fresno",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11256",
     "name": "San Leandro Hospital",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10810",
     "name": "San Mateo Medical Center",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16228",
     "name": "San Ramon Regional Medical Center",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16166",
     "name": "San Ramon Regional Medical Center South Building",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10843",
     "name": "Santa Barbara Cottage Hospital",
     "county": "Santa Barbara",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10935",
     "name": "Santa Clara Valley Medical Center",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12033",
     "name": "Santa Monica - UCLA Medical Center And Orthopaedic Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10848",
     "name": "Santa Ynez Valley Cottage Hospital",
     "county": "Santa Barbara",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14181",
     "name": "Scripps Green Hospital",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12309",
     "name": "Scripps Memorial Hospital - Encinitas",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12363",
     "name": "Scripps Memorial Hospital - La Jolla",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12339",
     "name": "Scripps Mercy Hospital",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12268",
     "name": "Scripps Mercy Hospital Chula Vista",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16703",
     "name": "Select Specialty Hospital - San Diego",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10513",
     "name": "Seneca District Hospital",
     "county": "Plumas",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10811",
     "name": "Sequoia Hospital",
     "county": "San Mateo",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13336",
     "name": "Sharp Chula Vista Medical Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12295",
     "name": "Sharp Coronado Hospital and Healthcare Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15454",
     "name": "Sharp Mary Birch Hospital For Women And Newborns",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12364",
     "name": "Sharp Memorial Hospital",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11001",
     "name": "Shasta Regional Medical Center",
     "county": "Shasta",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12047",
     "name": "Sherman Oaks Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14506",
     "name": "Shriners Hospitals For Children Northern California",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10375",
     "name": "Sierra Nevada Memorial Hospital",
     "county": "Nevada",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11140",
     "name": "Sierra View Medical Center",
     "county": "Tulare",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11052",
     "name": "Sonoma Specialty Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11064",
     "name": "Sonoma Valley Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13059",
     "name": "South Coast Global Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11848",
     "name": "Southern California Hospital At Culver City",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11718",
     "name": "Southern California Hospital at Hollywood",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10037",
     "name": "Southern Humboldt Community Healthcare District",
     "county": "Humboldt",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10202",
     "name": "Southern Inyo Hospital",
     "county": "Inyo",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15749",
     "name": "Southwest Healthcare Inland Valley Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16681",
     "name": "Southwest Healthcare Rancho Springs Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11172",
     "name": "St Johns Regional Medical Center",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11344",
     "name": "St Rose Hospital",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10694",
     "name": "St. Bernardine Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11121",
     "name": "St. Elizabeth Community Hospital",
     "county": "Tehama",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12004",
     "name": "St. Francis Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13181",
     "name": "St. John's Hospital Camarillo",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10750",
     "name": "St. Joseph's Medical Center of Stockton",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17487",
     "name": "St. Louise Regional Hospital",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12012",
     "name": "St. Mary Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10943",
     "name": "Stanford Health Care",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10035",
     "name": "Stanford Health Care",
     "county": "Santa Clara",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11363",
     "name": "Stanford Health Care Tri-Valley",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16632",
     "name": "Stanford Health Care Tri-Valley",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17461",
     "name": "Stanislaus Surgical Hospital",
     "county": "Stanislaus",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18232",
     "name": "Stockton Regional Rehabilitation Hospital",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10321",
     "name": "Surprise Valley Community Hospital",
     "county": "Modoc",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17490",
     "name": "Sutter Amador Hospital",
     "county": "Amador",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10494",
     "name": "Sutter Auburn Faith Hospital",
     "county": "Placer",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12784",
     "name": "Sutter Coast Hospital",
     "county": "Del Norte",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17725",
     "name": "Sutter Davis Hospital",
     "county": "Yolo",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10052",
     "name": "Sutter Delta Medical Center",
     "county": "Contra Costa",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "14345",
     "name": "Sutter Lakeside Hospital",
     "county": "Lake",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13901",
     "name": "Sutter Maternity  Surgery Center of Santa Cruz",
     "county": "Santa Cruz",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10625",
     "name": "Sutter Medical Center  Sacramento",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17700",
     "name": "Sutter Roseville Medical Center",
     "county": "Placer",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18187",
     "name": "Sutter Santa Rosa Regional Hospital",
     "county": "Sonoma",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12525",
     "name": "Sutter Solano Medical Center",
     "county": "Solano",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17724",
     "name": "Sutter Surgical Hospital - North Valley",
     "county": "Sutter",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10757",
     "name": "Sutter Tracy Community Hospital",
     "county": "San Joaquin",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10377",
     "name": "Tahoe Forest Hospital",
     "county": "Nevada",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18167",
     "name": "Temecula Valley Hospital",
     "county": "Riverside",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17669",
     "name": "Thousand Oaks Surgical Hosp.  A Campus Of Los Robles Hosp.  Medical Ctr.",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12249",
     "name": "Torrance Memorial Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18201",
     "name": "Totally Kids Rehabilitation Hospital",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12372",
     "name": "Tri-City Medical Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11125",
     "name": "Trinity Hospital",
     "county": "Trinity",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10025",
     "name": "UC Davis Rehabilitation Hospital",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12872",
     "name": "UC San Diego Health - East Campus Medical Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12359",
     "name": "UC San Diego Health Hillcrest - Hillcrest Medical Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11659",
     "name": "UC San Diego Health La Jolla - Jacobs Medical Center  Sulpizio Cardiovascular Center",
     "county": "San Diego",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10062",
     "name": "UCI Health Rehabilitation Hospital",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16234",
     "name": "UCI Health-Fountain Valley",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12834",
     "name": "UCI Health-Fountain Valley",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12831",
     "name": "UCI Health-Lakewood",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10440",
     "name": "UCI Health-Los Alamitos",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10446",
     "name": "UCI Health-Orange",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "13077",
     "name": "UCI Health-Placentia Linda",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12182",
     "name": "UCLA West Valley Medical Center",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11242",
     "name": "UCSF Benioff Children's Hospital Oakland",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12460",
     "name": "UCSF Health - St. Mary's Hospital",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12457",
     "name": "UCSF Health Saint Francis Hospital",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12476",
     "name": "UCSF Medical Center",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "18181",
     "name": "UCSF Medical Center At Mission Bay",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12443",
     "name": "UCSF Medical Center at Mount Zion",
     "county": "San Francisco",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10619",
     "name": "University of California Davis Medical Center",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10039",
     "name": "University of California Irvine Medical Center - Irvine",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11858",
     "name": "USC Arcadia Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15179",
     "name": "USC Kenneth Norris Jr. Cancer Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12551",
     "name": "USC Verdugo Hills Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "17124",
     "name": "Valley Children's Hospital",
     "county": "Madera",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12140",
     "name": "Valley Presbyterian Hospital",
     "county": "Los Angeles",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11162",
     "name": "Ventura County Medical Center",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11175",
     "name": "Ventura County Medical Center - Santa Paula Hospital",
     "county": "Ventura",
-    "region": "North Los Angeles"
+    "region": "North Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "16620",
     "name": "Vibra Hospital Of Northern California",
     "county": "Shasta",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10631",
     "name": "Vibra Hospital of Sacramento",
     "county": "Sacramento",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10707",
     "name": "Victor Valley Global Medical Center",
     "county": "San Bernardino",
-    "region": "South"
+    "region": "South",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11366",
     "name": "Washington Hospital",
     "county": "Alameda",
-    "region": "Central"
+    "region": "Central",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "15019",
     "name": "Watsonville Community Hospital",
     "county": "Santa Cruz",
-    "region": "Coastal"
+    "region": "Coastal",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "10475",
     "name": "West Anaheim Medical Center",
     "county": "Orange",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12180",
     "name": "West Covina Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "12201",
     "name": "Whittier Hospital Medical Center",
     "county": "Los Angeles",
-    "region": "South Los Angeles"
+    "region": "South Los Angeles",
+    "latitude": null,
+    "longitude": null
   },
   {
     "code": "11198",
     "name": "Woodland Memorial Hospital",
     "county": "Yolo",
-    "region": "North"
+    "region": "North",
+    "latitude": null,
+    "longitude": null
   }
 ]

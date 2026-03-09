@@ -55,6 +55,8 @@ export interface Facility {
   phone?: string;
   county: string;
   region: string;
+  latitude?: number;
+  longitude?: number;
   updatedAt: string;
 }
 
@@ -186,11 +188,32 @@ export function isValidOperationalStatus(value: unknown): value is OperationalSt
   return typeof value === "string" && (OPERATIONAL_STATUSES as readonly string[]).includes(value);
 }
 
+function normalizeFacilityCoordinate(value: unknown, minimum: number, maximum: number): number | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
+  if (!Number.isFinite(parsed) || parsed < minimum || parsed > maximum) {
+    return undefined;
+  }
+
+  return Number(parsed.toFixed(8));
+}
+
 export function createSeedSnapshot(): Pick<Snapshot, "facilities" | "bedStatuses"> {
   const now = new Date().toISOString();
 
-  const facilities: Facility[] = (californiaAcuteHospitals as Array<{ code: string; name: string; county: string; region: string }>).map(
-    (facility) => ({
+  type SeedFacility = {
+    code: string;
+    name: string;
+    county: string;
+    region: string;
+    latitude?: unknown;
+    longitude?: unknown;
+  };
+
+  const facilities: Facility[] = (californiaAcuteHospitals as SeedFacility[]).map((facility) => ({
       id: `fac-${facility.code}`,
       code: facility.code,
       name: facility.name,
@@ -201,6 +224,8 @@ export function createSeedSnapshot(): Pick<Snapshot, "facilities" | "bedStatuses
       zip: "00000",
       county: facility.county,
       region: facility.region,
+      latitude: normalizeFacilityCoordinate(facility.latitude, -90, 90),
+      longitude: normalizeFacilityCoordinate(facility.longitude, -180, 180),
       updatedAt: now
     })
   );

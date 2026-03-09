@@ -1,3 +1,5 @@
+import { dirname, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { v4 as uuidv4 } from "uuid";
 import {
   BED_TYPES,
@@ -61,16 +63,58 @@ export interface SubmissionEvent {
   source: string;
 }
 
+interface PersistedStoreState {
+  startedAt: string;
+  revision: number;
+  lastChangedAt: string;
+  facilities: Facility[];
+  bedStatuses: BedStatusRecord[];
+  uploadJobs: UploadJob[];
+  facilitySubmissions: Array<{
+    facilityId: string;
+    counter: FacilitySubmissionCounter;
+  }>;
+}
+
+function resolvePersistencePath(customPath?: string): string {
+  const configured = normalizeText(customPath ?? process.env.HBEDS_STORE_FILE);
+  if (!configured) {
+    return resolve(process.cwd(), "data", "hbeds-store.json");
+  }
+  if (configured.startsWith("/")) {
+    return configured;
+  }
+  return resolve(process.cwd(), configured);
+}
+
+function normalizeFacilityCoordinate(value: unknown, minimum: number, maximum: number): number | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
+  if (!Number.isFinite(parsed) || parsed < minimum || parsed > maximum) {
+    return undefined;
+  }
+  return Number(parsed.toFixed(8));
+}
+
 export class HBedsStore {
   private readonly facilities = new Map<string, Facility>();
   private readonly bedStatuses = new Map<string, BedStatusRecord>();
   private readonly facilitySubmissions = new Map<string, FacilitySubmissionCounter>();
-  private readonly startedAt = new Date().toISOString();
+  private readonly persistencePath: string;
+  private startedAt = new Date().toISOString();
   private uploadJobs: UploadJob[] = [];
   private revision = 1;
   private lastChangedAt = new Date().toISOString();
 
-  constructor() {
+  constructor(persistencePath?: string) {
+    this.persistencePath = resolvePersistencePath(persistencePath);
+    const restored = this.restoreFromDisk();
+    if (restored) {
+      return;
+    }
+
     const seed = createSeedSnapshot();
     for (const facility of seed.facilities) {
       this.facilities.set(facility.id, facility);
@@ -81,6 +125,7 @@ export class HBedsStore {
     for (const facility of seed.facilities) {
       this.facilitySubmissions.set(facility.id, this.emptySubmissionCounter());
     }
+    this.persistToDisk();
   }
 
   private emptySubmissionCounter(): FacilitySubmissionCounter {
@@ -95,6 +140,116 @@ export class HBedsStore {
       sourceCounts: {},
       recentSubmissions: []
     };
+  }
+
+  private normalizeCounter(counter: Partial<FacilitySubmissionCounter> | undefined): FacilitySubmissionCounter {
+    const sourceCounts = counter?.sourceCounts;
+    const recentSubmissions = counter?.recentSubmissions;
+    const safeSourceCounts: Record<string, number> = {};
+    if (sourceCounts && typeof sourceCounts === "object") {
+      for (const [source, count] of Object.entries(sourceCounts)) {
+        safeSourceCounts[source] = Number.isFinite(count) ? Math.max(0, Math.floor(Number(count))) : 0;
+      }
+    }
+
+    return {
+      totalSubmissions: Number.isFinite(counter?.totalSubmissions) ? Math.max(0, Math.floor(Number(counter?.totalSubmissions))) : 0,
+      firstSubmissionAt: normalizeText(counter?.firstSubmissionAt) || null,
+      lastSubmissionAt: normalizeText(counter?.lastSubmissionAt) || null,
+      intervalCount: Number.isFinite(counter?.intervalCount) ? Math.max(0, Math.floor(Number(counter?.intervalCount))) : 0,
+      intervalMinutesTotal: Number.isFinite(counter?.intervalMinutesTotal) ? Math.max(0, Number(counter?.intervalMinutesTotal)) : 0,
+      onTimeIntervals: Number.isFinite(counter?.onTimeIntervals) ? Math.max(0, Math.floor(Number(counter?.onTimeIntervals))) : 0,
+      lateIntervals: Number.isFinite(counter?.lateIntervals) ? Math.max(0, Math.floor(Number(counter?.lateIntervals))) : 0,
+      sourceCounts: safeSourceCounts,
+      recentSubmissions: Array.isArray(recentSubmissions)
+        ? recentSubmissions
+            .map((submission) => ({
+              submittedAt: normalizeText(submission?.submittedAt),
+              source: normalizeText(submission?.source)
+            }))
+            .filter((submission) => Boolean(submission.submittedAt) && Boolean(submission.source))
+            .slice(0, 120)
+        : []
+    };
+  }
+
+  private restoreFromDisk(): boolean {
+    if (!existsSync(this.persistencePath)) {
+      return false;
+    }
+
+    try {
+      const raw = readFileSync(this.persistencePath, "utf8");
+      const parsed = JSON.parse(raw) as Partial<PersistedStoreState>;
+      if (!Array.isArray(parsed.facilities) || !Array.isArray(parsed.bedStatuses)) {
+        return false;
+      }
+
+      this.facilities.clear();
+      this.bedStatuses.clear();
+      this.facilitySubmissions.clear();
+
+      for (const facility of parsed.facilities) {
+        if (!facility?.id) {
+          continue;
+        }
+        this.facilities.set(facility.id, facility);
+      }
+
+      for (const record of parsed.bedStatuses) {
+        if (!record?.id) {
+          continue;
+        }
+        this.bedStatuses.set(record.id, record);
+      }
+
+      const persistedCounters = new Map<string, FacilitySubmissionCounter>();
+      for (const item of parsed.facilitySubmissions ?? []) {
+        const facilityId = normalizeText(item?.facilityId);
+        if (!facilityId) {
+          continue;
+        }
+        persistedCounters.set(facilityId, this.normalizeCounter(item?.counter));
+      }
+
+      for (const facilityId of this.facilities.keys()) {
+        this.facilitySubmissions.set(facilityId, persistedCounters.get(facilityId) ?? this.emptySubmissionCounter());
+      }
+
+      this.uploadJobs = Array.isArray(parsed.uploadJobs) ? parsed.uploadJobs.slice(0, 50) : [];
+      this.startedAt = normalizeText(parsed.startedAt) || new Date().toISOString();
+      this.lastChangedAt = normalizeText(parsed.lastChangedAt) || new Date().toISOString();
+      this.revision = Number.isFinite(parsed.revision) ? Math.max(1, Math.floor(Number(parsed.revision))) : 1;
+      return true;
+    } catch (error) {
+      console.warn(`[HBedsStore] Unable to restore persisted state from ${this.persistencePath}:`, error);
+      return false;
+    }
+  }
+
+  private persistToDisk(): void {
+    const state: PersistedStoreState = {
+      startedAt: this.startedAt,
+      revision: this.revision,
+      lastChangedAt: this.lastChangedAt,
+      facilities: this.listFacilities(),
+      bedStatuses: this.listBedStatuses(),
+      uploadJobs: this.listUploadJobs(),
+      facilitySubmissions: Array.from(this.facilitySubmissions.entries()).map(([facilityId, counter]) => ({
+        facilityId,
+        counter
+      }))
+    };
+
+    try {
+      const directory = dirname(this.persistencePath);
+      mkdirSync(directory, { recursive: true });
+      const tmpPath = `${this.persistencePath}.tmp`;
+      writeFileSync(tmpPath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+      renameSync(tmpPath, this.persistencePath);
+    } catch (error) {
+      console.error(`[HBedsStore] Unable to persist state to ${this.persistencePath}:`, error);
+    }
   }
 
   private recordFacilitySubmission(facilityId: string, submittedAt: string, source: string): void {
@@ -124,6 +279,7 @@ export class HBedsStore {
   private touch(): void {
     this.revision += 1;
     this.lastChangedAt = new Date().toISOString();
+    this.persistToDisk();
   }
 
   private toFacilityCode(code: string): string {
@@ -208,6 +364,8 @@ export class HBedsStore {
     state?: string;
     zip?: string;
     phone?: string;
+    latitude?: number;
+    longitude?: number;
   }): Facility {
     const code = this.toFacilityCode(normalizeText(input.code));
     const name = normalizeText(input.name);
@@ -220,6 +378,8 @@ export class HBedsStore {
     const addressLine1 = normalizeText(input.addressLine1) || "Address on file";
     const addressLine2 = normalizeText(input.addressLine2) || undefined;
     const phone = normalizeText(input.phone) || undefined;
+    const latitude = normalizeFacilityCoordinate(input.latitude, -90, 90);
+    const longitude = normalizeFacilityCoordinate(input.longitude, -180, 180);
 
     if (!code || !name || !county || !region) {
       throw new Error("code, name, county, and region are required.");
@@ -243,6 +403,8 @@ export class HBedsStore {
       phone,
       county,
       region,
+      latitude,
+      longitude,
       updatedAt: new Date().toISOString()
     };
 
@@ -266,6 +428,8 @@ export class HBedsStore {
       state?: string;
       zip?: string;
       phone?: string;
+      latitude?: number | null;
+      longitude?: number | null;
     }
   ): Facility {
     const current = this.facilities.get(id);
@@ -281,6 +445,21 @@ export class HBedsStore {
       }
     }
 
+    const hasLatitude = Object.prototype.hasOwnProperty.call(input, "latitude");
+    const hasLongitude = Object.prototype.hasOwnProperty.call(input, "longitude");
+
+    const nextLatitude = hasLatitude ? normalizeFacilityCoordinate(input.latitude, -90, 90) : current.latitude;
+    const nextLongitude = hasLongitude ? normalizeFacilityCoordinate(input.longitude, -180, 180) : current.longitude;
+
+    if (hasLatitude && input.latitude !== null && input.latitude !== undefined && nextLatitude === undefined) {
+      throw new Error("latitude must be a number between -90 and 90.");
+    }
+    if (hasLongitude && input.longitude !== null && input.longitude !== undefined && nextLongitude === undefined) {
+      throw new Error("longitude must be a number between -180 and 180.");
+    }
+    const resolvedLatitude = hasLatitude ? (input.latitude === null ? undefined : nextLatitude) : current.latitude;
+    const resolvedLongitude = hasLongitude ? (input.longitude === null ? undefined : nextLongitude) : current.longitude;
+
     const updated: Facility = {
       ...current,
       code: nextCode,
@@ -294,6 +473,8 @@ export class HBedsStore {
       state: normalizeText(input.state) || current.state,
       zip: normalizeText(input.zip) || current.zip,
       phone: input.phone === "" ? undefined : normalizeText(input.phone) || current.phone,
+      latitude: resolvedLatitude,
+      longitude: resolvedLongitude,
       updatedAt: new Date().toISOString()
     };
 
@@ -578,6 +759,7 @@ export class HBedsStore {
     };
 
     this.uploadJobs = [job, ...this.uploadJobs].slice(0, 50);
+    this.touch();
     return job;
   }
 

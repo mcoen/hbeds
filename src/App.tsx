@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
   BED_TYPE_LABELS,
   BED_TYPES,
@@ -38,21 +38,28 @@ import {
   type HbedsAiHelperResponse,
   type SimulationStatus
 } from "./lib/api";
+import { CALIFORNIA_CENTER, getCountyCoordinate } from "./lib/caCountyCoordinates";
 
-type TabId = "manual" | "bulk" | "analytics" | "notifications" | "settings" | "apis" | "cdcNhsn" | "facilityDetails" | "aiHelper";
+type TabId = "manual" | "bulk" | "analytics" | "notifications" | "settings" | "apis" | "cdcNhsn" | "facilityDetails" | "aiHelper" | "heatMap";
 type ApiTabId = "rest" | "graphql" | "fhir" | "sftp" | "bulk";
 type IncomingApiFilter = "all" | "rest" | "graphql" | "fhir";
 type IncomingWindowId = "1m" | "15m" | "60m" | "12h" | "24h";
 type OutgoingWindowId = "1d" | "7d" | "30d";
 type ManualViewMode = "facilities" | "beds";
 type FacilityModalMode = "create" | "edit";
-
-interface RowEditState {
-  operationalStatus: OperationalStatus;
-  staffedBeds: string;
-  occupiedBeds: string;
-  availableBeds: string;
-}
+type BedModalMode = "create" | "edit";
+type UserRole = "cdph" | "hospital";
+type SortDirection = "asc" | "desc";
+type FacilityGridSortKey = "name" | "facilityType" | "county" | "updatedAt";
+type BedGridSortKey = "facilityName" | "unit" | "bedType" | "operationalStatus" | "staffedBeds" | "occupiedBeds" | "availableBeds" | "lastUpdatedAt";
+type HeatMapViewId =
+  | "occupancy"
+  | "staleHour"
+  | "staleDay"
+  | "staleWeek"
+  | "lowAvailability"
+  | "operationalRisk"
+  | "respiratoryPressure";
 
 interface Notice {
   type: "success" | "error";
@@ -71,6 +78,8 @@ interface FacilityFormState {
   phone: string;
   county: string;
   region: string;
+  latitude: string;
+  longitude: string;
 }
 
 interface BedModalFormState {
@@ -92,6 +101,14 @@ interface BedModalFormState {
 interface LoginFormState {
   email: string;
   password: string;
+}
+
+interface SessionUser {
+  email: string;
+  role: UserRole;
+  facilityId?: string;
+  facilityCode?: string;
+  facilityName?: string;
 }
 
 interface RestQueryState {
@@ -157,10 +174,40 @@ interface FacilityComplianceRow {
   compliant: boolean;
 }
 
+interface HeatMapFacility {
+  id: string;
+  code: string;
+  name: string;
+  county: string;
+  region: string;
+  lat: number;
+  lng: number;
+  staffedBeds: number;
+  occupiedBeds: number;
+  availableBeds: number;
+  availablePercent: number;
+  capacityPercent: number;
+  limitedUnits: number;
+  diversionUnits: number;
+  closedUnits: number;
+  respiratoryConfirmed: number;
+  lastUpdatedAt: string | null;
+  minutesSinceUpdate: number | null;
+  markerStatus: "critical" | "warning" | "good";
+  primaryMetricLabel: string;
+  secondaryMetricLabel?: string;
+}
+
+type HeatMapFacilityAggregate = Omit<HeatMapFacility, "markerStatus" | "primaryMetricLabel" | "secondaryMetricLabel">;
+
 const LOGO_URL = "https://www.michaelcoen.com/images/CDPH-Logo.png";
 const HOSPITAL_BACKDROP_URL = "https://www.michaelcoen.com/images/HBEDS-Background.jpg";
 const DEMO_LOGIN_EMAIL = "cdph.admin@cdph.ca.gov";
 const DEMO_LOGIN_PASSWORD = "password";
+const DEMO_HOSPITAL_LOGIN_EMAIL = "hospital.user.11205@ca-hbeds.org";
+const DEMO_HOSPITAL_LOGIN_PASSWORD = "password";
+const DEMO_HOSPITAL_FACILITY_CODE = "11205";
+const DEMO_HOSPITAL_FACILITY_ID = `fac-${DEMO_HOSPITAL_FACILITY_CODE}`;
 
 const EMPTY_FACILITY_FORM: FacilityFormState = {
   code: "",
@@ -173,7 +220,9 @@ const EMPTY_FACILITY_FORM: FacilityFormState = {
   zip: "",
   phone: "",
   county: "",
-  region: ""
+  region: "",
+  latitude: "",
+  longitude: ""
 };
 
 const EMPTY_BED_MODAL_FORM: BedModalFormState = {
@@ -241,6 +290,58 @@ const OUTGOING_WINDOW_OPTIONS: Array<{
   { id: "30d", label: "Last 30 days", durationMinutes: 30 * 24 * 60, bucketSeconds: 24 * 60 * 60 }
 ];
 
+const CDPH_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
+  { id: "manual", label: "Facilities, Beds, and Statuses" },
+  { id: "apis", label: "Submission Options" },
+  { id: "heatMap", label: "Geospatial Analysis" },
+  { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
+  { id: "aiHelper", label: "AI Helper" },
+  { id: "analytics", label: "Analytics" },
+  { id: "notifications", label: "Notifications" },
+  { id: "settings", label: "Settings" }
+];
+
+const HOSPITAL_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
+  { id: "manual", label: "Facilities, Beds, and Statuses" },
+  { id: "apis", label: "Submission Options" },
+  { id: "heatMap", label: "Geospatial Analysis" },
+  { id: "analytics", label: "Analytics" },
+  { id: "notifications", label: "Notifications" }
+];
+
+const CDPH_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
+  { id: "manual", label: "Facilities" },
+  { id: "apis", label: "Submit" },
+  { id: "heatMap", label: "Geospatial Analysis" },
+  { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
+  { id: "aiHelper", label: "AI" },
+  { id: "analytics", label: "Metrics" },
+  { id: "notifications", label: "Alerts" },
+  { id: "settings", label: "Settings" }
+];
+
+const HOSPITAL_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
+  { id: "manual", label: "Facilities" },
+  { id: "apis", label: "Submit" },
+  { id: "heatMap", label: "Geospatial Analysis" },
+  { id: "analytics", label: "Metrics" },
+  { id: "notifications", label: "Alerts" }
+];
+
+const CDPH_API_TABS: Array<{ id: ApiTabId; label: string }> = [
+  { id: "fhir", label: "FHIR API" },
+  { id: "rest", label: "REST JSON API" },
+  { id: "graphql", label: "GraphQL API" },
+  { id: "sftp", label: "SFTP Submission" },
+  { id: "bulk", label: "Bulk Upload" }
+];
+
+const HOSPITAL_API_TABS: Array<{ id: ApiTabId; label: string }> = [
+  { id: "fhir", label: "FHIR API" },
+  { id: "rest", label: "REST JSON API" },
+  { id: "graphql", label: "GraphQL API" }
+];
+
 const AI_SUGGESTED_QUESTIONS = [
   "Which facilities are currently missing the 15-minute reporting requirement?",
   "Show me facilities with the highest ICU occupancy pressure right now.",
@@ -249,10 +350,93 @@ const AI_SUGGESTED_QUESTIONS = [
   "List the top lagging facilities and recommended follow-up actions.",
   "Summarize operational risks for the next reporting interval."
 ];
+const DEFAULT_HEAT_MAP_CAPACITY_THRESHOLD = 89;
+const HEAT_MAP_MAX_FILTER_THRESHOLD = 99;
+const HEAT_MAP_LOW_AVAILABILITY_WARNING_THRESHOLD = 10;
+const HEAT_MAP_LOW_AVAILABILITY_CRITICAL_THRESHOLD = 3;
+const HEAT_MAP_RESPIRATORY_WARNING_THRESHOLD = 5;
+const HEAT_MAP_RESPIRATORY_CRITICAL_THRESHOLD = 12;
+const HEAT_MAP_VIEW_OPTIONS: Array<{ id: HeatMapViewId; label: string; description: string; countLabel: string; emptyMessage: string }> = [
+  {
+    id: "occupancy",
+    label: "High Occupancy",
+    description: "Facilities currently above the selected occupancy threshold.",
+    countLabel: "At-Risk Facilities",
+    emptyMessage: "No facilities are above the selected occupancy threshold right now."
+  },
+  {
+    id: "staleHour",
+    label: "No Submission > 1 Hour",
+    description: "Facilities that have not submitted updates in over one hour.",
+    countLabel: "Overdue (1h+)",
+    emptyMessage: "All facilities submitted within the last hour."
+  },
+  {
+    id: "staleDay",
+    label: "No Submission > 1 Day",
+    description: "Facilities that have not submitted updates in over 24 hours.",
+    countLabel: "Overdue (24h+)",
+    emptyMessage: "No facilities are currently over one day late."
+  },
+  {
+    id: "staleWeek",
+    label: "No Submission > 1 Week",
+    description: "Facilities that have not submitted updates in over seven days.",
+    countLabel: "Overdue (7d+)",
+    emptyMessage: "No facilities are currently over one week late."
+  },
+  {
+    id: "lowAvailability",
+    label: "Low Available Beds",
+    description: "Facilities with 10% or fewer available staffed beds.",
+    countLabel: "Low Availability",
+    emptyMessage: "No facilities are currently at or below 10% available beds."
+  },
+  {
+    id: "operationalRisk",
+    label: "Operational Disruptions",
+    description: "Facilities with limited, diversion, or closed operating units.",
+    countLabel: "Disruption Sites",
+    emptyMessage: "No current operational disruptions are detected."
+  },
+  {
+    id: "respiratoryPressure",
+    label: "Respiratory Pressure",
+    description: "Facilities with elevated respiratory census relative to staffed beds.",
+    countLabel: "Respiratory Pressure",
+    emptyMessage: "No facilities currently exceed respiratory pressure thresholds."
+  }
+];
+const LEAFLET_SCRIPT_ID = "leaflet-script";
+const LEAFLET_CSS_ID = "leaflet-style";
 
 function asNumber(value: string, fallback = 0): number {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) ? Math.max(0, parsed) : fallback;
+}
+
+function parseCoordinateValue(value: string, minimum: number, maximum: number): number | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const parsed = Number.parseFloat(trimmed);
+  if (!Number.isFinite(parsed) || parsed < minimum || parsed > maximum) {
+    return undefined;
+  }
+
+  return parsed;
+}
+
+function hashFacilityToken(value: string): number {
+  return value.split("").reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 10_000, 0);
+}
+
+function jitterOffset(seed: string, axis: "lat" | "lng"): number {
+  const value = hashFacilityToken(seed) % 100;
+  const normalized = (value / 100) * 2 - 1;
+  return normalized * (axis === "lat" ? 0.055 : 0.07);
 }
 
 function statusSelectTone(status: string): string {
@@ -273,6 +457,56 @@ function statusLabel(status: string): string {
     return status;
   }
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function gridSortIndicator(active: boolean, direction: SortDirection): string {
+  if (!active) {
+    return "↕";
+  }
+  return direction === "asc" ? "▲" : "▼";
+}
+
+function heatMapFillColor(status: HeatMapFacility["markerStatus"]): string {
+  if (status === "critical") {
+    return "#dc2626";
+  }
+  if (status === "warning") {
+    return "#eab308";
+  }
+  return "#16a34a";
+}
+
+function heatMapCapacityStatus(capacityPercent: number): HeatMapFacility["markerStatus"] {
+  if (capacityPercent > 95) {
+    return "critical";
+  }
+  if (capacityPercent > 90) {
+    return "warning";
+  }
+  return "good";
+}
+
+function formatDurationFromMinutes(minutes: number): string {
+  if (minutes < 90) {
+    return `${Math.round(minutes)} min`;
+  }
+  if (minutes < 24 * 60) {
+    return `${(minutes / 60).toFixed(1)} hr`;
+  }
+  if (minutes < 7 * 24 * 60) {
+    return `${(minutes / (24 * 60)).toFixed(1)} day`;
+  }
+  return `${(minutes / (7 * 24 * 60)).toFixed(1)} wk`;
+}
+
+function hospitalIconHtml(color: string): string {
+  return `<div style="width:26px;height:26px;border-radius:7px;background:${color};border:1.6px solid #0f172a;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(15,23,42,0.25);">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" aria-hidden="true">
+      <path d="M5 21V6.8c0-.99.81-1.8 1.8-1.8h10.4c.99 0 1.8.81 1.8 1.8V21" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+      <path d="M9.5 10.5h5M12 8v5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"></path>
+      <path d="M10 21v-3.2c0-.44.36-.8.8-.8h2.4c.44 0 .8.36.8.8V21" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+  </div>`;
 }
 
 function bedTypeLabel(type: BedType): string {
@@ -297,6 +531,17 @@ function normalizeApiPath(path: string, fallback: string): string {
   return `/${trimmed}`;
 }
 
+function withFacilityQuery(path: string, facilityId: string): string {
+  if (!facilityId) {
+    return path;
+  }
+  const [pathname, queryString = ""] = path.split("?", 2);
+  const params = new URLSearchParams(queryString);
+  params.set("facilityId", facilityId);
+  const nextQuery = params.toString();
+  return nextQuery ? `${pathname}?${nextQuery}` : pathname;
+}
+
 function minutesAgoIso(minutes: number): string {
   return new Date(Date.now() - minutes * 60 * 1000).toISOString();
 }
@@ -306,6 +551,14 @@ function percentOfTotal(value: number, total: number): string {
     return "0.0%";
   }
   return `${((value / total) * 100).toFixed(1)}%`;
+}
+
+function normalizeCoordinateValue(value: string): number | undefined {
+  if (!value.trim()) {
+    return undefined;
+  }
+  const numeric = Number.parseFloat(value);
+  return Number.isFinite(numeric) ? numeric : undefined;
 }
 
 function notificationTone(severity: NotificationItem["severity"]): string {
@@ -332,6 +585,52 @@ function severityLabel(severity: NotificationItem["severity"]): string {
     return "Success";
   }
   return "Info";
+}
+
+function buildInitialNotifications(role: UserRole, facilityCode?: string): NotificationItem[] {
+  if (role === "hospital") {
+    return [
+      {
+        id: "notif-hospital-scope",
+        title: "Hospital Scope Active",
+        message: `Submission and analytics views are scoped to Facility ID ${facilityCode ?? "assigned facility"}.`,
+        source: "Access Control",
+        severity: "info",
+        createdAt: minutesAgoIso(3),
+        read: false
+      }
+    ];
+  }
+
+  return [
+    {
+      id: "notif-1",
+      title: "CDC/NHSN Sync Queue",
+      message: "CDC/NHSN integration queue is active and awaiting the next scheduled submission window.",
+      source: "CDC/NHSN",
+      severity: "info",
+      createdAt: minutesAgoIso(6),
+      read: false
+    },
+    {
+      id: "notif-2",
+      title: "Bulk Upload Processed",
+      message: "Most recent bulk upload completed and records were merged into the current revision.",
+      source: "Bulk Upload",
+      severity: "success",
+      createdAt: minutesAgoIso(28),
+      read: false
+    },
+    {
+      id: "notif-3",
+      title: "Operational Status Warning",
+      message: "Multiple units are currently marked as Limited or Diversion and should be reviewed.",
+      source: "Bed Status",
+      severity: "warning",
+      createdAt: minutesAgoIso(57),
+      read: true
+    }
+  ];
 }
 
 function mainTabIcon(tabId: TabId) {
@@ -390,6 +689,20 @@ function mainTabIcon(tabId: TabId) {
           strokeLinejoin="round"
         />
         <path d="M15.1 12.2 16 14.2l2 .9-2 .9-.9 2-.9-2-2-.9 2-.9.9-2Z" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (tabId === "heatMap") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+        <path
+          d="M9.7 3.2 4.5 5.4v11.2l5.2-2.2 5.8 2V5.8 5.2l-5.8-2Z"
+          stroke="currentColor"
+          strokeWidth="1.4"
+          strokeLinejoin="round"
+        />
+        <path d="M4.5 16.2V5.2" stroke="currentColor" strokeWidth="1.1" />
+        <path d="M15 17.4V6.2" stroke="currentColor" strokeWidth="1.1" />
       </svg>
     );
   }
@@ -457,6 +770,7 @@ export default function App() {
   const [notice, setNotice] = useState<Notice | null>(null);
 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginBackdropAvailable, setLoginBackdropAvailable] = useState(true);
@@ -485,47 +799,40 @@ export default function App() {
   });
   const [outgoingCdcSubmissions, setOutgoingCdcSubmissions] = useState<AnalyticsSubmissionsResponse | null>(null);
   const [analyticsLastRefreshedAt, setAnalyticsLastRefreshedAt] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(() => [
-    {
-      id: "notif-1",
-      title: "CDC/NHSN Sync Queue",
-      message: "CDC/NHSN integration queue is active and awaiting the next scheduled submission window.",
-      source: "CDC/NHSN",
-      severity: "info",
-      createdAt: minutesAgoIso(6),
-      read: false
-    },
-    {
-      id: "notif-2",
-      title: "Bulk Upload Processed",
-      message: "Most recent bulk upload completed and records were merged into the current revision.",
-      source: "Bulk Upload",
-      severity: "success",
-      createdAt: minutesAgoIso(28),
-      read: false
-    },
-    {
-      id: "notif-3",
-      title: "Operational Status Warning",
-      message: "Multiple units are currently marked as Limited or Diversion and should be reviewed.",
-      source: "Bed Status",
-      severity: "warning",
-      createdAt: minutesAgoIso(57),
-      read: true
-    }
-  ]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => buildInitialNotifications("cdph"));
   const [apiMetrics, setApiMetrics] = useState<ApiMetricsResponse | null>(null);
   const [cdcNhsnDashboard, setCdcNhsnDashboard] = useState<CdcNhsnDashboard | null>(null);
   const [revision, setRevision] = useState<number>(1);
+  const [leafletLoadError, setLeafletLoadError] = useState<string | null>(null);
+  const [heatMapCapacityThreshold, setHeatMapCapacityThreshold] =
+    useState<number>(DEFAULT_HEAT_MAP_CAPACITY_THRESHOLD);
+  const [heatMapViewId, setHeatMapViewId] = useState<HeatMapViewId>("occupancy");
 
   const [filters, setFilters] = useState({
     facilityId: "",
     bedType: "",
-    operationalStatus: ""
+    operationalStatus: "",
+    unit: ""
+  });
+  const [facilityGridFilters, setFacilityGridFilters] = useState<{
+    facilityType: string;
+    county: string;
+    region: string;
+  }>({
+    facilityType: "",
+    county: "",
+    region: ""
+  });
+  const [facilityGridSort, setFacilityGridSort] = useState<{ key: FacilityGridSortKey; direction: SortDirection }>({
+    key: "name",
+    direction: "asc"
+  });
+  const [bedGridSort, setBedGridSort] = useState<{ key: BedGridSortKey; direction: SortDirection }>({
+    key: "facilityName",
+    direction: "asc"
   });
   const [generalSearch, setGeneralSearch] = useState("");
 
-  const [rowEdits, setRowEdits] = useState<Record<string, RowEditState>>({});
   const [bulkFile, setBulkFile] = useState<File | null>(null);
 
   const [facilityModalOpen, setFacilityModalOpen] = useState(false);
@@ -534,6 +841,8 @@ export default function App() {
   const [editingFacilityId, setEditingFacilityId] = useState<string | null>(null);
 
   const [bedModalOpen, setBedModalOpen] = useState(false);
+  const [bedModalMode, setBedModalMode] = useState<BedModalMode>("create");
+  const [editingBedStatusId, setEditingBedStatusId] = useState<string | null>(null);
   const [bedModalForm, setBedModalForm] = useState<BedModalFormState>(EMPTY_BED_MODAL_FORM);
 
   const [restQuery, setRestQuery] = useState<RestQueryState>(EMPTY_REST_QUERY);
@@ -570,6 +879,22 @@ export default function App() {
     themeMode: "light"
   });
 
+  const heatMapContainerRef = useRef<HTMLDivElement>(null);
+  const heatMapRef = useRef<unknown>(null);
+  const heatMapLayerRef = useRef<unknown>(null);
+
+  const isHospitalUser = sessionUser?.role === "hospital";
+  const hospitalFacilityId = sessionUser?.facilityId ?? "";
+  const hospitalFacilityCode = sessionUser?.facilityCode ?? "";
+  const hospitalScopeLabel = sessionUser?.facilityName
+    ? `${sessionUser.facilityName} (Facility ID ${sessionUser.facilityCode})`
+    : hospitalFacilityCode
+      ? `Facility ID ${hospitalFacilityCode}`
+      : "Assigned Facility";
+  const desktopNavItems = isHospitalUser ? HOSPITAL_NAV_ITEMS : CDPH_NAV_ITEMS;
+  const mobileNavItems = isHospitalUser ? HOSPITAL_MOBILE_NAV_ITEMS : CDPH_MOBILE_NAV_ITEMS;
+  const apiTabs = isHospitalUser ? HOSPITAL_API_TABS : CDPH_API_TABS;
+
   const setError = useCallback((error: unknown) => {
     setNotice({
       type: "error",
@@ -577,20 +902,155 @@ export default function App() {
     });
   }, []);
 
+  const loadLeafletAssets = useCallback(async () => {
+    if ((window as Window & { L?: unknown }).L) {
+      setLeafletLoadError(null);
+      return;
+    }
+
+    const existingScript = document.querySelector<HTMLScriptElement>(`script#${LEAFLET_SCRIPT_ID}`);
+    const existingLink = document.querySelector<HTMLLinkElement>(`link#${LEAFLET_CSS_ID}`);
+
+    if (!existingLink) {
+      const link = document.createElement("link");
+      link.id = LEAFLET_CSS_ID;
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+
+    if (!existingScript) {
+      const script = document.createElement("script");
+      script.id = LEAFLET_SCRIPT_ID;
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.async = true;
+
+      const done = new Promise<void>((resolve, reject) => {
+        script.onload = () => resolve();
+        script.onerror = () => {
+          reject(new Error("Unable to load Leaflet map assets from the CDN. Check network connectivity and refresh."));
+        };
+      });
+
+      document.head.appendChild(script);
+      await done;
+    } else {
+      if (!(window as Window & { L?: unknown }).L) {
+        await new Promise<void>((resolve, reject) => {
+          const startAt = Date.now();
+          const timer = window.setInterval(() => {
+            if ((window as Window & { L?: unknown }).L) {
+              window.clearInterval(timer);
+              resolve();
+            } else if (Date.now() - startAt > 8000) {
+              window.clearInterval(timer);
+              reject(new Error("Leaflet script did not initialize in time."));
+            }
+          }, 80);
+        });
+      }
+    }
+
+    if ((window as Window & { L?: unknown }).L) {
+      setLeafletLoadError(null);
+    } else {
+      throw new Error("Leaflet failed to initialize.");
+    }
+  }, []);
+
+  const safeLoad = useCallback(
+    async (label: string, loader: () => Promise<void>, fallback?: () => void): Promise<string | null> => {
+      try {
+        await loader();
+        return null;
+      } catch (error) {
+        fallback?.();
+        const detail = error instanceof Error ? error.message : "Request failed.";
+        return `${label}: ${detail}`;
+      }
+    },
+    []
+  );
+
+  const resetFacilityData = useCallback(() => {
+    setFacilities([]);
+    setBedStatuses([]);
+    setSummary(null);
+    setFacilityDetailsMetrics(null);
+    setSelectedFacilityDetailsId(null);
+    setBedModalForm(EMPTY_BED_MODAL_FORM);
+    setBedModalMode("create");
+    setEditingBedStatusId(null);
+  }, []);
+
+  const resetSummary = useCallback(() => {
+    setSummary(null);
+    setRevision(1);
+  }, []);
+
+  const resetJobs = useCallback(() => {
+    setBulkJobs([]);
+  }, []);
+
+  const resetAnalytics = useCallback(() => {
+    setApiMetrics(null);
+    setIncomingSubmissionsByApi({
+      rest: null,
+      graphql: null,
+      fhir: null
+    });
+    setOutgoingCdcSubmissions(null);
+    setAnalyticsLastRefreshedAt(null);
+  }, []);
+
+  const resetCdcNhsn = useCallback(() => {
+    setCdcNhsnDashboard(null);
+  }, []);
+
+  const resetSimulationStatus = useCallback(() => {
+    setSimulationStatus(null);
+  }, []);
+
   const loadFacilities = useCallback(async () => {
     const data = await getFacilities();
-    setFacilities(data);
+    if (isHospitalUser) {
+      const scopedFacility = data.find((facility) => facility.id === hospitalFacilityId || facility.code === hospitalFacilityCode);
+      const scopedFacilities = scopedFacility ? [scopedFacility] : [];
+      setFacilities(scopedFacilities);
+      setFilters((current) => ({
+        ...current,
+        facilityId: scopedFacility?.id ?? hospitalFacilityId
+      }));
+      setSessionUser((current) =>
+        current?.role === "hospital"
+          ? {
+              ...current,
+              facilityId: scopedFacility?.id ?? current.facilityId,
+              facilityCode: scopedFacility?.code ?? current.facilityCode,
+              facilityName: scopedFacility?.name ?? current.facilityName
+            }
+          : current
+      );
+    } else {
+      setFacilities(data);
+    }
 
     setBedModalForm((current) => {
       if (current.facilityId || data.length === 0) {
         return current;
       }
+      if (isHospitalUser) {
+        return { ...current, facilityId: hospitalFacilityId };
+      }
       return { ...current, facilityId: data[0].id };
     });
-  }, []);
+  }, [hospitalFacilityCode, hospitalFacilityId, isHospitalUser]);
 
   const loadFacilityDetails = useCallback(
     async (facilityId: string) => {
+      if (isHospitalUser && hospitalFacilityId && facilityId !== hospitalFacilityId) {
+        throw new Error("Hospital users can only view details for their assigned facility.");
+      }
       setFacilityDetailsLoading(true);
       try {
         const details = await getFacilitySubmissionMetrics(facilityId);
@@ -601,7 +1061,7 @@ export default function App() {
         setFacilityDetailsLoading(false);
       }
     },
-    [setError]
+    [hospitalFacilityId, isHospitalUser, setError]
   );
 
   const loadSummary = useCallback(async () => {
@@ -616,9 +1076,13 @@ export default function App() {
   }, []);
 
   const loadApiMetrics = useCallback(async () => {
+    if (isHospitalUser) {
+      setApiMetrics(null);
+      return;
+    }
     const metrics = await getApiMetrics();
     setApiMetrics(metrics);
-  }, []);
+  }, [isHospitalUser]);
 
   const loadCdcNhsnDashboard = useCallback(async () => {
     const dashboard = await getCdcNhsnDashboard();
@@ -634,28 +1098,34 @@ export default function App() {
     const incomingWindow = INCOMING_WINDOW_OPTIONS.find((item) => item.id === incomingWindowId) ?? INCOMING_WINDOW_OPTIONS[4];
     const outgoingWindow = OUTGOING_WINDOW_OPTIONS.find((item) => item.id === outgoingWindowId) ?? OUTGOING_WINDOW_OPTIONS[0];
 
-    const [rest, graphql, fhir, cdcNhsn] = await Promise.all([
+    const [rest, graphql, fhir] = await Promise.all([
       getAnalyticsSubmissionsOverTime({
         api: "rest",
         durationMinutes: incomingWindow.durationMinutes,
-        bucketSeconds: incomingWindow.bucketSeconds
+        bucketSeconds: incomingWindow.bucketSeconds,
+        facilityId: isHospitalUser ? hospitalFacilityId : undefined
       }),
       getAnalyticsSubmissionsOverTime({
         api: "graphql",
         durationMinutes: incomingWindow.durationMinutes,
-        bucketSeconds: incomingWindow.bucketSeconds
+        bucketSeconds: incomingWindow.bucketSeconds,
+        facilityId: isHospitalUser ? hospitalFacilityId : undefined
       }),
       getAnalyticsSubmissionsOverTime({
         api: "fhir",
         durationMinutes: incomingWindow.durationMinutes,
-        bucketSeconds: incomingWindow.bucketSeconds
-      }),
-      getAnalyticsSubmissionsOverTime({
-        api: "cdcNhsn",
-        durationMinutes: outgoingWindow.durationMinutes,
-        bucketSeconds: outgoingWindow.bucketSeconds
+        bucketSeconds: incomingWindow.bucketSeconds,
+        facilityId: isHospitalUser ? hospitalFacilityId : undefined
       })
     ]);
+
+    const cdcNhsn = isHospitalUser
+      ? null
+      : await getAnalyticsSubmissionsOverTime({
+          api: "cdcNhsn",
+          durationMinutes: outgoingWindow.durationMinutes,
+          bucketSeconds: outgoingWindow.bucketSeconds
+        });
 
     setIncomingSubmissionsByApi({
       rest,
@@ -664,43 +1134,42 @@ export default function App() {
     });
     setOutgoingCdcSubmissions(cdcNhsn);
     setAnalyticsLastRefreshedAt(new Date().toISOString());
-  }, [incomingWindowId, outgoingWindowId]);
+  }, [hospitalFacilityId, incomingWindowId, isHospitalUser, outgoingWindowId]);
 
   const loadBedStatuses = useCallback(async () => {
+    const scopedFacilityId = isHospitalUser ? hospitalFacilityId : filters.facilityId;
     const records = await getBedStatuses({
-      facilityId: filters.facilityId || undefined,
+      facilityId: scopedFacilityId || undefined,
       bedType: filters.bedType || undefined,
-      operationalStatus: filters.operationalStatus || undefined
+      operationalStatus: filters.operationalStatus || undefined,
+      unit: filters.unit || undefined
     });
-
     setBedStatuses(records);
-    setRowEdits(
-      records.reduce<Record<string, RowEditState>>((acc, row) => {
-        acc[row.id] = {
-          operationalStatus: row.operationalStatus,
-          staffedBeds: String(row.staffedBeds),
-          occupiedBeds: String(row.occupiedBeds),
-          availableBeds: String(row.availableBeds)
-        };
-        return acc;
-      }, {})
-    );
-  }, [filters]);
+  }, [filters, hospitalFacilityId, isHospitalUser]);
 
   const refreshAll = useCallback(async () => {
     setLoading(true);
     try {
-      await Promise.all([
-        loadFacilities(),
-        loadSummary(),
-        loadJobs(),
-        loadBedStatuses(),
-        loadApiMetrics(),
-        loadCdcNhsnDashboard(),
-        loadSimulationStatus(),
-        ...(activeTab === "analytics" ? [loadAnalyticsSubmissions()] : []),
-        ...(activeTab === "facilityDetails" && selectedFacilityDetailsId ? [loadFacilityDetails(selectedFacilityDetailsId)] : [])
+      const failures = await Promise.all([
+        safeLoad("Facilities", loadFacilities, resetFacilityData),
+        safeLoad("Summary", loadSummary, resetSummary),
+        ...(!isHospitalUser ? [safeLoad("Bulk Jobs", loadJobs, resetJobs)] : []),
+        safeLoad("Bed Statuses", loadBedStatuses, () => setBedStatuses([])),
+        safeLoad("API Metrics", loadApiMetrics, resetAnalytics),
+        ...(!isHospitalUser ? [safeLoad("CDC/NHSN Dashboard", loadCdcNhsnDashboard, resetCdcNhsn)] : []),
+        ...(!isHospitalUser ? [safeLoad("Simulation Status", loadSimulationStatus, resetSimulationStatus)] : []),
+        ...(activeTab === "analytics" ? [safeLoad("Analytics", loadAnalyticsSubmissions, () => setAnalyticsLastRefreshedAt(null))] : []),
+        ...(activeTab === "facilityDetails" && selectedFacilityDetailsId
+          ? [safeLoad("Facility Details", () => loadFacilityDetails(selectedFacilityDetailsId))]
+          : [])
       ]);
+      const failed = failures.filter((failure): failure is string => failure !== null);
+      if (failed.length > 0) {
+        setNotice({
+          type: "error",
+          message: `Some startup endpoints returned errors: ${failed.join(" | ")}`
+        });
+      }
     } catch (error) {
       setError(error);
     } finally {
@@ -708,7 +1177,6 @@ export default function App() {
     }
   }, [
     activeTab,
-    selectedFacilityDetailsId,
     loadFacilities,
     loadSummary,
     loadJobs,
@@ -718,7 +1186,17 @@ export default function App() {
     loadSimulationStatus,
     loadAnalyticsSubmissions,
     loadFacilityDetails,
-    setError
+    setError,
+    safeLoad,
+    resetFacilityData,
+    resetSummary,
+    resetJobs,
+    resetAnalytics,
+    resetCdcNhsn,
+    resetSimulationStatus,
+    setNotice,
+    isHospitalUser,
+    selectedFacilityDetailsId
   ]);
 
   useEffect(() => {
@@ -729,20 +1207,6 @@ export default function App() {
   }, [isAuthenticated, refreshAll]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      return;
-    }
-
-    void (async () => {
-      try {
-        await loadBedStatuses();
-      } catch (error) {
-        setError(error);
-      }
-    })();
-  }, [isAuthenticated, loadBedStatuses, setError]);
-
-  useEffect(() => {
     if (!isAuthenticated || activeTab !== "facilityDetails" || !selectedFacilityDetailsId) {
       return;
     }
@@ -750,16 +1214,79 @@ export default function App() {
   }, [activeTab, isAuthenticated, loadFacilityDetails, selectedFacilityDetailsId]);
 
   useEffect(() => {
-    if (!isAuthenticated || activeTab !== "cdcNhsn") {
+    if (!isAuthenticated || isHospitalUser || activeTab !== "cdcNhsn") {
       return;
     }
     void loadCdcNhsnDashboard().catch(setError);
-  }, [activeTab, isAuthenticated, loadCdcNhsnDashboard, setError]);
+  }, [activeTab, isAuthenticated, isHospitalUser, loadCdcNhsnDashboard, setError]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !isHospitalUser) {
+      return;
+    }
+    const hospitalAllowedTabs = new Set<TabId>(["manual", "facilityDetails", "apis", "heatMap", "analytics", "notifications"]);
+    if (!hospitalAllowedTabs.has(activeTab)) {
+      setActiveTab("manual");
+    }
+  }, [activeTab, isAuthenticated, isHospitalUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !isHospitalUser) {
+      return;
+    }
+    const allowedApiTabs = new Set<ApiTabId>(HOSPITAL_API_TABS.map((item) => item.id));
+    if (!allowedApiTabs.has(activeApiTab)) {
+      setActiveApiTab("fhir");
+    }
+  }, [activeApiTab, isAuthenticated, isHospitalUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !isHospitalUser || !hospitalFacilityId) {
+      return;
+    }
+    if (filters.facilityId === hospitalFacilityId) {
+      return;
+    }
+    setFilters((current) => ({ ...current, facilityId: hospitalFacilityId }));
+  }, [filters.facilityId, hospitalFacilityId, isAuthenticated, isHospitalUser]);
 
   useEffect(() => {
     setApiQueryError(null);
     setApiQueryResponse(null);
   }, [activeApiTab]);
+
+  useEffect(() => {
+    if (isHospitalUser) {
+      setRestQuery({
+        method: "GET",
+        path: withFacilityQuery("/api/v1/bed-statuses", hospitalFacilityId),
+        body: ""
+      });
+      setGraphqlQuery({
+        query: `query ScopedBedStatuses($facilityId: String!) {
+  bedStatuses(facilityId: $facilityId) {
+    id
+    facilityName
+    facilityCode
+    unit
+    bedType
+    operationalStatus
+    staffedBeds
+    occupiedBeds
+    availableBeds
+    lastUpdatedAt
+  }
+}`,
+        variables: JSON.stringify({ facilityId: hospitalFacilityId }, null, 2)
+      });
+      setFhirQueryPath(withFacilityQuery("/api/fhir/Observation", hospitalFacilityId));
+      return;
+    }
+
+    setRestQuery(EMPTY_REST_QUERY);
+    setGraphqlQuery(EMPTY_GRAPHQL_QUERY);
+    setFhirQueryPath(EMPTY_FHIR_QUERY_PATH);
+  }, [hospitalFacilityId, isHospitalUser]);
 
   const tabTitle = useMemo(() => {
     if (activeTab === "manual") {
@@ -780,19 +1307,102 @@ export default function App() {
     if (activeTab === "settings") {
       return "Settings";
     }
+    if (activeTab === "heatMap") {
+      return "Geospatial Analysis";
+    }
     if (activeTab === "cdcNhsn") {
       return "NHSN Bed Connectivy";
     }
     return "Submission Options";
   }, [activeTab, facilityDetailsMetrics]);
 
-  const filteredBedStatuses = useMemo(() => {
-    const query = generalSearch.trim().toLowerCase();
-    if (!query) {
+  const scopedFacilities = useMemo(() => {
+    if (!isHospitalUser) {
+      return facilities;
+    }
+    return facilities.filter((facility) => facility.id === hospitalFacilityId || facility.code === hospitalFacilityCode);
+  }, [facilities, hospitalFacilityCode, hospitalFacilityId, isHospitalUser]);
+
+  const scopedBedStatuses = useMemo(() => {
+    if (!isHospitalUser) {
       return bedStatuses;
     }
+    return bedStatuses.filter((record) => record.facilityId === hospitalFacilityId || record.facilityCode === hospitalFacilityCode);
+  }, [bedStatuses, hospitalFacilityCode, hospitalFacilityId, isHospitalUser]);
 
-    return bedStatuses.filter((row) => {
+  const effectiveSummary = useMemo<DashboardSummary | null>(() => {
+    if (!isHospitalUser) {
+      return summary;
+    }
+    if (!summary) {
+      return null;
+    }
+
+    const totalStaffedBeds = scopedBedStatuses.reduce((sum, row) => sum + row.staffedBeds, 0);
+    const totalOccupiedBeds = scopedBedStatuses.reduce((sum, row) => sum + row.occupiedBeds, 0);
+    const totalAvailableBeds = scopedBedStatuses.reduce((sum, row) => sum + row.availableBeds, 0);
+
+    const statusMap = scopedBedStatuses.reduce<Record<string, number>>((acc, row) => {
+      acc[row.operationalStatus] = (acc[row.operationalStatus] ?? 0) + 1;
+      return acc;
+    }, {});
+    const bedTypeMap = scopedBedStatuses.reduce<Record<string, number>>((acc, row) => {
+      acc[row.bedType] = (acc[row.bedType] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    return {
+      ...summary,
+      totalFacilities: scopedFacilities.length,
+      totalStaffedBeds,
+      totalOccupiedBeds,
+      totalAvailableBeds,
+      statusCounts: Object.entries(statusMap).map(([label, count]) => ({ label, count })),
+      bedTypeCounts: Object.entries(bedTypeMap).map(([label, count]) => ({ label, count }))
+    };
+  }, [isHospitalUser, scopedBedStatuses, scopedFacilities.length, summary]);
+
+  const facilityCountyOptions = useMemo(
+    () =>
+      [...new Set(scopedFacilities.map((facility) => facility.county.trim()).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      ),
+    [scopedFacilities]
+  );
+  const facilityRegionOptions = useMemo(
+    () =>
+      [...new Set(scopedFacilities.map((facility) => facility.region.trim()).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b, undefined, { sensitivity: "base" })
+      ),
+    [scopedFacilities]
+  );
+  const filteredBedStatuses = useMemo(() => {
+    const query = generalSearch.trim().toLowerCase();
+    const unitQuery = filters.unit.trim().toLowerCase();
+    const timestamp = (value: string): number => {
+      const ms = new Date(value).getTime();
+      return Number.isFinite(ms) ? ms : 0;
+    };
+    const compareText = (left: string, right: string): number =>
+      left.localeCompare(right, undefined, { sensitivity: "base", numeric: true });
+    const compareNumber = (left: number, right: number): number => left - right;
+
+    const rows = scopedBedStatuses.filter((row) => {
+      if (filters.facilityId && row.facilityId !== filters.facilityId) {
+        return false;
+      }
+      if (filters.bedType && row.bedType !== filters.bedType) {
+        return false;
+      }
+      if (filters.operationalStatus && row.operationalStatus !== filters.operationalStatus) {
+        return false;
+      }
+      if (unitQuery && !row.unit.toLowerCase().includes(unitQuery)) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
       const haystack = [
         row.facilityName,
         row.facilityCode,
@@ -801,20 +1411,69 @@ export default function App() {
         row.unit,
         row.bedType,
         bedTypeLabel(row.bedType),
-        row.operationalStatus
+        row.operationalStatus,
+        statusLabel(row.operationalStatus)
       ]
         .join(" ")
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [bedStatuses, generalSearch]);
+
+    return [...rows].sort((a, b) => {
+      let result = 0;
+      if (bedGridSort.key === "facilityName") {
+        result = compareText(a.facilityName, b.facilityName);
+      } else if (bedGridSort.key === "unit") {
+        result = compareText(a.unit, b.unit);
+      } else if (bedGridSort.key === "bedType") {
+        result = compareText(bedTypeLabel(a.bedType), bedTypeLabel(b.bedType));
+      } else if (bedGridSort.key === "operationalStatus") {
+        result = compareText(statusLabel(a.operationalStatus), statusLabel(b.operationalStatus));
+      } else if (bedGridSort.key === "staffedBeds") {
+        result = compareNumber(a.staffedBeds, b.staffedBeds);
+      } else if (bedGridSort.key === "occupiedBeds") {
+        result = compareNumber(a.occupiedBeds, b.occupiedBeds);
+      } else if (bedGridSort.key === "availableBeds") {
+        result = compareNumber(a.availableBeds, b.availableBeds);
+      } else if (bedGridSort.key === "lastUpdatedAt") {
+        result = compareNumber(timestamp(a.lastUpdatedAt), timestamp(b.lastUpdatedAt));
+      }
+
+      if (result === 0) {
+        result = compareText(a.facilityName, b.facilityName);
+      }
+      if (result === 0) {
+        result = compareText(a.unit, b.unit);
+      }
+      if (result === 0) {
+        result = compareText(bedTypeLabel(a.bedType), bedTypeLabel(b.bedType));
+      }
+
+      return bedGridSort.direction === "asc" ? result : -result;
+    });
+  }, [bedGridSort.direction, bedGridSort.key, filters.bedType, filters.facilityId, filters.operationalStatus, filters.unit, generalSearch, scopedBedStatuses]);
   const filteredFacilities = useMemo(() => {
     const query = generalSearch.trim().toLowerCase();
-    if (!query) {
-      return facilities;
-    }
+    const timestamp = (value: string): number => {
+      const ms = new Date(value).getTime();
+      return Number.isFinite(ms) ? ms : 0;
+    };
+    const compareText = (left: string, right: string): number =>
+      left.localeCompare(right, undefined, { sensitivity: "base", numeric: true });
 
-    return facilities.filter((facility) => {
+    const rows = scopedFacilities.filter((facility) => {
+      if (facilityGridFilters.facilityType && facility.facilityType !== facilityGridFilters.facilityType) {
+        return false;
+      }
+      if (facilityGridFilters.county && facility.county !== facilityGridFilters.county) {
+        return false;
+      }
+      if (facilityGridFilters.region && facility.region !== facilityGridFilters.region) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
       const haystack = [
         facility.name,
         facility.code,
@@ -833,7 +1492,37 @@ export default function App() {
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [facilities, generalSearch]);
+
+    return [...rows].sort((a, b) => {
+      let result = 0;
+      if (facilityGridSort.key === "name") {
+        result = compareText(a.name, b.name);
+      } else if (facilityGridSort.key === "facilityType") {
+        result = compareText(facilityTypeLabel(a.facilityType), facilityTypeLabel(b.facilityType));
+      } else if (facilityGridSort.key === "county") {
+        result = compareText(a.county, b.county);
+      } else if (facilityGridSort.key === "updatedAt") {
+        result = timestamp(a.updatedAt) - timestamp(b.updatedAt);
+      }
+
+      if (result === 0) {
+        result = compareText(a.name, b.name);
+      }
+      if (result === 0) {
+        result = compareText(a.code, b.code);
+      }
+
+      return facilityGridSort.direction === "asc" ? result : -result;
+    });
+  }, [
+    facilityGridFilters.county,
+    facilityGridFilters.facilityType,
+    facilityGridFilters.region,
+    facilityGridSort.direction,
+    facilityGridSort.key,
+    generalSearch,
+    scopedFacilities
+  ]);
 
   const sortedNotifications = useMemo(
     () => [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
@@ -856,38 +1545,290 @@ export default function App() {
     () => notifications.reduce((count, item) => count + (item.severity === "critical" ? 1 : 0), 0),
     [notifications]
   );
-  const facilityComplianceRows = useMemo<FacilityComplianceRow[]>(() => {
+  const facilityHeatMapAggregates = useMemo<HeatMapFacilityAggregate[]>(() => {
     const nowMs = Date.now();
-    const latestByFacility = new Map<string, number>();
+    const aggregateByFacility = new Map<
+      string,
+      {
+        staffedBeds: number;
+        occupiedBeds: number;
+        availableBeds: number;
+        limitedUnits: number;
+        diversionUnits: number;
+        closedUnits: number;
+        respiratoryConfirmed: number;
+        lastUpdatedMs: number | null;
+      }
+    >();
 
-    for (const record of bedStatuses) {
-      const timestamp = new Date(record.lastUpdatedAt).getTime();
-      if (!Number.isFinite(timestamp)) {
-        continue;
+    for (const record of scopedBedStatuses) {
+      const current = aggregateByFacility.get(record.facilityId) ?? {
+        staffedBeds: 0,
+        occupiedBeds: 0,
+        availableBeds: 0,
+        limitedUnits: 0,
+        diversionUnits: 0,
+        closedUnits: 0,
+        respiratoryConfirmed: 0,
+        lastUpdatedMs: null
+      };
+      current.staffedBeds += record.staffedBeds;
+      current.occupiedBeds += record.occupiedBeds;
+      current.availableBeds += record.availableBeds;
+      if (record.operationalStatus === "limited") {
+        current.limitedUnits += 1;
+      } else if (record.operationalStatus === "diversion") {
+        current.diversionUnits += 1;
+      } else if (record.operationalStatus === "closed") {
+        current.closedUnits += 1;
       }
-      const current = latestByFacility.get(record.facilityId);
-      if (current === undefined || timestamp > current) {
-        latestByFacility.set(record.facilityId, timestamp);
+      current.respiratoryConfirmed += (record.covidConfirmed ?? 0) + (record.influenzaConfirmed ?? 0) + (record.rsvConfirmed ?? 0);
+
+      const updatedMs = new Date(record.lastUpdatedAt).getTime();
+      if (Number.isFinite(updatedMs) && (current.lastUpdatedMs === null || updatedMs > current.lastUpdatedMs)) {
+        current.lastUpdatedMs = updatedMs;
       }
+      aggregateByFacility.set(record.facilityId, current);
     }
 
-    return facilities.map((facility) => {
-      const lastUpdateMs = latestByFacility.get(facility.id);
+    return scopedFacilities.map((facility) => {
+      const totals = aggregateByFacility.get(facility.id) ?? {
+        staffedBeds: 0,
+        occupiedBeds: 0,
+        availableBeds: 0,
+        limitedUnits: 0,
+        diversionUnits: 0,
+        closedUnits: 0,
+        respiratoryConfirmed: 0,
+        lastUpdatedMs: null
+      };
+      const baseLocation = getCountyCoordinate(facility.county) ?? CALIFORNIA_CENTER;
+      const coordinateSeed = `${facility.id}-${facility.county}-${facility.region}`;
+      const hasExactCoordinates =
+        typeof facility.latitude === "number" &&
+        Number.isFinite(facility.latitude) &&
+        typeof facility.longitude === "number" &&
+        Number.isFinite(facility.longitude);
+      const capacityPercent = totals.staffedBeds > 0 ? (totals.occupiedBeds / totals.staffedBeds) * 100 : 0;
+      const availablePercent = totals.staffedBeds > 0 ? (totals.availableBeds / totals.staffedBeds) * 100 : 0;
       const minutesSinceUpdate =
-        lastUpdateMs === undefined ? null : Math.max(0, (nowMs - lastUpdateMs) / (1000 * 60));
-      const compliant = minutesSinceUpdate !== null && minutesSinceUpdate <= 15;
+        totals.lastUpdatedMs === null ? null : Math.max(0, (nowMs - totals.lastUpdatedMs) / (1000 * 60));
+
       return {
-        facilityId: facility.id,
-        facilityCode: facility.code,
-        facilityName: facility.name,
+        id: facility.id,
+        code: facility.code,
+        name: facility.name,
         county: facility.county,
         region: facility.region,
-        lastUpdatedAt: lastUpdateMs === undefined ? null : new Date(lastUpdateMs).toISOString(),
-        minutesSinceUpdate,
-        compliant
+        lat: hasExactCoordinates ? (facility.latitude as number) : baseLocation.lat + jitterOffset(coordinateSeed, "lat"),
+        lng: hasExactCoordinates ? (facility.longitude as number) : baseLocation.lng + jitterOffset(coordinateSeed, "lng"),
+        staffedBeds: totals.staffedBeds,
+        occupiedBeds: totals.occupiedBeds,
+        availableBeds: totals.availableBeds,
+        availablePercent,
+        capacityPercent,
+        limitedUnits: totals.limitedUnits,
+        diversionUnits: totals.diversionUnits,
+        closedUnits: totals.closedUnits,
+        respiratoryConfirmed: totals.respiratoryConfirmed,
+        lastUpdatedAt: totals.lastUpdatedMs === null ? null : new Date(totals.lastUpdatedMs).toISOString(),
+        minutesSinceUpdate
       };
     });
-  }, [bedStatuses, facilities]);
+  }, [scopedBedStatuses, scopedFacilities]);
+  const facilityComplianceRows = useMemo<FacilityComplianceRow[]>(
+    () =>
+      facilityHeatMapAggregates.map((facility) => {
+        const compliant = facility.minutesSinceUpdate !== null && facility.minutesSinceUpdate <= 15;
+        return {
+          facilityId: facility.id,
+          facilityCode: facility.code,
+          facilityName: facility.name,
+          county: facility.county,
+          region: facility.region,
+          lastUpdatedAt: facility.lastUpdatedAt,
+          minutesSinceUpdate: facility.minutesSinceUpdate,
+          compliant
+        };
+      }),
+    [facilityHeatMapAggregates]
+  );
+  const selectedHeatMapView = useMemo(
+    () => HEAT_MAP_VIEW_OPTIONS.find((view) => view.id === heatMapViewId) ?? HEAT_MAP_VIEW_OPTIONS[0],
+    [heatMapViewId]
+  );
+  const heatMapFacilities = useMemo<HeatMapFacility[]>(() => {
+    const staleRank = (minutes: number | null): number => (minutes === null ? Number.MAX_SAFE_INTEGER : minutes);
+    const decorate = (
+      rows: HeatMapFacilityAggregate[],
+      metricBuilder: (row: HeatMapFacilityAggregate) => {
+        markerStatus: HeatMapFacility["markerStatus"];
+        primaryMetricLabel: string;
+        secondaryMetricLabel?: string;
+      }
+    ) =>
+      rows.map((row) => ({
+        ...row,
+        ...metricBuilder(row)
+      }));
+
+    if (heatMapViewId === "occupancy") {
+      const rows = facilityHeatMapAggregates
+        .filter((row) => row.staffedBeds > 0 && row.capacityPercent >= heatMapCapacityThreshold)
+        .sort((a, b) => b.capacityPercent - a.capacityPercent);
+      return decorate(rows, (row) => ({
+        markerStatus: heatMapCapacityStatus(row.capacityPercent),
+        primaryMetricLabel: `Occupancy: ${Math.round(row.capacityPercent)}%`,
+        secondaryMetricLabel: `Available ${row.availableBeds} of ${row.staffedBeds} staffed beds`
+      }));
+    }
+
+    if (heatMapViewId === "staleHour") {
+      const warningThreshold = 60;
+      const criticalThreshold = 180;
+      const rows = facilityHeatMapAggregates
+        .filter((row) => row.minutesSinceUpdate === null || row.minutesSinceUpdate >= warningThreshold)
+        .sort((a, b) => staleRank(b.minutesSinceUpdate) - staleRank(a.minutesSinceUpdate));
+      return decorate(rows, (row) => ({
+        markerStatus: row.minutesSinceUpdate === null || row.minutesSinceUpdate >= criticalThreshold ? "critical" : "warning",
+        primaryMetricLabel:
+          row.minutesSinceUpdate === null
+            ? "Submission gap: no updates received"
+            : `Submission gap: ${formatDurationFromMinutes(row.minutesSinceUpdate)} since last update`,
+        secondaryMetricLabel: "Threshold: over 1 hour"
+      }));
+    }
+
+    if (heatMapViewId === "staleDay") {
+      const warningThreshold = 24 * 60;
+      const criticalThreshold = 3 * 24 * 60;
+      const rows = facilityHeatMapAggregates
+        .filter((row) => row.minutesSinceUpdate === null || row.minutesSinceUpdate >= warningThreshold)
+        .sort((a, b) => staleRank(b.minutesSinceUpdate) - staleRank(a.minutesSinceUpdate));
+      return decorate(rows, (row) => ({
+        markerStatus: row.minutesSinceUpdate === null || row.minutesSinceUpdate >= criticalThreshold ? "critical" : "warning",
+        primaryMetricLabel:
+          row.minutesSinceUpdate === null
+            ? "Submission gap: no updates received"
+            : `Submission gap: ${formatDurationFromMinutes(row.minutesSinceUpdate)} since last update`,
+        secondaryMetricLabel: "Threshold: over 24 hours"
+      }));
+    }
+
+    if (heatMapViewId === "staleWeek") {
+      const warningThreshold = 7 * 24 * 60;
+      const criticalThreshold = 14 * 24 * 60;
+      const rows = facilityHeatMapAggregates
+        .filter((row) => row.minutesSinceUpdate === null || row.minutesSinceUpdate >= warningThreshold)
+        .sort((a, b) => staleRank(b.minutesSinceUpdate) - staleRank(a.minutesSinceUpdate));
+      return decorate(rows, (row) => ({
+        markerStatus: row.minutesSinceUpdate === null || row.minutesSinceUpdate >= criticalThreshold ? "critical" : "warning",
+        primaryMetricLabel:
+          row.minutesSinceUpdate === null
+            ? "Submission gap: no updates received"
+            : `Submission gap: ${formatDurationFromMinutes(row.minutesSinceUpdate)} since last update`,
+        secondaryMetricLabel: "Threshold: over 7 days"
+      }));
+    }
+
+    if (heatMapViewId === "lowAvailability") {
+      const rows = facilityHeatMapAggregates
+        .filter((row) => row.staffedBeds > 0 && row.availablePercent <= HEAT_MAP_LOW_AVAILABILITY_WARNING_THRESHOLD)
+        .sort((a, b) => a.availablePercent - b.availablePercent);
+      return decorate(rows, (row) => ({
+        markerStatus: row.availablePercent <= HEAT_MAP_LOW_AVAILABILITY_CRITICAL_THRESHOLD ? "critical" : "warning",
+        primaryMetricLabel: `Available capacity: ${Math.round(row.availablePercent)}%`,
+        secondaryMetricLabel: `Available ${row.availableBeds} of ${row.staffedBeds} staffed beds`
+      }));
+    }
+
+    if (heatMapViewId === "operationalRisk") {
+      const rows = facilityHeatMapAggregates
+        .filter((row) => row.limitedUnits + row.diversionUnits + row.closedUnits > 0)
+        .sort((a, b) => b.diversionUnits + b.closedUnits - (a.diversionUnits + a.closedUnits));
+      return decorate(rows, (row) => ({
+        markerStatus: row.diversionUnits + row.closedUnits > 0 ? "critical" : "warning",
+        primaryMetricLabel: `Operational alerts: ${row.limitedUnits} limited, ${row.diversionUnits} diversion, ${row.closedUnits} closed`,
+        secondaryMetricLabel: `Total units with disruption: ${row.limitedUnits + row.diversionUnits + row.closedUnits}`
+      }));
+    }
+
+    const rows = facilityHeatMapAggregates
+      .filter((row) => row.staffedBeds > 0 && (row.respiratoryConfirmed / row.staffedBeds) * 100 >= HEAT_MAP_RESPIRATORY_WARNING_THRESHOLD)
+      .sort((a, b) => b.respiratoryConfirmed / Math.max(1, b.staffedBeds) - a.respiratoryConfirmed / Math.max(1, a.staffedBeds));
+    return decorate(rows, (row) => {
+      const respiratoryPercent = (row.respiratoryConfirmed / Math.max(1, row.staffedBeds)) * 100;
+      return {
+        markerStatus: respiratoryPercent >= HEAT_MAP_RESPIRATORY_CRITICAL_THRESHOLD ? "critical" : "warning",
+        primaryMetricLabel: `Respiratory census: ${Math.round(respiratoryPercent)}%`,
+        secondaryMetricLabel: `${row.respiratoryConfirmed} respiratory-confirmed patients`
+      };
+    });
+  }, [facilityHeatMapAggregates, heatMapCapacityThreshold, heatMapViewId]);
+  const heatMapLegendItems = useMemo<Array<{ status: HeatMapFacility["markerStatus"]; label: string }>>(() => {
+    if (heatMapViewId === "occupancy") {
+      return [
+        { status: "good", label: "Under 90% Occupancy" },
+        { status: "warning", label: "Over 90% and under 95% Occupancy" },
+        { status: "critical", label: "Over 95% Occupancy" }
+      ];
+    }
+    if (heatMapViewId === "staleHour") {
+      return [
+        { status: "warning", label: "No submission for over 1 hour" },
+        { status: "critical", label: "No submission for over 3 hours or no submissions yet" }
+      ];
+    }
+    if (heatMapViewId === "staleDay") {
+      return [
+        { status: "warning", label: "No submission for over 24 hours" },
+        { status: "critical", label: "No submission for over 3 days or no submissions yet" }
+      ];
+    }
+    if (heatMapViewId === "staleWeek") {
+      return [
+        { status: "warning", label: "No submission for over 7 days" },
+        { status: "critical", label: "No submission for over 14 days or no submissions yet" }
+      ];
+    }
+    if (heatMapViewId === "lowAvailability") {
+      return [
+        { status: "warning", label: "Available beds at or below 10%" },
+        { status: "critical", label: "Available beds at or below 3%" }
+      ];
+    }
+    if (heatMapViewId === "operationalRisk") {
+      return [
+        { status: "warning", label: "Limited units present" },
+        { status: "critical", label: "Diversion or closed units present" }
+      ];
+    }
+    return [
+      { status: "warning", label: "Respiratory census over 5% of staffed beds" },
+      { status: "critical", label: "Respiratory census over 12% of staffed beds" }
+    ];
+  }, [heatMapViewId]);
+  const heatMapSubtitle = useMemo(() => {
+    if (heatMapViewId === "occupancy") {
+      return `Live county-level map showing facilities currently above ${heatMapCapacityThreshold}% occupied.`;
+    }
+    if (heatMapViewId === "staleHour") {
+      return "Live map showing facilities that have not submitted in the last hour.";
+    }
+    if (heatMapViewId === "staleDay") {
+      return "Live map showing facilities that have not submitted in the last day.";
+    }
+    if (heatMapViewId === "staleWeek") {
+      return "Live map showing facilities that have not submitted in the last week.";
+    }
+    if (heatMapViewId === "lowAvailability") {
+      return "Live map showing facilities with very low available bed capacity.";
+    }
+    if (heatMapViewId === "operationalRisk") {
+      return "Live map showing facilities with limited, diversion, or closed unit status.";
+    }
+    return "Live map showing facilities with elevated respiratory census pressure.";
+  }, [heatMapCapacityThreshold, heatMapViewId]);
   const nonCompliantFacilities = useMemo(
     () =>
       facilityComplianceRows
@@ -908,9 +1849,9 @@ export default function App() {
     return total / withUpdates.length;
   }, [facilityComplianceRows]);
   const manualBedMetrics = useMemo(() => {
-    const staffed = summary?.totalStaffedBeds ?? 0;
-    const occupied = summary?.totalOccupiedBeds ?? 0;
-    const available = summary?.totalAvailableBeds ?? 0;
+    const staffed = effectiveSummary?.totalStaffedBeds ?? 0;
+    const occupied = effectiveSummary?.totalOccupiedBeds ?? 0;
+    const available = effectiveSummary?.totalAvailableBeds ?? 0;
     const totalBeds = staffed + occupied + available;
     return {
       totalBeds,
@@ -918,7 +1859,7 @@ export default function App() {
       occupiedPercent: percentOfTotal(occupied, totalBeds),
       availablePercent: percentOfTotal(available, totalBeds)
     };
-  }, [summary]);
+  }, [effectiveSummary]);
   const visibleIncomingApis = useMemo<Array<Exclude<IncomingApiFilter, "all">>>(
     () => (incomingApiFilter === "all" ? INCOMING_API_ORDER : [incomingApiFilter]),
     [incomingApiFilter]
@@ -975,15 +1916,18 @@ export default function App() {
     if (aiScopeFacilityId === "all") {
       return "All Facilities";
     }
-    return facilities.find((facility) => facility.id === aiScopeFacilityId)?.name ?? aiScopeFacilityId;
-  }, [aiScopeFacilityId, facilities]);
+    return scopedFacilities.find((facility) => facility.id === aiScopeFacilityId)?.name ?? aiScopeFacilityId;
+  }, [aiScopeFacilityId, scopedFacilities]);
   const aiScopedBedStatuses = useMemo(
-    () => (aiScopeFacilityId === "all" ? bedStatuses : bedStatuses.filter((record) => record.facilityId === aiScopeFacilityId)),
-    [aiScopeFacilityId, bedStatuses]
+    () =>
+      aiScopeFacilityId === "all"
+        ? scopedBedStatuses
+        : scopedBedStatuses.filter((record) => record.facilityId === aiScopeFacilityId),
+    [aiScopeFacilityId, scopedBedStatuses]
   );
   const aiScopedFacilities = useMemo(
-    () => (aiScopeFacilityId === "all" ? facilities : facilities.filter((facility) => facility.id === aiScopeFacilityId)),
-    [aiScopeFacilityId, facilities]
+    () => (aiScopeFacilityId === "all" ? scopedFacilities : scopedFacilities.filter((facility) => facility.id === aiScopeFacilityId)),
+    [aiScopeFacilityId, scopedFacilities]
   );
   const aiScopedNonCompliant = useMemo(
     () =>
@@ -1066,6 +2010,22 @@ export default function App() {
 
   const hasRows = filteredBedStatuses.length > 0;
   const hasFacilityRows = filteredFacilities.length > 0;
+  const toggleFacilityGridSort = useCallback((key: FacilityGridSortKey) => {
+    setFacilityGridSort((current) => {
+      if (current.key !== key) {
+        return { key, direction: "asc" };
+      }
+      return { key, direction: current.direction === "asc" ? "desc" : "asc" };
+    });
+  }, []);
+  const toggleBedGridSort = useCallback((key: BedGridSortKey) => {
+    setBedGridSort((current) => {
+      if (current.key !== key) {
+        return { key, direction: "asc" };
+      }
+      return { key, direction: current.direction === "asc" ? "desc" : "asc" };
+    });
+  }, []);
   const activeApiMetrics = useMemo(() => {
     if (!apiMetrics || activeApiTab === "sftp" || activeApiTab === "bulk") {
       return null;
@@ -1106,6 +2066,103 @@ export default function App() {
     setNotifications((current) => current.map((item) => ({ ...item, read: true })));
   }, []);
 
+  const destroyHeatMap = useCallback(() => {
+    const map = heatMapRef.current as { remove?: () => void } | null;
+    if (map?.remove) {
+      map.remove();
+    }
+    heatMapRef.current = null;
+    heatMapLayerRef.current = null;
+  }, []);
+
+  const redrawHeatMap = useCallback(async () => {
+    if (!isAuthenticated || activeTab !== "heatMap") {
+      return;
+    }
+
+    try {
+      await loadLeafletAssets();
+      setLeafletLoadError(null);
+    } catch (error) {
+      setLeafletLoadError(error instanceof Error ? error.message : "Unable to initialize heat map.");
+      return;
+    }
+
+    const mapContainer = heatMapContainerRef.current;
+    const Leaflet = (window as Window & { L?: unknown }).L as {
+      map: (container: HTMLElement, options: Record<string, unknown>) => unknown;
+      tileLayer: (url: string, options: Record<string, unknown>) => { addTo: (map: unknown) => void };
+      layerGroup: (layers?: unknown[]) => { addTo: (map: unknown) => void; clearLayers: () => void; remove: () => void; eachLayer?: (callback: (layer: unknown) => void) => void };
+      divIcon: (options: Record<string, unknown>) => unknown;
+      marker: (position: [number, number], options: Record<string, unknown>) => { bindPopup: (content: string) => void; addTo: (layer: unknown) => void };
+    };
+
+    if (!mapContainer || !Leaflet) {
+      return;
+    }
+
+    if (!heatMapRef.current) {
+      const map = Leaflet.map(mapContainer, {
+        center: [CALIFORNIA_CENTER.lat, CALIFORNIA_CENTER.lng],
+        zoom: 6,
+        minZoom: 5,
+        maxZoom: 17,
+        zoomControl: true,
+        scrollWheelZoom: true
+      });
+      Leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      heatMapRef.current = map;
+    }
+
+    const map = heatMapRef.current as {
+      invalidateSize?: () => void;
+      setView: (coords: [number, number], zoom?: number) => void;
+      addLayer: (layer: unknown) => void;
+      removeLayer: (layer: unknown) => void;
+    };
+
+    map.setView([CALIFORNIA_CENTER.lat, CALIFORNIA_CENTER.lng], 6);
+    map.invalidateSize?.();
+
+    if (heatMapLayerRef.current) {
+      map.removeLayer(heatMapLayerRef.current as never);
+      heatMapLayerRef.current = null;
+    }
+
+    const layerGroup = Leaflet.layerGroup() as unknown as {
+      addLayer: (layer: unknown) => void;
+      addTo: (mapInstance: unknown) => void;
+      clearLayers: () => void;
+    };
+    for (const facility of heatMapFacilities) {
+      const markerIcon = Leaflet.divIcon({
+        className: "",
+        html: hospitalIconHtml(heatMapFillColor(facility.markerStatus)),
+        iconSize: [26, 26],
+        iconAnchor: [13, 13],
+        popupAnchor: [0, -12]
+      });
+      const marker = Leaflet.marker([facility.lat, facility.lng], { icon: markerIcon });
+      const lastSubmissionLabel = facility.lastUpdatedAt ? new Date(facility.lastUpdatedAt).toLocaleString() : "No submissions yet";
+      marker.bindPopup(
+        `<div class="text-xs"><p><strong>${facility.name}</strong></p><p>Facility ID ${facility.code}</p><p>County: ${
+          facility.county
+        }</p><p>${facility.primaryMetricLabel}</p>${
+          facility.secondaryMetricLabel ? `<p>${facility.secondaryMetricLabel}</p>` : ""
+        }<p>Last Submission: ${lastSubmissionLabel}</p><p>Staffed: ${facility.staffedBeds}</p><p>Occupied: ${
+          facility.occupiedBeds
+        }</p><p>Available: ${facility.availableBeds}</p></div>`
+      );
+      layerGroup.addLayer(marker as never);
+    }
+
+    map.addLayer(layerGroup as never);
+    heatMapLayerRef.current = layerGroup;
+  }, [activeTab, heatMapFacilities, isAuthenticated, loadLeafletAssets]);
+
   useEffect(() => {
     if (sortedNotifications.length === 0) {
       if (selectedNotificationId !== null) {
@@ -1126,14 +2183,20 @@ export default function App() {
   }, [selectedNotificationId, sortedNotifications]);
 
   useEffect(() => {
+    if (isHospitalUser) {
+      if (hospitalFacilityId && aiScopeFacilityId !== hospitalFacilityId) {
+        setAiScopeFacilityId(hospitalFacilityId);
+      }
+      return;
+    }
     if (aiScopeFacilityId === "all") {
       return;
     }
-    if (facilities.some((facility) => facility.id === aiScopeFacilityId)) {
+    if (scopedFacilities.some((facility) => facility.id === aiScopeFacilityId)) {
       return;
     }
     setAiScopeFacilityId("all");
-  }, [aiScopeFacilityId, facilities]);
+  }, [aiScopeFacilityId, hospitalFacilityId, isHospitalUser, scopedFacilities]);
 
   useEffect(() => {
     document.documentElement.style.colorScheme = userSettings.themeMode;
@@ -1166,6 +2229,25 @@ export default function App() {
   }, [isAuthenticated, activeTab, loadAnalyticsSubmissions]);
 
   useEffect(() => {
+    if (!isAuthenticated || activeTab !== "heatMap") {
+      destroyHeatMap();
+      return;
+    }
+
+    let active = true;
+    void (async () => {
+      await redrawHeatMap();
+      if (!active) {
+        return;
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [activeTab, destroyHeatMap, isAuthenticated, redrawHeatMap]);
+
+  useEffect(() => {
     if (!isAuthenticated || !complianceAlertSignature) {
       return;
     }
@@ -1184,7 +2266,9 @@ export default function App() {
       {
         id: `notif-compliance-${Date.now()}`,
         title: "15-minute Upload Compliance Alert",
-        message: `${nonCompliantFacilities.length} hospitals missed the 15-minute requirement${preview ? ` (examples: ${preview})` : ""}.`,
+        message: isHospitalUser
+          ? `Your assigned facility is outside the 15-minute update requirement.`
+          : `${nonCompliantFacilities.length} hospitals missed the 15-minute requirement${preview ? ` (examples: ${preview})` : ""}.`,
         source: "Analytics",
         severity,
         createdAt: nowIso,
@@ -1193,13 +2277,24 @@ export default function App() {
       ...current
     ].slice(0, 200));
     setLastComplianceAlertSignature(complianceAlertSignature);
-  }, [complianceAlertSignature, isAuthenticated, lastComplianceAlertSignature, nonCompliantFacilities]);
+  }, [complianceAlertSignature, isAuthenticated, isHospitalUser, lastComplianceAlertSignature, nonCompliantFacilities]);
+
+  useEffect(() => {
+    return () => {
+      destroyHeatMap();
+    };
+  }, [destroyHeatMap]);
 
   function clearNoticeSoon(): void {
     window.setTimeout(() => setNotice(null), 4000);
   }
 
   function openFacilityModal(): void {
+    if (isHospitalUser) {
+      setNotice({ type: "error", message: "Hospital users cannot add facilities." });
+      clearNoticeSoon();
+      return;
+    }
     setFacilityModalMode("create");
     setEditingFacilityId(null);
     setFacilityForm(EMPTY_FACILITY_FORM);
@@ -1207,6 +2302,11 @@ export default function App() {
   }
 
   function openEditFacilityModal(facility: Facility): void {
+    if (isHospitalUser) {
+      setNotice({ type: "error", message: "Hospital users cannot edit facility attributes." });
+      clearNoticeSoon();
+      return;
+    }
     setFacilityModalMode("edit");
     setEditingFacilityId(facility.id);
     setFacilityForm({
@@ -1220,7 +2320,9 @@ export default function App() {
       zip: facility.zip,
       phone: facility.phone ?? "",
       county: facility.county,
-      region: facility.region
+      region: facility.region,
+      latitude: facility.latitude === undefined ? "" : String(facility.latitude),
+      longitude: facility.longitude === undefined ? "" : String(facility.longitude)
     });
     setFacilityModalOpen(true);
   }
@@ -1233,9 +2335,47 @@ export default function App() {
   }
 
   function openBedModal(facilityId?: string): void {
-    const preferredFacility = facilityId || filters.facilityId || facilities[0]?.id || "";
+    const preferredFacility = isHospitalUser
+      ? hospitalFacilityId
+      : facilityId || filters.facilityId || scopedFacilities[0]?.id || "";
+    setBedModalMode("create");
+    setEditingBedStatusId(null);
     setBedModalForm({ ...EMPTY_BED_MODAL_FORM, facilityId: preferredFacility });
     setBedModalOpen(true);
+  }
+
+  function openEditBedModal(row: BedStatusRecord): void {
+    if (isHospitalUser && row.facilityId !== hospitalFacilityId) {
+      setNotice({ type: "error", message: "Hospital users can only edit bed statuses for their assigned facility." });
+      clearNoticeSoon();
+      return;
+    }
+
+    setBedModalMode("edit");
+    setEditingBedStatusId(row.id);
+    setBedModalForm({
+      facilityId: row.facilityId,
+      unit: row.unit,
+      bedType: row.bedType,
+      operationalStatus: row.operationalStatus,
+      staffedBeds: String(row.staffedBeds),
+      occupiedBeds: String(row.occupiedBeds),
+      availableBeds: String(row.availableBeds),
+      covidConfirmed: row.covidConfirmed === undefined ? "" : String(row.covidConfirmed),
+      influenzaConfirmed: row.influenzaConfirmed === undefined ? "" : String(row.influenzaConfirmed),
+      rsvConfirmed: row.rsvConfirmed === undefined ? "" : String(row.rsvConfirmed),
+      newCovidAdmissions: row.newCovidAdmissions === undefined ? "" : String(row.newCovidAdmissions),
+      newInfluenzaAdmissions: row.newInfluenzaAdmissions === undefined ? "" : String(row.newInfluenzaAdmissions),
+      newRsvAdmissions: row.newRsvAdmissions === undefined ? "" : String(row.newRsvAdmissions)
+    });
+    setBedModalOpen(true);
+  }
+
+  function closeBedModal(): void {
+    setBedModalOpen(false);
+    setBedModalMode("create");
+    setEditingBedStatusId(null);
+    setBedModalForm(EMPTY_BED_MODAL_FORM);
   }
 
   function openFacilityDetails(facilityId: string): void {
@@ -1250,10 +2390,41 @@ export default function App() {
 
     await new Promise((resolve) => window.setTimeout(resolve, 350));
 
-    if (loginForm.email.trim().toLowerCase() !== DEMO_LOGIN_EMAIL || loginForm.password !== DEMO_LOGIN_PASSWORD) {
+    const normalizedEmail = loginForm.email.trim().toLowerCase();
+    const isCdphLogin = normalizedEmail === DEMO_LOGIN_EMAIL && loginForm.password === DEMO_LOGIN_PASSWORD;
+    const isHospitalLogin =
+      normalizedEmail === DEMO_HOSPITAL_LOGIN_EMAIL && loginForm.password === DEMO_HOSPITAL_LOGIN_PASSWORD;
+
+    if (!isCdphLogin && !isHospitalLogin) {
       setLoginError("Invalid credentials. Use the demo credentials shown below.");
       setLoginSubmitting(false);
       return;
+    }
+
+    if (isCdphLogin) {
+      setSessionUser({
+        email: DEMO_LOGIN_EMAIL,
+        role: "cdph"
+      });
+      setUserSettings((current) => ({ ...current, email: DEMO_LOGIN_EMAIL }));
+      setNotifications(buildInitialNotifications("cdph"));
+      setFilters((current) => ({ ...current, facilityId: "" }));
+      setBedModalForm(EMPTY_BED_MODAL_FORM);
+      setAiScopeFacilityId("all");
+      setActiveApiTab("fhir");
+    } else {
+      setSessionUser({
+        email: DEMO_HOSPITAL_LOGIN_EMAIL,
+        role: "hospital",
+        facilityId: DEMO_HOSPITAL_FACILITY_ID,
+        facilityCode: DEMO_HOSPITAL_FACILITY_CODE
+      });
+      setUserSettings((current) => ({ ...current, email: DEMO_HOSPITAL_LOGIN_EMAIL }));
+      setNotifications(buildInitialNotifications("hospital", DEMO_HOSPITAL_FACILITY_CODE));
+      setFilters((current) => ({ ...current, facilityId: DEMO_HOSPITAL_FACILITY_ID }));
+      setBedModalForm({ ...EMPTY_BED_MODAL_FORM, facilityId: DEMO_HOSPITAL_FACILITY_ID });
+      setAiScopeFacilityId(DEMO_HOSPITAL_FACILITY_ID);
+      setActiveApiTab("fhir");
     }
 
     setIsAuthenticated(true);
@@ -1262,7 +2433,9 @@ export default function App() {
 
   function handleSignOut(): void {
     setIsAuthenticated(false);
+    setSessionUser(null);
     setActiveTab("manual");
+    setActiveApiTab("fhir");
     setSelectedFacilityDetailsId(null);
     setFacilityDetailsMetrics(null);
     setAiScopeFacilityId("all");
@@ -1272,22 +2445,75 @@ export default function App() {
     setAiLatestResponse(null);
     setAiHistory([]);
     setNotice(null);
+    setNotifications(buildInitialNotifications("cdph"));
+    setBedModalOpen(false);
+    setBedModalMode("create");
+    setEditingBedStatusId(null);
+    setBedModalForm(EMPTY_BED_MODAL_FORM);
     setLoginForm({ email: DEMO_LOGIN_EMAIL, password: DEMO_LOGIN_PASSWORD });
+    setFilters({
+      facilityId: "",
+      bedType: "",
+      operationalStatus: "",
+      unit: ""
+    });
+    setFacilityGridFilters({
+      facilityType: "",
+      county: "",
+      region: ""
+    });
+    setFacilityGridSort({ key: "name", direction: "asc" });
+    setBedGridSort({ key: "facilityName", direction: "asc" });
   }
 
   async function handleSaveFacility(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
+    if (isHospitalUser) {
+      setNotice({ type: "error", message: "Hospital users cannot manage facility attributes." });
+      clearNoticeSoon();
+      return;
+    }
     setSaving(true);
+    const latitude = parseCoordinateValue(facilityForm.latitude, -90, 90);
+    const longitude = parseCoordinateValue(facilityForm.longitude, -180, 180);
+    if (facilityForm.latitude.trim() && latitude === undefined) {
+      setNotice({ type: "error", message: "Latitude must be a number between -90 and 90." });
+      clearNoticeSoon();
+      setSaving(false);
+      return;
+    }
+    if (facilityForm.longitude.trim() && longitude === undefined) {
+      setNotice({ type: "error", message: "Longitude must be a number between -180 and 180." });
+      clearNoticeSoon();
+      setSaving(false);
+      return;
+    }
+
+    const facilityPayload = {
+      code: facilityForm.code,
+      name: facilityForm.name,
+      facilityType: facilityForm.facilityType,
+      addressLine1: facilityForm.addressLine1,
+      addressLine2: facilityForm.addressLine2,
+      city: facilityForm.city,
+      state: facilityForm.state,
+      zip: facilityForm.zip,
+      phone: facilityForm.phone,
+      county: facilityForm.county,
+      region: facilityForm.region,
+      latitude,
+      longitude
+    };
 
     try {
       if (facilityModalMode === "edit") {
         if (!editingFacilityId) {
           throw new Error("No facility selected for editing.");
         }
-        await updateFacility(editingFacilityId, facilityForm);
+        await updateFacility(editingFacilityId, facilityPayload);
         setNotice({ type: "success", message: "Facility updated." });
       } else {
-        await createFacility(facilityForm);
+        await createFacility(facilityPayload);
         setNotice({ type: "success", message: "Facility created." });
       }
       closeFacilityModal();
@@ -1300,13 +2526,27 @@ export default function App() {
     }
   }
 
-  async function handleCreateBedStatus(event: FormEvent<HTMLFormElement>): Promise<void> {
+  async function handleSaveBedStatus(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
+    const bedStatusIdToEdit = editingBedStatusId;
+    if (bedModalMode === "edit" && !bedStatusIdToEdit) {
+      setNotice({ type: "error", message: "No bed status selected for editing." });
+      clearNoticeSoon();
+      return;
+    }
+
+    const selectedFacilityId = isHospitalUser ? hospitalFacilityId : bedModalForm.facilityId;
+    if (!selectedFacilityId) {
+      setNotice({ type: "error", message: "Select a facility." });
+      clearNoticeSoon();
+      return;
+    }
+
     setSaving(true);
 
     try {
       const payload: BedStatusInput = {
-        facilityId: bedModalForm.facilityId,
+        facilityId: selectedFacilityId,
         unit: bedModalForm.unit,
         bedType: bedModalForm.bedType,
         operationalStatus: bedModalForm.operationalStatus,
@@ -1322,35 +2562,14 @@ export default function App() {
         lastUpdatedAt: new Date().toISOString()
       };
 
-      await createBedStatus(payload);
-      setBedModalOpen(false);
-      setNotice({ type: "success", message: "Bed and bed status saved." });
-      clearNoticeSoon();
-      await Promise.all([loadSummary(), loadBedStatuses()]);
-    } catch (error) {
-      setError(error);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleSaveRow(row: BedStatusRecord): Promise<void> {
-    const draft = rowEdits[row.id];
-    if (!draft) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      await updateBedStatus(row.id, {
-        operationalStatus: draft.operationalStatus,
-        staffedBeds: asNumber(draft.staffedBeds, row.staffedBeds),
-        occupiedBeds: asNumber(draft.occupiedBeds, row.occupiedBeds),
-        availableBeds: asNumber(draft.availableBeds, row.availableBeds),
-        lastUpdatedAt: new Date().toISOString()
-      });
-
-      setNotice({ type: "success", message: `Updated ${row.facilityCode} ${row.unit} ${bedTypeLabel(row.bedType)}.` });
+      if (bedModalMode === "edit" && bedStatusIdToEdit) {
+        await updateBedStatus(bedStatusIdToEdit, payload);
+        setNotice({ type: "success", message: "Bed and bed status updated." });
+      } else {
+        await createBedStatus(payload);
+        setNotice({ type: "success", message: "Bed and bed status saved." });
+      }
+      closeBedModal();
       clearNoticeSoon();
       await Promise.all([loadSummary(), loadBedStatuses()]);
     } catch (error) {
@@ -1361,6 +2580,11 @@ export default function App() {
   }
 
   async function handleBulkUpload(): Promise<void> {
+    if (isHospitalUser) {
+      setNotice({ type: "error", message: "Bulk upload is not available for hospital accounts." });
+      clearNoticeSoon();
+      return;
+    }
     if (!bulkFile) {
       setNotice({ type: "error", message: "Choose a CSV or JSON file first." });
       clearNoticeSoon();
@@ -1428,7 +2652,7 @@ export default function App() {
   }
 
   async function handleRunRestQuery(): Promise<void> {
-    const path = normalizeApiPath(restQuery.path, "/api/v1/facilities");
+    let path = normalizeApiPath(restQuery.path, "/api/v1/facilities");
     let body: string | undefined;
 
     if (restQuery.method !== "GET" && restQuery.body.trim()) {
@@ -1440,6 +2664,40 @@ export default function App() {
       }
     } else if (restQuery.method !== "GET" && !restQuery.body.trim()) {
       body = "{}";
+    }
+
+    if (isHospitalUser) {
+      if (!hospitalFacilityId) {
+        setApiQueryError("Hospital scope is not configured.");
+        return;
+      }
+
+      if (path.startsWith("/api/v1/bed-statuses")) {
+        path = withFacilityQuery(path, hospitalFacilityId);
+      } else if (path.startsWith("/api/v1/facilities")) {
+        if (restQuery.method !== "GET") {
+          setApiQueryError("Hospital users cannot update facilities via REST.");
+          return;
+        }
+        path = `/api/v1/facilities/${hospitalFacilityId}/metrics`;
+      } else {
+        setApiQueryError("Hospital users may only query bed status and assigned facility metrics.");
+        return;
+      }
+
+      if (restQuery.method === "POST" && path.startsWith("/api/v1/bed-statuses")) {
+        const parsed = body ? (JSON.parse(body) as Record<string, unknown>) : {};
+        parsed.facilityId = hospitalFacilityId;
+        body = JSON.stringify(parsed);
+      }
+      if (restQuery.method === "PATCH" && path.startsWith("/api/v1/bed-statuses/")) {
+        const bedId = path.split("/").pop()?.split("?")[0] ?? "";
+        const canEdit = scopedBedStatuses.some((record) => record.id === bedId);
+        if (!canEdit) {
+          setApiQueryError("Hospital users can only patch bed status rows for their own facility.");
+          return;
+        }
+      }
     }
 
     await runApiQuery(path, {
@@ -1460,6 +2718,44 @@ export default function App() {
       }
     }
 
+    if (isHospitalUser) {
+      if (!hospitalFacilityId) {
+        setApiQueryError("Hospital scope is not configured.");
+        return;
+      }
+      const queryLower = graphqlQuery.query.toLowerCase();
+      const usesAllowedOperation =
+        queryLower.includes("bedstatuses") || queryLower.includes("createbedstatus") || queryLower.includes("updatebedstatus");
+      const includesForbiddenOperation =
+        queryLower.includes("facilities") ||
+        queryLower.includes("uploadjobs") ||
+        queryLower.includes("dashboardsummary") ||
+        queryLower.includes("createfacility") ||
+        queryLower.includes("updatefacility") ||
+        queryLower.includes("bulkupload");
+      if (!usesAllowedOperation || includesForbiddenOperation) {
+        setApiQueryError("Hospital users can only query or update their own bed status records via GraphQL.");
+        return;
+      }
+      if (queryLower.includes("bedstatuses") && !queryLower.includes("facilityid")) {
+        setApiQueryError("Hospital GraphQL queries must include `facilityId`.");
+        return;
+      }
+      parsedVariables = {
+        ...parsedVariables,
+        facilityId: hospitalFacilityId
+      };
+      if (queryLower.includes("createbedstatus") || queryLower.includes("updatebedstatus")) {
+        const currentInput = parsedVariables.input;
+        if (typeof currentInput === "object" && currentInput !== null) {
+          parsedVariables.input = {
+            ...(currentInput as Record<string, unknown>),
+            facilityId: hospitalFacilityId
+          };
+        }
+      }
+    }
+
     await runApiQuery("/graphql", {
       method: "POST",
       headers: {
@@ -1473,11 +2769,35 @@ export default function App() {
   }
 
   async function handleRunFhirQuery(): Promise<void> {
-    const path = normalizeApiPath(fhirQueryPath, EMPTY_FHIR_QUERY_PATH);
+    let path = normalizeApiPath(fhirQueryPath, EMPTY_FHIR_QUERY_PATH);
+    if (isHospitalUser) {
+      if (!hospitalFacilityId) {
+        setApiQueryError("Hospital scope is not configured.");
+        return;
+      }
+      const allowsPath =
+        path.startsWith("/api/fhir/Observation") || path.startsWith("/api/fhir/Location") || path === "/api/fhir/metadata";
+      if (!allowsPath) {
+        setApiQueryError("Hospital users can only query FHIR Observation/Location endpoints.");
+        return;
+      }
+      if (path !== "/api/fhir/metadata") {
+        const [pathname, queryString = ""] = path.split("?", 2);
+        const params = new URLSearchParams(queryString);
+        params.set("facilityId", hospitalFacilityId);
+        params.delete("includeFacilities");
+        const scopedQuery = params.toString();
+        path = scopedQuery ? `${pathname}?${scopedQuery}` : pathname;
+      }
+    }
     await runApiQuery(path, { method: "GET" });
   }
 
   async function handleRestApiBulkUpload(): Promise<void> {
+    if (isHospitalUser) {
+      setApiQueryError("File bulk upload is not available for hospital accounts.");
+      return;
+    }
     if (!restBulkFile) {
       setApiQueryError("Select a CSV or JSON file first.");
       return;
@@ -1502,6 +2822,10 @@ export default function App() {
   }
 
   async function handleSftpBulkUpload(): Promise<void> {
+    if (isHospitalUser) {
+      setApiQueryError("SFTP emulation is not available for hospital accounts.");
+      return;
+    }
     if (!sftpBulkFile) {
       setApiQueryError("Select a CSV or JSON file first.");
       return;
@@ -1539,6 +2863,18 @@ export default function App() {
       return;
     }
 
+    const scopedRows = isHospitalUser
+      ? rows.map((row) =>
+          typeof row === "object" && row !== null
+            ? {
+                ...(row as Record<string, unknown>),
+                facilityId: hospitalFacilityId,
+                facilityCode: hospitalFacilityCode || undefined
+              }
+            : row
+        )
+      : rows;
+
     setApiBulkUploading(true);
     const mutation = `mutation BulkUpload($rows: [BulkUploadRowInput!]!) {
   bulkUpload(rows: $rows, source: "graphql-ui") {
@@ -1557,7 +2893,7 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query: mutation,
-          variables: { rows }
+          variables: { rows: scopedRows }
         })
       });
 
@@ -1585,12 +2921,24 @@ export default function App() {
       return;
     }
 
+    const scopedRows = isHospitalUser
+      ? rows.map((row) =>
+          typeof row === "object" && row !== null
+            ? {
+                ...(row as Record<string, unknown>),
+                facilityId: hospitalFacilityId,
+                facilityCode: hospitalFacilityCode || undefined
+              }
+            : row
+        )
+      : rows;
+
     setApiBulkUploading(true);
     try {
       const result = await runApiQuery("/api/fhir/$bulk-upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rows })
+        body: JSON.stringify({ rows: scopedRows })
       });
 
       if (result.ok) {
@@ -1807,9 +3155,12 @@ export default function App() {
               </form>
 
               <div className="rounded-xl border border-slate-300/70 bg-white/80 p-3 text-xs text-slate-700">
-                <p className="font-semibold">Demo account</p>
+                <p className="font-semibold">Demo accounts</p>
                 <p>
                   <code>{DEMO_LOGIN_EMAIL}</code> / <code>{DEMO_LOGIN_PASSWORD}</code>
+                </p>
+                <p className="mt-1">
+                  <code>{DEMO_HOSPITAL_LOGIN_EMAIL}</code> / <code>{DEMO_HOSPITAL_LOGIN_PASSWORD}</code>
                 </p>
               </div>
             </section>
@@ -1857,21 +3208,15 @@ export default function App() {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm font-bold tracking-tight">CDPH HBEDS</p>
-              <p className="text-[11px] text-slate-500">FacilityIQ-style operations console</p>
+              <p className="text-sm font-bold tracking-tight">{isHospitalUser ? "Hospital HBEDS" : "CDPH HBEDS"}</p>
+              <p className="text-[11px] text-slate-500">
+                {isHospitalUser ? hospitalScopeLabel : "FacilityIQ-style operations console"}
+              </p>
             </div>
 
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Navigation</p>
             <nav className="space-y-1">
-              {[
-                { id: "manual", label: "Facilities, Beds, and Statuses" },
-                { id: "apis", label: "Submission Options" },
-                { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
-                { id: "aiHelper", label: "AI Helper" },
-                { id: "analytics", label: "Analytics" },
-                { id: "notifications", label: "Notifications" },
-                { id: "settings", label: "Settings" }
-              ].map((item) => (
+              {desktopNavItems.map((item) => (
                 (() => {
                   const isActive = activeTab === item.id || (item.id === "manual" && activeTab === "facilityDetails");
                   return (
@@ -1914,17 +3259,20 @@ export default function App() {
               </svg>
               <span>Sign Out</span>
             </button>
+            <p className="text-center text-sm font-extrabold text-slate-800">Powered by TeleTracking</p>
           </div>
         </aside>
 
-        <main className="min-w-0 lg:h-[calc(100dvh-2rem)]">
+            <main className="min-w-0 lg:h-[calc(100dvh-2rem)]">
           <div className="flex h-full min-w-0 flex-col gap-4">
             <header className="surface-panel-strong shrink-0">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h1 className="text-lg font-bold tracking-tight md:text-2xl">{tabTitle}</h1>
                   <p className="text-xs text-slate-600">
-                    Hospital Bed & EMS Data System workflow for manual reporting, bulk import, API submissions, and SFTP intake.
+                    {isHospitalUser
+                      ? `Hospital-scoped HBEDS workflow for ${hospitalScopeLabel}.`
+                      : "Hospital Bed & EMS Data System workflow for manual reporting, bulk import, API submissions, and SFTP intake."}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -1978,16 +3326,8 @@ export default function App() {
                   </button>
                 </div>
               </div>
-              <nav className="mt-3 grid grid-cols-7 gap-2 lg:hidden">
-                {[
-                  { id: "manual", label: "Facilities" },
-                  { id: "apis", label: "Submit" },
-                  { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
-                  { id: "aiHelper", label: "AI" },
-                  { id: "analytics", label: "Metrics" },
-                  { id: "notifications", label: "Alerts" },
-                  { id: "settings", label: "Settings" }
-                ].map((item) => (
+              <nav className={`mt-3 grid gap-2 lg:hidden ${isHospitalUser ? "grid-cols-5" : "grid-cols-4"}`}>
+                {mobileNavItems.map((item) => (
                   (() => {
                     const isActive = activeTab === item.id || (item.id === "manual" && activeTab === "facilityDetails");
                     return (
@@ -2022,12 +3362,14 @@ export default function App() {
               </div>
             ) : null}
 
+            <div className="min-h-0 flex-1 overflow-auto overflow-x-hidden pr-1">
+
             {activeTab === "manual" && (
-              <section className="surface-panel stagger-in flex min-h-0 flex-1 flex-col space-y-4 overflow-hidden">
+              <section className="surface-panel stagger-in flex min-h-0 flex-1 flex-col space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Facilities</p>
-                    <p className="text-2xl font-bold">{summary?.totalFacilities ?? 0}</p>
+                    <p className="text-2xl font-bold">{effectiveSummary?.totalFacilities ?? 0}</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Total Beds</p>
@@ -2035,17 +3377,17 @@ export default function App() {
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Staffed Beds</p>
-                    <p className="text-2xl font-bold">{summary?.totalStaffedBeds ?? 0}</p>
+                    <p className="text-2xl font-bold">{effectiveSummary?.totalStaffedBeds ?? 0}</p>
                     <p className="text-xs text-slate-500">{manualBedMetrics.staffedPercent} of total</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Occupied Beds</p>
-                    <p className="text-2xl font-bold">{summary?.totalOccupiedBeds ?? 0}</p>
+                    <p className="text-2xl font-bold">{effectiveSummary?.totalOccupiedBeds ?? 0}</p>
                     <p className="text-xs text-slate-500">{manualBedMetrics.occupiedPercent} of total</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Available Beds</p>
-                    <p className="text-2xl font-bold">{summary?.totalAvailableBeds ?? 0}</p>
+                    <p className="text-2xl font-bold">{effectiveSummary?.totalAvailableBeds ?? 0}</p>
                     <p className="text-xs text-slate-500">{manualBedMetrics.availablePercent} of total</p>
                   </article>
                 </div>
@@ -2084,56 +3426,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {manualViewMode === "beds" && (
-                  <div className="grid gap-2 md:grid-cols-3">
-                    <label className="text-xs font-medium text-slate-600">
-                      Facility
-                      <select
-                        className="soft-select mt-1 w-full"
-                        value={filters.facilityId}
-                        onChange={(event) => setFilters((current) => ({ ...current, facilityId: event.target.value }))}
-                      >
-                        <option value="">All facilities</option>
-                        {facilities.map((facility) => (
-                          <option key={facility.id} value={facility.id}>
-                            {facility.name} ({facility.code})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="text-xs font-medium text-slate-600">
-                      Bed Type
-                      <select
-                        className="soft-select mt-1 w-full"
-                        value={filters.bedType}
-                        onChange={(event) => setFilters((current) => ({ ...current, bedType: event.target.value }))}
-                      >
-                        <option value="">All bed types</option>
-                        {BED_TYPES.map((bedType) => (
-                          <option key={bedType} value={bedType}>
-                            {bedTypeLabel(bedType)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="text-xs font-medium text-slate-600">
-                      Status
-                      <select
-                        className="soft-select mt-1 w-full"
-                        value={filters.operationalStatus}
-                        onChange={(event) => setFilters((current) => ({ ...current, operationalStatus: event.target.value }))}
-                      >
-                        <option value="">All Statuses</option>
-                        {OPERATIONAL_STATUSES.map((status) => (
-                          <option key={status} value={status}>
-                            {statusLabel(status)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-                )}
-
                 <div className="flex flex-wrap items-end gap-2">
                   <label className="flex-1 text-xs font-medium text-slate-600">
                     General Search
@@ -2148,7 +3440,7 @@ export default function App() {
                       onChange={(event) => setGeneralSearch(event.target.value)}
                     />
                   </label>
-                  {manualViewMode === "facilities" && (
+                  {manualViewMode === "facilities" && !isHospitalUser && (
                     <button
                       type="button"
                       className="subtle-button mb-[1px] inline-flex items-center gap-2 px-3 py-2"
@@ -2170,13 +3462,104 @@ export default function App() {
                     <table className="w-full min-w-[1080px] border-collapse text-sm">
                       <thead className="sticky top-0 bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
                         <tr>
-                          <th className="px-3 py-2">Facility</th>
-                          <th className="px-3 py-2">Type</th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleFacilityGridSort("name")}>
+                              <span>Facility</span>
+                              <span className="text-[10px]">{gridSortIndicator(facilityGridSort.key === "name", facilityGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleFacilityGridSort("facilityType")}>
+                              <span>Type</span>
+                              <span className="text-[10px]">
+                                {gridSortIndicator(facilityGridSort.key === "facilityType", facilityGridSort.direction)}
+                              </span>
+                            </button>
+                          </th>
                           <th className="px-3 py-2">Address</th>
-                          <th className="px-3 py-2">Location</th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleFacilityGridSort("county")}>
+                              <span>Location</span>
+                              <span className="text-[10px]">{gridSortIndicator(facilityGridSort.key === "county", facilityGridSort.direction)}</span>
+                            </button>
+                          </th>
                           <th className="px-3 py-2">Contact</th>
-                          <th className="px-3 py-2">Updated</th>
-                          <th className="px-3 py-2">Actions</th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleFacilityGridSort("updatedAt")}>
+                              <span>Updated</span>
+                              <span className="text-[10px]">{gridSortIndicator(facilityGridSort.key === "updatedAt", facilityGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          {!isHospitalUser && <th className="px-3 py-2">Actions</th>}
+                        </tr>
+                        <tr className="border-t border-slate-200 bg-slate-50 text-[11px] normal-case tracking-normal text-slate-600">
+                          <th className="px-3 py-2 text-slate-500">Use General Search for name, ID, and address.</th>
+                          <th className="px-3 py-2">
+                            <select
+                              className="soft-select w-full text-xs"
+                              value={facilityGridFilters.facilityType}
+                              onChange={(event) =>
+                                setFacilityGridFilters((current) => ({ ...current, facilityType: event.target.value }))
+                              }
+                            >
+                              <option value="">All Facility Types</option>
+                              {FACILITY_TYPES.map((facilityType) => (
+                                <option key={facilityType} value={facilityType}>
+                                  {facilityTypeLabel(facilityType)}
+                                </option>
+                              ))}
+                            </select>
+                          </th>
+                          <th className="px-3 py-2" />
+                          <th className="px-3 py-2">
+                            <div className="grid gap-1">
+                              <select
+                                className="soft-select w-full text-xs"
+                                value={facilityGridFilters.county}
+                                onChange={(event) =>
+                                  setFacilityGridFilters((current) => ({ ...current, county: event.target.value }))
+                                }
+                              >
+                                <option value="">All Counties</option>
+                                {facilityCountyOptions.map((county) => (
+                                  <option key={county} value={county}>
+                                    {county}
+                                  </option>
+                                ))}
+                              </select>
+                              <select
+                                className="soft-select w-full text-xs"
+                                value={facilityGridFilters.region}
+                                onChange={(event) =>
+                                  setFacilityGridFilters((current) => ({ ...current, region: event.target.value }))
+                                }
+                              >
+                                <option value="">All Regions</option>
+                                {facilityRegionOptions.map((region) => (
+                                  <option key={region} value={region}>
+                                    {region}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </th>
+                          <th className="px-3 py-2" />
+                          <th className="px-3 py-2">
+                            <button
+                              type="button"
+                              className="subtle-button inline-flex items-center gap-1 px-2 py-1 text-xs"
+                              onClick={() =>
+                                setFacilityGridFilters({
+                                  facilityType: "",
+                                  county: "",
+                                  region: ""
+                                })
+                              }
+                            >
+                              Clear Filters
+                            </button>
+                          </th>
+                          {!isHospitalUser && <th className="px-3 py-2" />}
                         </tr>
                       </thead>
                       <tbody>
@@ -2214,31 +3597,33 @@ export default function App() {
                               </td>
                               <td className="px-3 py-2 text-xs text-slate-700">{facility.phone || "N/A"}</td>
                               <td className="px-3 py-2 text-xs text-slate-600">{new Date(facility.updatedAt).toLocaleString()}</td>
-                              <td className="px-3 py-2">
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    className="icon-subtle-button"
-                                    title="Edit facility"
-                                    aria-label="Edit facility"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      openEditFacilityModal(facility);
-                                    }}
-                                    disabled={saving}
-                                  >
-                                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                                      <path d="m4.2 13.9 1.2 1.9 2.3-.5 7.2-7.2a1.6 1.6 0 0 0 0-2.2l-.8-.8a1.6 1.6 0 0 0-2.2 0l-7.2 7.2-.5 2.3Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                      <path d="M10.7 6.3 13.7 9.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                                    </svg>
-                                  </button>
-                                </div>
-                              </td>
+                              {!isHospitalUser && (
+                                <td className="px-3 py-2">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      type="button"
+                                      className="icon-subtle-button"
+                                      title="Edit facility"
+                                      aria-label="Edit facility"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        openEditFacilityModal(facility);
+                                      }}
+                                      disabled={saving}
+                                    >
+                                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                        <path d="m4.2 13.9 1.2 1.9 2.3-.5 7.2-7.2a1.6 1.6 0 0 0 0-2.2l-.8-.8a1.6 1.6 0 0 0-2.2 0l-7.2 7.2-.5 2.3Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                        <path d="M10.7 6.3 13.7 9.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </td>
+                              )}
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td className="px-3 py-8 text-center text-sm text-slate-500" colSpan={7}>
+                            <td className="px-3 py-8 text-center text-sm text-slate-500" colSpan={isHospitalUser ? 6 : 7}>
                               No facilities match the current search.
                             </td>
                           </tr>
@@ -2251,149 +3636,191 @@ export default function App() {
                     <table className="w-full min-w-[1080px] border-collapse text-sm">
                       <thead className="sticky top-0 bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
                         <tr>
-                          <th className="px-3 py-2">Facility</th>
-                          <th className="px-3 py-2">Unit</th>
-                          <th className="px-3 py-2">Bed Type</th>
-                          <th className="px-3 py-2">Status</th>
-                          <th className="px-3 py-2">Staffed</th>
-                          <th className="px-3 py-2">Occupied</th>
-                          <th className="px-3 py-2">Available</th>
-                          <th className="px-3 py-2">Last Updated</th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("facilityName")}>
+                              <span>Facility</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "facilityName", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("unit")}>
+                              <span>Unit</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "unit", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("bedType")}>
+                              <span>Bed Type</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "bedType", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("operationalStatus")}>
+                              <span>Status</span>
+                              <span className="text-[10px]">
+                                {gridSortIndicator(bedGridSort.key === "operationalStatus", bedGridSort.direction)}
+                              </span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("staffedBeds")}>
+                              <span>Staffed</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "staffedBeds", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("occupiedBeds")}>
+                              <span>Occupied</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "occupiedBeds", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("availableBeds")}>
+                              <span>Available</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "availableBeds", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
+                          <th className="px-3 py-2">
+                            <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleBedGridSort("lastUpdatedAt")}>
+                              <span>Last Updated</span>
+                              <span className="text-[10px]">{gridSortIndicator(bedGridSort.key === "lastUpdatedAt", bedGridSort.direction)}</span>
+                            </button>
+                          </th>
                           <th className="px-3 py-2">Actions</th>
+                        </tr>
+                        <tr className="border-t border-slate-200 bg-slate-50 text-[11px] normal-case tracking-normal text-slate-600">
+                          <th className="px-3 py-2">
+                            <select
+                              className="soft-select w-full text-xs"
+                              value={filters.facilityId}
+                              onChange={(event) => setFilters((current) => ({ ...current, facilityId: event.target.value }))}
+                              disabled={isHospitalUser}
+                            >
+                              {!isHospitalUser && <option value="">All Facilities</option>}
+                              {scopedFacilities.map((facility) => (
+                                <option key={facility.id} value={facility.id}>
+                                  {facility.name} ({facility.code})
+                                </option>
+                              ))}
+                            </select>
+                          </th>
+                          <th className="px-3 py-2">
+                            <input
+                              className="soft-input w-full text-xs"
+                              placeholder="All Units"
+                              value={filters.unit}
+                              onChange={(event) => setFilters((current) => ({ ...current, unit: event.target.value }))}
+                            />
+                          </th>
+                          <th className="px-3 py-2">
+                            <select
+                              className="soft-select w-full text-xs"
+                              value={filters.bedType}
+                              onChange={(event) => setFilters((current) => ({ ...current, bedType: event.target.value }))}
+                            >
+                              <option value="">All Bed Types</option>
+                              {BED_TYPES.map((bedType) => (
+                                <option key={bedType} value={bedType}>
+                                  {bedTypeLabel(bedType)}
+                                </option>
+                              ))}
+                            </select>
+                          </th>
+                          <th className="px-3 py-2">
+                            <select
+                              className="soft-select w-full text-xs"
+                              value={filters.operationalStatus}
+                              onChange={(event) =>
+                                setFilters((current) => ({ ...current, operationalStatus: event.target.value }))
+                              }
+                            >
+                              <option value="">All Statuses</option>
+                              {OPERATIONAL_STATUSES.map((status) => (
+                                <option key={status} value={status}>
+                                  {statusLabel(status)}
+                                </option>
+                              ))}
+                            </select>
+                          </th>
+                          <th className="px-3 py-2" />
+                          <th className="px-3 py-2" />
+                          <th className="px-3 py-2" />
+                          <th className="px-3 py-2 text-slate-500">Use General Search for county and region.</th>
+                          <th className="px-3 py-2">
+                            <button
+                              type="button"
+                              className="subtle-button inline-flex items-center gap-1 px-2 py-1 text-xs"
+                              onClick={() =>
+                                setFilters((current) => ({
+                                  ...current,
+                                  facilityId: isHospitalUser ? hospitalFacilityId : "",
+                                  bedType: "",
+                                  operationalStatus: "",
+                                  unit: ""
+                                }))
+                              }
+                            >
+                              Clear Filters
+                            </button>
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {hasRows ? (
-                          filteredBedStatuses.map((row) => {
-                            const edit = rowEdits[row.id];
-                            return (
-                              <tr key={row.id} className="border-t border-slate-100 align-top">
-                                <td className="px-3 py-2">
-                                  <p className="font-semibold text-slate-900">{row.facilityName}</p>
-                                  <p className="text-xs text-slate-500">Facility ID {row.facilityCode}</p>
-                                </td>
-                                <td className="px-3 py-2 font-medium">{row.unit}</td>
-                                <td className="px-3 py-2 text-xs">{bedTypeLabel(row.bedType)}</td>
-                                <td className="px-3 py-2">
-                                  <select
-                                    className={`soft-select w-[132px] ${statusSelectTone(edit?.operationalStatus ?? row.operationalStatus)}`}
-                                    value={edit?.operationalStatus ?? row.operationalStatus}
-                                    onChange={(event) =>
-                                      setRowEdits((current) => ({
-                                        ...current,
-                                        [row.id]: {
-                                          ...(current[row.id] ?? {
-                                            operationalStatus: row.operationalStatus,
-                                            staffedBeds: String(row.staffedBeds),
-                                            occupiedBeds: String(row.occupiedBeds),
-                                            availableBeds: String(row.availableBeds)
-                                          }),
-                                          operationalStatus: event.target.value as OperationalStatus
-                                        }
-                                      }))
-                                    }
+                          filteredBedStatuses.map((row) => (
+                            <tr key={row.id} className="border-t border-slate-100 align-top">
+                              <td className="px-3 py-2">
+                                <p className="font-semibold text-slate-900">{row.facilityName}</p>
+                                <p className="text-xs text-slate-500">Facility ID {row.facilityCode}</p>
+                              </td>
+                              <td className="px-3 py-2 font-medium">{row.unit}</td>
+                              <td className="px-3 py-2 text-xs">{bedTypeLabel(row.bedType)}</td>
+                              <td className="px-3 py-2">
+                                <span className={`status-badge ${statusSelectTone(row.operationalStatus)}`}>
+                                  {statusLabel(row.operationalStatus)}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 font-mono text-sm">{row.staffedBeds}</td>
+                              <td className="px-3 py-2 font-mono text-sm">{row.occupiedBeds}</td>
+                              <td className="px-3 py-2 font-mono text-sm">{row.availableBeds}</td>
+                              <td className="px-3 py-2 text-xs text-slate-600">{new Date(row.lastUpdatedAt).toLocaleString()}</td>
+                              <td className="px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    className="icon-subtle-button"
+                                    title="Edit bed and status"
+                                    aria-label="Edit bed and status"
+                                    onClick={() => openEditBedModal(row)}
+                                    disabled={saving}
                                   >
-                                    {OPERATIONAL_STATUSES.map((status) => (
-                                      <option key={status} value={status}>
-                                        {statusLabel(status)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td className="px-3 py-2">
-                                  <input
-                                    className="soft-input w-[90px]"
-                                    value={edit?.staffedBeds ?? String(row.staffedBeds)}
-                                    onChange={(event) =>
-                                      setRowEdits((current) => ({
-                                        ...current,
-                                        [row.id]: {
-                                          ...(current[row.id] ?? {
-                                            operationalStatus: row.operationalStatus,
-                                            staffedBeds: String(row.staffedBeds),
-                                            occupiedBeds: String(row.occupiedBeds),
-                                            availableBeds: String(row.availableBeds)
-                                          }),
-                                          staffedBeds: event.target.value
-                                        }
-                                      }))
-                                    }
-                                  />
-                                </td>
-                                <td className="px-3 py-2">
-                                  <input
-                                    className="soft-input w-[90px]"
-                                    value={edit?.occupiedBeds ?? String(row.occupiedBeds)}
-                                    onChange={(event) =>
-                                      setRowEdits((current) => ({
-                                        ...current,
-                                        [row.id]: {
-                                          ...(current[row.id] ?? {
-                                            operationalStatus: row.operationalStatus,
-                                            staffedBeds: String(row.staffedBeds),
-                                            occupiedBeds: String(row.occupiedBeds),
-                                            availableBeds: String(row.availableBeds)
-                                          }),
-                                          occupiedBeds: event.target.value
-                                        }
-                                      }))
-                                    }
-                                  />
-                                </td>
-                                <td className="px-3 py-2">
-                                  <input
-                                    className="soft-input w-[90px]"
-                                    value={edit?.availableBeds ?? String(row.availableBeds)}
-                                    onChange={(event) =>
-                                      setRowEdits((current) => ({
-                                        ...current,
-                                        [row.id]: {
-                                          ...(current[row.id] ?? {
-                                            operationalStatus: row.operationalStatus,
-                                            staffedBeds: String(row.staffedBeds),
-                                            occupiedBeds: String(row.occupiedBeds),
-                                            availableBeds: String(row.availableBeds)
-                                          }),
-                                          availableBeds: event.target.value
-                                        }
-                                      }))
-                                    }
-                                  />
-                                </td>
-                                <td className="px-3 py-2 text-xs text-slate-600">{new Date(row.lastUpdatedAt).toLocaleString()}</td>
-                                <td className="px-3 py-2">
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      className="icon-subtle-button"
-                                      title="Save row"
-                                      aria-label="Save row"
-                                      onClick={() => void handleSaveRow(row)}
-                                      disabled={saving}
-                                    >
-                                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                                        <path d="M4.2 4.2h9.2l2.4 2.4v9.2H4.2V4.2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                        <path d="M7 4.2v5h5.2v-5M7.4 13h5.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                                      </svg>
-                                    </button>
-                                    <button
-                                      type="button"
-                                      className="icon-subtle-button"
-                                      title="Add bed and status"
-                                      aria-label="Add bed and status"
-                                      onClick={() => openBedModal(row.facilityId)}
-                                      disabled={saving}
-                                    >
-                                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                                        <rect x="3.2" y="4.2" width="13.6" height="11.6" rx="2.2" stroke="currentColor" strokeWidth="1.4" />
-                                        <path d="M10 7v6m-3-3h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })
+                                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                      <path
+                                        d="m4.2 13.9 1.2 1.9 2.3-.5 7.2-7.2a1.6 1.6 0 0 0 0-2.2l-.8-.8a1.6 1.6 0 0 0-2.2 0l-7.2 7.2-.5 2.3Z"
+                                        stroke="currentColor"
+                                        strokeWidth="1.4"
+                                        strokeLinejoin="round"
+                                      />
+                                      <path d="M10.7 6.3 13.7 9.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="icon-subtle-button"
+                                    title="Add bed and status"
+                                    aria-label="Add bed and status"
+                                    onClick={() => openBedModal(row.facilityId)}
+                                    disabled={saving}
+                                  >
+                                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                      <rect x="3.2" y="4.2" width="13.6" height="11.6" rx="2.2" stroke="currentColor" strokeWidth="1.4" />
+                                      <path d="M10 7v6m-3-3h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
                         ) : (
                           <tr>
                             <td className="px-3 py-8 text-center text-sm text-slate-500" colSpan={9}>
@@ -2402,8 +3829,8 @@ export default function App() {
                                 <button
                                   type="button"
                                   className="subtle-button inline-flex items-center gap-2"
-                                  onClick={() => openBedModal(filters.facilityId || facilities[0]?.id)}
-                                  disabled={facilities.length === 0}
+                                  onClick={() => openBedModal(filters.facilityId || scopedFacilities[0]?.id)}
+                                  disabled={scopedFacilities.length === 0}
                                 >
                                   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                                     <rect x="3.2" y="4.2" width="13.6" height="11.6" rx="2.2" stroke="currentColor" strokeWidth="1.4" />
@@ -2419,6 +3846,109 @@ export default function App() {
                     </table>
                   </div>
                 )}
+                </section>
+            )}
+
+            {activeTab === "heatMap" && (
+              <section className="space-y-4">
+                <article className="surface-panel-strong stagger-in space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h2 className="section-heading">California Geospatial Analysis</h2>
+                      <p className="section-subtitle">{heatMapSubtitle}</p>
+                      <p className="mt-1 text-[11px] text-slate-500/80">Map Source: OpenStreetMap + live bed utilization</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                      <article className="rounded-xl border border-slate-200 bg-white p-2.5">
+                        <p className="text-xs uppercase tracking-wide text-slate-500">{selectedHeatMapView.countLabel}</p>
+                        <p className="text-2xl font-bold text-rose-700">{heatMapFacilities.length}</p>
+                      </article>
+                      <article className="rounded-xl border border-slate-200 bg-white p-2.5">
+                        <p className="text-xs uppercase tracking-wide text-slate-500">Selected View</p>
+                        <p className="text-sm font-semibold">{selectedHeatMapView.label}</p>
+                      </article>
+                      <article className="rounded-xl border border-slate-200 bg-white p-2.5">
+                        <p className="text-xs uppercase tracking-wide text-slate-500">
+                          {heatMapViewId === "occupancy" ? "Filter Threshold" : "View Description"}
+                        </p>
+                        {heatMapViewId === "occupancy" ? (
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-xs text-slate-500">≥</span>
+                            <input
+                              aria-label="Heat map capacity threshold"
+                              className="w-20 rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                              max={HEAT_MAP_MAX_FILTER_THRESHOLD}
+                              min="0"
+                              onChange={(event) => {
+                                const raw = Number.parseInt(event.target.value, 10);
+                                const next = Number.isFinite(raw)
+                                  ? Math.min(HEAT_MAP_MAX_FILTER_THRESHOLD, Math.max(0, raw))
+                                  : heatMapCapacityThreshold;
+                                setHeatMapCapacityThreshold(next);
+                              }}
+                              onFocus={(event) => event.target.select()}
+                              step="1"
+                              type="number"
+                              value={heatMapCapacityThreshold}
+                            />
+                            <span className="text-xs text-slate-500">%</span>
+                          </div>
+                        ) : (
+                          <p className="mt-1 text-sm leading-snug text-slate-700">{selectedHeatMapView.description}</p>
+                        )}
+                      </article>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200/90 bg-white/90 p-2.5">
+                    <p className="text-xs uppercase tracking-wide text-slate-500">Map Options</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {HEAT_MAP_VIEW_OPTIONS.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          className={`api-tab-button ${
+                            heatMapViewId === option.id ? "border-blue-500 bg-blue-50 text-blue-800" : "border-slate-300 bg-white text-slate-700"
+                          }`}
+                          onClick={() => setHeatMapViewId(option.id)}
+                          title={option.description}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+
+                <article className="surface-panel-strong stagger-in space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="section-heading">Geospatial Map</h2>
+                    <p className="text-xs text-slate-500">Tip: zoom and pan to inspect county/city-level clusters.</p>
+                  </div>
+                  <div className="relative">
+                    <div ref={heatMapContainerRef} className="h-[64dvh] min-h-[420px] rounded-xl border border-slate-300" />
+                    {heatMapFacilities.length === 0 && !leafletLoadError ? (
+                      <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/75 text-sm text-slate-700 backdrop-blur-sm">
+                        {selectedHeatMapView.emptyMessage}
+                      </div>
+                    ) : null}
+                    {leafletLoadError ? (
+                      <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-rose-100/85 p-4 text-center text-sm text-rose-800">
+                        {leafletLoadError}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="rounded-xl border border-slate-300/70 bg-white p-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Legend</p>
+                    <div className="mt-2 flex flex-wrap gap-4 text-xs">
+                      {heatMapLegendItems.map((item) => (
+                        <span key={`${heatMapViewId}-${item.status}-${item.label}`} className="inline-flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: heatMapFillColor(item.status) }} />
+                          {item.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </article>
               </section>
             )}
 
@@ -2589,7 +4119,7 @@ export default function App() {
             )}
 
             {activeTab === "analytics" && (
-              <section className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+              <section className="min-h-0 flex-1 space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Facilities On Time</p>
@@ -2619,7 +4149,9 @@ export default function App() {
                     <div className="space-y-1">
                       <h2 className="section-heading">Incoming Submissions</h2>
                       <p className="section-subtitle">
-                        Live 15-minute buckets aligned to simulation windows. CDC/NHSN outbound traffic is charted below.
+                        {isHospitalUser
+                          ? "Live incoming submissions for your assigned hospital."
+                          : "Live 15-minute buckets aligned to simulation windows. CDC/NHSN outbound traffic is charted below."}
                       </p>
                     </div>
                     <div className="ml-auto mr-6 flex flex-wrap items-center gap-6 self-start pt-0.5">
@@ -2736,7 +4268,8 @@ export default function App() {
                   </div>
                 </article>
 
-                <article className="surface-panel stagger-in space-y-3">
+                {!isHospitalUser && (
+                  <article className="surface-panel stagger-in space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <h2 className="section-heading">Outgoing CDC/NHSN Submissions</h2>
@@ -2819,7 +4352,8 @@ export default function App() {
                       </svg>
                     </div>
                   </div>
-                </article>
+                  </article>
+                )}
 
                 <article className="surface-panel stagger-in">
                   <h2 className="section-heading">Hospitals Missing 15-Minute Requirement</h2>
@@ -2882,7 +4416,7 @@ export default function App() {
                       Scope
                       <select className="soft-select mt-1 w-full" value={aiScopeFacilityId} onChange={(event) => setAiScopeFacilityId(event.target.value)}>
                         <option value="all">All Facilities</option>
-                        {facilities.map((facility) => (
+                        {scopedFacilities.map((facility) => (
                           <option key={facility.id} value={facility.id}>
                             {facility.name}
                           </option>
@@ -3328,13 +4862,7 @@ export default function App() {
                 <article className="surface-panel-strong stagger-in space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      {[
-                        { id: "fhir", label: "FHIR API" },
-                        { id: "rest", label: "REST JSON API" },
-                        { id: "graphql", label: "GraphQL API" },
-                        { id: "sftp", label: "SFTP Submission" },
-                        { id: "bulk", label: "Bulk Upload" }
-                      ].map((item) => (
+                      {apiTabs.map((item) => (
                         <button
                           key={item.id}
                           type="button"
@@ -3358,7 +4886,7 @@ export default function App() {
                     <button
                       type="button"
                       className="subtle-button inline-flex items-center gap-2"
-                      onClick={() => void Promise.all([loadApiMetrics(), loadJobs()])}
+                      onClick={() => void Promise.all([loadApiMetrics(), ...(!isHospitalUser ? [loadJobs()] : [])])}
                       disabled={loading || apiQueryRunning || apiBulkUploading}
                     >
                       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
@@ -3375,6 +4903,11 @@ export default function App() {
                       ? "SFTP is modeled as file-based submission into the same ingestion pipeline used by bulk upload."
                       : "Usage metrics are tracked in memory while the local API server is running."}
                   </p>
+                  {isHospitalUser && (
+                    <p className="rounded-lg border border-amber-300/80 bg-amber-100/75 px-3 py-2 text-xs text-amber-900">
+                      Scoped to <span className="font-semibold">{hospitalScopeLabel}</span>. API requests and updates are restricted to this hospital.
+                    </p>
+                  )}
                 </article>
 
                 {activeApiTab === "bulk" ? (
@@ -3744,6 +5277,7 @@ export default function App() {
                             onChange={(event) =>
                               setRestQuery((current) => ({ ...current, method: event.target.value as RestQueryState["method"] }))
                             }
+                            disabled={isHospitalUser && restQuery.path.startsWith("/api/v1/facilities")}
                           >
                             <option value="GET">GET</option>
                             <option value="POST">POST</option>
@@ -3754,6 +5288,7 @@ export default function App() {
                             value={restQuery.path}
                             placeholder="/api/v1/facilities"
                             onChange={(event) => setRestQuery((current) => ({ ...current, path: event.target.value }))}
+                            disabled={isHospitalUser}
                           />
                         </div>
                         {restQuery.method !== "GET" && (
@@ -3775,31 +5310,33 @@ export default function App() {
                           </svg>
                           <span>{apiQueryRunning ? "Running..." : "Run REST Query"}</span>
                         </button>
-                        <div className="rounded-xl border border-slate-300/80 bg-white/85 p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">REST Bulk Upload</p>
-                          <p className="mt-1 text-xs text-slate-600">Upload CSV or JSON to `/api/bulk/upload`.</p>
-                          <a className="subtle-button mt-2 inline-flex" href="/api/bulk/template">
-                            Download CSV Template
-                          </a>
-                          <input
-                            type="file"
-                            className="soft-input mt-2 w-full"
-                            accept=".csv,.json,text/csv,application/json"
-                            onChange={(event) => setRestBulkFile(event.target.files?.[0] ?? null)}
-                          />
-                          <button
-                            type="button"
-                            className="subtle-button mt-2 inline-flex w-full items-center justify-center gap-2"
-                            onClick={() => void handleRestApiBulkUpload()}
-                            disabled={apiBulkUploading}
-                          >
-                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                              <path d="M10 3.8v8m0-8 2.8 2.8M10 3.8 7.2 6.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M4.6 11.8v2.7a1.9 1.9 0 0 0 1.9 1.9h7a1.9 1.9 0 0 0 1.9-1.9v-2.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                            </svg>
-                            <span>{apiBulkUploading ? "Uploading..." : "Run REST Bulk Upload"}</span>
-                          </button>
-                        </div>
+                        {!isHospitalUser && (
+                          <div className="rounded-xl border border-slate-300/80 bg-white/85 p-3">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">REST Bulk Upload</p>
+                            <p className="mt-1 text-xs text-slate-600">Upload CSV or JSON to `/api/bulk/upload`.</p>
+                            <a className="subtle-button mt-2 inline-flex" href="/api/bulk/template">
+                              Download CSV Template
+                            </a>
+                            <input
+                              type="file"
+                              className="soft-input mt-2 w-full"
+                              accept=".csv,.json,text/csv,application/json"
+                              onChange={(event) => setRestBulkFile(event.target.files?.[0] ?? null)}
+                            />
+                            <button
+                              type="button"
+                              className="subtle-button mt-2 inline-flex w-full items-center justify-center gap-2"
+                              onClick={() => void handleRestApiBulkUpload()}
+                              disabled={apiBulkUploading}
+                            >
+                              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                <path d="M10 3.8v8m0-8 2.8 2.8M10 3.8 7.2 6.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M4.6 11.8v2.7a1.9 1.9 0 0 0 1.9 1.9h7a1.9 1.9 0 0 0 1.9-1.9v-2.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                              </svg>
+                              <span>{apiBulkUploading ? "Uploading..." : "Run REST Bulk Upload"}</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -3815,6 +5352,7 @@ export default function App() {
                           value={graphqlQuery.variables}
                           placeholder='{"facilityId":"fac-11205"}'
                           onChange={(event) => setGraphqlQuery((current) => ({ ...current, variables: event.target.value }))}
+                          disabled={isHospitalUser}
                         />
                         <button
                           type="button"
@@ -3859,6 +5397,7 @@ export default function App() {
                           value={fhirQueryPath}
                           placeholder="/api/fhir/metadata"
                           onChange={(event) => setFhirQueryPath(event.target.value)}
+                          disabled={isHospitalUser}
                         />
                         <button
                           type="button"
@@ -4113,6 +5652,7 @@ export default function App() {
                 </div>
               </section>
             )}
+            </div>
           </div>
         </main>
       </div>
@@ -4254,6 +5794,24 @@ export default function App() {
                     required
                   />
                 </label>
+                <label className="text-xs font-medium text-slate-600">
+                  Latitude
+                  <input
+                    className="soft-input mt-1 w-full"
+                    placeholder="38.5816"
+                    value={facilityForm.latitude}
+                    onChange={(event) => setFacilityForm((current) => ({ ...current, latitude: event.target.value }))}
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  Longitude
+                  <input
+                    className="soft-input mt-1 w-full"
+                    placeholder="-121.4944"
+                    value={facilityForm.longitude}
+                    onChange={(event) => setFacilityForm((current) => ({ ...current, longitude: event.target.value }))}
+                  />
+                </label>
               </div>
 
               <button type="submit" className="action-button inline-flex w-full items-center justify-center gap-2" disabled={saving}>
@@ -4272,106 +5830,160 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
           <div className="surface-panel w-full max-w-2xl space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Add Bed &amp; Status</h2>
-              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={() => setBedModalOpen(false)}>
+              <h2 className="text-lg font-bold">Bed Status</h2>
+              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeBedModal}>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                   <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
                 <span>Close</span>
               </button>
             </div>
-            <form className="grid gap-2" onSubmit={(event) => void handleCreateBedStatus(event)}>
-              <select
-                className="soft-select w-full"
-                value={bedModalForm.facilityId}
-                onChange={(event) => setBedModalForm((current) => ({ ...current, facilityId: event.target.value }))}
-                required
-              >
-                <option value="">Select facility</option>
-                {facilities.map((facility) => (
-                  <option key={facility.id} value={facility.id}>
-                    {facility.name} ({facility.code})
-                  </option>
-                ))}
-              </select>
+            <form className="grid gap-2" onSubmit={(event) => void handleSaveBedStatus(event)}>
+              <label className="text-xs font-medium text-slate-600">
+                Facility
+                <select
+                  className="soft-select mt-1 w-full"
+                  value={bedModalForm.facilityId}
+                  onChange={(event) => setBedModalForm((current) => ({ ...current, facilityId: event.target.value }))}
+                  disabled={isHospitalUser}
+                  required
+                >
+                  <option value="">Select facility</option>
+                  {scopedFacilities.map((facility) => (
+                    <option key={facility.id} value={facility.id}>
+                      {facility.name} ({facility.code})
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-              <input
-                className="soft-input w-full"
-                placeholder="Unit (ICU-A, MEDSURG-1)"
-                value={bedModalForm.unit}
-                onChange={(event) => setBedModalForm((current) => ({ ...current, unit: event.target.value }))}
-                required
-              />
+              <label className="text-xs font-medium text-slate-600">
+                Unit
+                <input
+                  className="soft-input mt-1 w-full"
+                  placeholder="ICU-A, MEDSURG-1"
+                  value={bedModalForm.unit}
+                  onChange={(event) => setBedModalForm((current) => ({ ...current, unit: event.target.value }))}
+                  required
+                />
+              </label>
 
               <div className="grid grid-cols-2 gap-2">
-                <select
-                  className="soft-select w-full"
-                  value={bedModalForm.bedType}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, bedType: event.target.value as BedType }))}
-                >
-                  {BED_TYPES.map((bedType) => (
-                    <option key={bedType} value={bedType}>
-                      {bedTypeLabel(bedType)}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="soft-select w-full"
-                  value={bedModalForm.operationalStatus}
-                  onChange={(event) =>
-                    setBedModalForm((current) => ({ ...current, operationalStatus: event.target.value as OperationalStatus }))
-                  }
-                >
-                  {OPERATIONAL_STATUSES.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabel(status)}
-                    </option>
-                  ))}
-                </select>
+                <label className="text-xs font-medium text-slate-600">
+                  Bed Type
+                  <select
+                    className="soft-select mt-1 w-full"
+                    value={bedModalForm.bedType}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, bedType: event.target.value as BedType }))}
+                  >
+                    {BED_TYPES.map((bedType) => (
+                      <option key={bedType} value={bedType}>
+                        {bedTypeLabel(bedType)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  Status
+                  <select
+                    className={`soft-select mt-1 w-full ${statusSelectTone(bedModalForm.operationalStatus)}`}
+                    value={bedModalForm.operationalStatus}
+                    onChange={(event) =>
+                      setBedModalForm((current) => ({ ...current, operationalStatus: event.target.value as OperationalStatus }))
+                    }
+                  >
+                    {OPERATIONAL_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabel(status)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <input
-                  className="soft-input"
-                  placeholder="Staffed"
-                  value={bedModalForm.staffedBeds}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, staffedBeds: event.target.value }))}
-                  required
-                />
-                <input
-                  className="soft-input"
-                  placeholder="Occupied"
-                  value={bedModalForm.occupiedBeds}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, occupiedBeds: event.target.value }))}
-                  required
-                />
-                <input
-                  className="soft-input"
-                  placeholder="Available"
-                  value={bedModalForm.availableBeds}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, availableBeds: event.target.value }))}
-                />
+                <label className="text-xs font-medium text-slate-600">
+                  Staffed Beds
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.staffedBeds}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, staffedBeds: event.target.value }))}
+                    required
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  Occupied Beds
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.occupiedBeds}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, occupiedBeds: event.target.value }))}
+                    required
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  Available Beds
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.availableBeds}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, availableBeds: event.target.value }))}
+                  />
+                </label>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
-                <input
-                  className="soft-input"
-                  placeholder="COVID+"
-                  value={bedModalForm.covidConfirmed}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, covidConfirmed: event.target.value }))}
-                />
-                <input
-                  className="soft-input"
-                  placeholder="Influenza+"
-                  value={bedModalForm.influenzaConfirmed}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, influenzaConfirmed: event.target.value }))}
-                />
-                <input
-                  className="soft-input"
-                  placeholder="RSV+"
-                  value={bedModalForm.rsvConfirmed}
-                  onChange={(event) => setBedModalForm((current) => ({ ...current, rsvConfirmed: event.target.value }))}
-                />
+                <label className="text-xs font-medium text-slate-600">
+                  COVID Confirmed
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.covidConfirmed}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, covidConfirmed: event.target.value }))}
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  Influenza Confirmed
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.influenzaConfirmed}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, influenzaConfirmed: event.target.value }))}
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  RSV Confirmed
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.rsvConfirmed}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, rsvConfirmed: event.target.value }))}
+                  />
+                </label>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <label className="text-xs font-medium text-slate-600">
+                  New COVID Admissions
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.newCovidAdmissions}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, newCovidAdmissions: event.target.value }))}
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  New Influenza Admissions
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.newInfluenzaAdmissions}
+                    onChange={(event) =>
+                      setBedModalForm((current) => ({ ...current, newInfluenzaAdmissions: event.target.value }))
+                    }
+                  />
+                </label>
+                <label className="text-xs font-medium text-slate-600">
+                  New RSV Admissions
+                  <input
+                    className="soft-input mt-1"
+                    value={bedModalForm.newRsvAdmissions}
+                    onChange={(event) => setBedModalForm((current) => ({ ...current, newRsvAdmissions: event.target.value }))}
+                  />
+                </label>
               </div>
 
               <button type="submit" className="action-button inline-flex w-full items-center justify-center gap-2" disabled={saving}>
@@ -4379,7 +5991,7 @@ export default function App() {
                   <path d="M4.2 4.2h9.2l2.4 2.4v9.2H4.2V4.2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
                   <path d="M7 4.2v5h5.2v-5M7.4 13h5.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
-                <span>Save Bed &amp; Status</span>
+                <span>{bedModalMode === "edit" ? "Save Bed &amp; Status Changes" : "Save Bed &amp; Status"}</span>
               </button>
             </form>
           </div>

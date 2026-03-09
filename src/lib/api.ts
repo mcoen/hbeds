@@ -133,8 +133,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const payload = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new Error(payload.error ?? `Request failed (${response.status}).`);
+    const text = await response.text();
+    let payload: { error?: string } = {};
+    try {
+      payload = JSON.parse(text) as { error?: string };
+    } catch {
+      // Leave payload as empty object if response is not JSON.
+    }
+    const detail = payload.error ?? text.trim();
+    const suffix = detail ? `: ${detail}` : "";
+    throw new Error(`Request failed (${response.status}) for ${path}${suffix}`);
   }
 
   return (await response.json()) as T;
@@ -160,6 +168,8 @@ export function createFacility(input: {
   phone?: string;
   county: string;
   region: string;
+  latitude?: number;
+  longitude?: number;
 }): Promise<Facility> {
   return request<Facility>("/api/v1/facilities", {
     method: "POST",
@@ -181,6 +191,8 @@ export function updateFacility(
     phone?: string;
     county?: string;
     region?: string;
+    latitude?: number;
+    longitude?: number;
   }
 ): Promise<Facility> {
   return request<Facility>(`/api/v1/facilities/${id}`, {
@@ -299,6 +311,7 @@ export function getAnalyticsSubmissionsOverTime(params?: {
   durationMinutes?: number;
   bucketMinutes?: number;
   bucketSeconds?: number;
+  facilityId?: string;
 }): Promise<AnalyticsSubmissionsResponse> {
   const qs = new URLSearchParams();
   if (params?.api) {
@@ -315,6 +328,9 @@ export function getAnalyticsSubmissionsOverTime(params?: {
   }
   if (params?.bucketSeconds !== undefined) {
     qs.set("bucketSeconds", String(params.bucketSeconds));
+  }
+  if (params?.facilityId) {
+    qs.set("facilityId", params.facilityId);
   }
   const suffix = qs.toString();
   return request<AnalyticsSubmissionsResponse>(`/api/analytics/submissions-over-time${suffix ? `?${suffix}` : ""}`);

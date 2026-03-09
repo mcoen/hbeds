@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import cors from "cors";
@@ -27,9 +27,64 @@ import {
 } from "./fhir";
 import { HBedsStore } from "./store";
 
-for (const fileName of [".env", ".env.local"]) {
+function isLikelyInvalidOpenAiValue(value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase().replace(/^["']|["']$/g, "") ?? "";
+  if (!normalized) {
+    return true;
+  }
+  if (
+    normalized.includes("your-openai-key") ||
+    normalized.includes("placeholder") ||
+    normalized.includes("sk-your") ||
+    normalized.includes("replace-with") ||
+    normalized.includes("replace_with")
+  ) {
+    return true;
+  }
+  return !normalized.startsWith("sk-") || normalized.length <= 25 || normalized.includes(" ");
+}
+
+function loadEnvFile(fileName: string): void {
   const envPath = path.resolve(process.cwd(), fileName);
-  if (existsSync(envPath) && typeof process.loadEnvFile === "function") {
+  if (!existsSync(envPath)) {
+    return;
+  }
+
+  const raw = readFileSync(envPath, "utf8");
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+    const noPrefix = trimmed.startsWith("export ") ? trimmed.slice(7).trim() : trimmed;
+    const index = noPrefix.indexOf("=");
+    if (index <= 0) {
+      continue;
+    }
+
+    const key = noPrefix.slice(0, index).trim();
+    let value = noPrefix.slice(index + 1).trim();
+    if (!key) {
+      continue;
+    }
+    if (
+      (value.startsWith("\"") && value.endsWith("\"")) ||
+      (value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith("<") && value.endsWith(">"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    if (process.env[key] === undefined || (key === "OPENAI_API_KEY" && isLikelyInvalidOpenAiValue(process.env[key]))) {
+      process.env[key] = value;
+    }
+  }
+}
+
+for (const fileName of [".env", ".env.local"]) {
+  loadEnvFile(fileName);
+  const envPath = path.resolve(process.cwd(), fileName);
+  if (typeof process.loadEnvFile === "function" && existsSync(envPath)) {
     process.loadEnvFile(envPath);
   }
 }
@@ -40,6 +95,7 @@ const store = new HBedsStore();
 const port = Number(process.env.PORT ?? process.env.API_PORT ?? 4110);
 const OPENAI_API_BASE_URL = (process.env.OPENAI_API_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "");
 const OPENAI_MODEL_HBEDS = (process.env.OPENAI_MODEL_HBEDS ?? process.env.OPENAI_MODEL ?? "gpt-4o-mini").trim();
+const OPENAI_FALLBACK_ENABLED = (process.env.HBEDS_AI_FALLBACK_ENABLED ?? "false").toLowerCase() === "true";
 
 type IntegrationTransmissionStatus = "sent" | "failed";
 
@@ -225,11 +281,27 @@ function toStringList(value: unknown, maxItems = 8): string[] {
 }
 
 function getOpenAiApiKey(): string {
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
+  const rawApiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!rawApiKey) {
     throw new Error("OPENAI_API_KEY is not configured on the server");
   }
+  const apiKey = rawApiKey.replace(/^["']|["']$/g, "");
+  if (isLikelyInvalidOpenAiValue(apiKey)) {
+    throw new Error(
+      "OPENAI_API_KEY is configured with a placeholder or invalid value. Replace it with a valid key from https://platform.openai.com/account/api-keys"
+    );
+  }
   return apiKey;
+}
+
+function openAiKeyStatus(): string {
+  try {
+    const apiKey = getOpenAiApiKey();
+    const preview = `${apiKey.slice(0, 7)}...${apiKey.slice(-4)}`;
+    return `configured (${preview})`;
+  } catch (error) {
+    return error instanceof Error ? error.message : "not configured";
+  }
 }
 
 function parsePossiblyFencedJson(raw: string): Record<string, unknown> {
@@ -345,6 +417,27 @@ function summarizeHbedsInsights(insights: unknown): Record<string, unknown> {
   }
 
   return summary;
+}
+
+function buildFallbackAiInsightsFromStore(): Record<string, unknown> {
+  const snapshot = store.summary();
+  const statusCounts = Object.fromEntries(snapshot.statusCounts.map((entry) => [entry.label, entry.count]));
+
+  return {
+    facilityCount: snapshot.totalFacilities,
+    bedsTracked: store.listBedStatuses().length,
+    totalStaffedBeds: snapshot.totalStaffedBeds,
+    totalOccupiedBeds: snapshot.totalOccupiedBeds,
+    totalAvailableBeds: snapshot.totalAvailableBeds,
+    openStatusCount: statusCounts.open ?? 0,
+    limitedStatusCount: statusCounts.limited ?? 0,
+    diversionStatusCount: statusCounts.diversion ?? 0,
+    closedStatusCount: statusCounts.closed ?? 0,
+    nonCompliantFacilityCount: 0,
+    revision: snapshot.revision,
+    topLaggingFacilities: [],
+    topConstrainedBedTypes: snapshot.bedTypeCounts.map((item) => item.label)
+  };
 }
 
 async function buildHbedsAiAnswerFromOpenAi(question: string, scopeLabel: string, insights: Record<string, unknown>): Promise<{
@@ -549,6 +642,21 @@ function parseBedStatusInput(payload: unknown, allowPartial = false): BedStatusI
     return normalized as BedStatusInput;
   }
   return normalized;
+}
+
+function parseFacilityCoordinate(value: unknown, minimum: number, maximum: number): number | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null || value === "") {
+    return null;
+  }
+
+  const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
+  if (!Number.isFinite(parsed) || parsed < minimum || parsed > maximum) {
+    throw new Error(`coordinate value must be between ${minimum} and ${maximum}.`);
+  }
+  return parsed;
 }
 
 function parseBulkRowsFromBody(body: unknown): BulkUploadRow[] {
@@ -975,6 +1083,19 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true, time: new Date().toISOString() });
 });
 
+app.get("/api/ai/config", (_req, res) => {
+  const status = openAiKeyStatus();
+  res.json({
+    openAi: {
+      configured: !status.startsWith("OPENAI_API_KEY") && !status.toLowerCase().includes("not configured"),
+      status,
+      model: OPENAI_MODEL_HBEDS,
+      baseUrl: OPENAI_API_BASE_URL,
+      fallbackEnabled: OPENAI_FALLBACK_ENABLED
+    }
+  });
+});
+
 app.get("/api/metrics", (_req, res) => {
   const withTopEndpoints = (metric: ApiUsageCounter) => ({
     apiType: metric.apiType,
@@ -1015,6 +1136,21 @@ app.post("/api/ai/hbeds-helper", async (req, res) => {
     res.json(generated);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    if (message.includes("OPENAI_API_KEY")) {
+      if (!OPENAI_FALLBACK_ENABLED) {
+        sendError(res, error, 503);
+        return;
+      }
+
+      const fallback = buildHbedsAiAnswer(question, scopeLabel, buildFallbackAiInsightsFromStore());
+      res.json({
+        answer: `${fallback.answer}\n\n[Local rule-based guidance used because OpenAI credentials are not available.]`,
+        resolutionPlan: fallback.resolutionPlan,
+        model: "hbeds-local-fallback"
+      });
+      return;
+    }
+
     sendError(res, error, message.includes("OPENAI_API_KEY") ? 503 : 502);
   }
 });
@@ -1036,6 +1172,7 @@ app.get("/api/analytics/submissions-over-time", (req, res) => {
       ? Math.max(1, Math.min(1_440, bucketMinutesParsed)) * 60
       : 15 * 60;
   const apiFilter = normalizeAnalyticsApiFilter(normalizeText(req.query.api));
+  const facilityIdFilter = normalizeText(req.query.facilityId);
 
   const bucketMs = bucketSeconds * 1000;
   const bucketCount = Math.max(1, Math.min(2_500, Math.ceil((durationMinutes * 60_000) / bucketMs)));
@@ -1085,6 +1222,9 @@ app.get("/api/analytics/submissions-over-time", (req, res) => {
   };
 
   for (const event of store.listRecentSubmissions()) {
+    if (facilityIdFilter && event.facilityId !== facilityIdFilter) {
+      continue;
+    }
     const api = sourceToAnalyticsApiFilter(event.source);
     if (!api) {
       continue;
@@ -1092,8 +1232,10 @@ app.get("/api/analytics/submissions-over-time", (req, res) => {
     addEvent(event.submittedAt, api);
   }
 
-  for (const transmission of cdcNhsnTransmissions) {
-    addEvent(transmission.submittedAt, "cdcNhsn");
+  if (!facilityIdFilter) {
+    for (const transmission of cdcNhsnTransmissions) {
+      addEvent(transmission.submittedAt, "cdcNhsn");
+    }
   }
 
   res.json({
@@ -1213,7 +1355,9 @@ app.post("/api/v1/facilities", (req, res) => {
       city: normalizeText(payload.city),
       state: normalizeText(payload.state),
       zip: normalizeText(payload.zip),
-      phone: normalizeText(payload.phone)
+      phone: normalizeText(payload.phone),
+      latitude: parseFacilityCoordinate(payload.latitude, -90, 90),
+      longitude: parseFacilityCoordinate(payload.longitude, -180, 180)
     });
     res.status(201).json(created);
   } catch (error) {
@@ -1223,6 +1367,10 @@ app.post("/api/v1/facilities", (req, res) => {
 
 app.patch("/api/v1/facilities/:id", (req, res) => {
   try {
+    const payload = req.body as Record<string, unknown>;
+    const hasLatitude = payload && Object.prototype.hasOwnProperty.call(payload, "latitude");
+    const hasLongitude = payload && Object.prototype.hasOwnProperty.call(payload, "longitude");
+
     const updated = store.updateFacility(req.params.id, {
       code: normalizeText(req.body?.code) || undefined,
       name: normalizeText(req.body?.name) || undefined,
@@ -1234,7 +1382,9 @@ app.patch("/api/v1/facilities/:id", (req, res) => {
       city: normalizeText(req.body?.city) || undefined,
       state: normalizeText(req.body?.state) || undefined,
       zip: normalizeText(req.body?.zip) || undefined,
-      phone: req.body?.phone === "" ? "" : normalizeText(req.body?.phone) || undefined
+      phone: req.body?.phone === "" ? "" : normalizeText(req.body?.phone) || undefined,
+      ...(hasLatitude ? { latitude: parseFacilityCoordinate(payload.latitude, -90, 90) } : {}),
+      ...(hasLongitude ? { longitude: parseFacilityCoordinate(payload.longitude, -180, 180) } : {})
     });
     res.json(updated);
   } catch (error) {
@@ -1333,6 +1483,8 @@ const graphqlSchema = buildSchema(`
     phone: String
     county: String!
     region: String!
+    latitude: Float
+    longitude: Float
     updatedAt: String!
   }
 
@@ -1403,6 +1555,8 @@ const graphqlSchema = buildSchema(`
     phone: String
     county: String!
     region: String!
+    latitude: Float
+    longitude: Float
   }
 
   input FacilityPatchInput {
@@ -1417,6 +1571,8 @@ const graphqlSchema = buildSchema(`
     phone: String
     county: String
     region: String
+    latitude: Float
+    longitude: Float
   }
 
   input BedStatusInput {
@@ -1523,6 +1679,8 @@ const graphqlRoot = {
       phone?: string;
       county: string;
       region: string;
+      latitude?: number;
+      longitude?: number;
     };
   }) =>
     store.createFacility(args.input),
@@ -1540,6 +1698,8 @@ const graphqlRoot = {
       phone?: string;
       county?: string;
       region?: string;
+      latitude?: number | null;
+      longitude?: number | null;
     };
   }) => store.updateFacility(args.id, args.input),
   createBedStatus: (args: { input: unknown }) => {
@@ -1661,6 +1821,18 @@ app.get("/api/fhir", (req, res) => {
   });
 });
 
+app.use("/api", (_req, res) => {
+  res.status(404).json({ error: "API endpoint not found" });
+});
+
+app.use((error: unknown, _req: Request, res: Response, _next: (error: unknown) => void) => {
+  if (res.headersSent) {
+    return;
+  }
+  const message = error instanceof Error ? error.message : "Unknown error";
+  sendError(res, new Error(message), 500);
+});
+
 const distPath = path.resolve(process.cwd(), "dist");
 if (existsSync(distPath)) {
   app.use(express.static(distPath));
@@ -1670,6 +1842,9 @@ if (existsSync(distPath)) {
 }
 
 const server = app.listen(port, () => {
+  // eslint-disable-next-line no-console
+  console.log(`HBEDS OpenAI config: ${openAiKeyStatus()}`);
+  console.log(`HBEDS AI fallback enabled: ${OPENAI_FALLBACK_ENABLED ? "true" : "false"}`);
   startSimulationEngine();
   // eslint-disable-next-line no-console
   console.log(`CDPH HBEDS API listening on http://localhost:${port}`);
