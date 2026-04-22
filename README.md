@@ -57,6 +57,26 @@ Use:
 - Email: `cdph.admin@cdph.ca.gov`
 - Password: `password`
 
+## AWS Deploy (Elastic Beanstalk)
+
+This repo includes a no-Docker deployment script for AWS Elastic Beanstalk:
+
+```bash
+./scripts/aws/deploy-eb.sh
+```
+
+Optional overrides:
+
+```bash
+APP_NAME=hbeds-cdph-app ENV_NAME=hbeds-prod AWS_REGION=us-west-2 ./scripts/aws/deploy-eb.sh
+```
+
+Requirements:
+
+- AWS CLI v2 installed
+- AWS credentials configured locally (`aws sts get-caller-identity` must work)
+- IAM permissions for Elastic Beanstalk, S3, and related service roles
+
 ## API Summary
 
 ### REST JSON

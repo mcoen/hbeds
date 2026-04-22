@@ -8,6 +8,7 @@
     "dev:web": "vite",
     "dev:api": "PORT=${API_PORT:-4110} tsx watch server/index.ts",
     "start:api": "PORT=${API_PORT:-4110} tsx server/index.ts",
+    "start": "PORT=${PORT:-${API_PORT:-4110}} tsx server/index.ts",
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview"
@@ -20,6 +21,7 @@
     "multer": "^1.4.5-lts.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tsx": "^4.19.3",
     "uuid": "^11.0.5"
   },
   "devDependencies": {
@@ -35,7 +37,6 @@
     "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
-    "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vite": "^6.2.0"
   }

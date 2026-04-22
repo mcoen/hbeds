@@ -43,7 +43,7 @@ import { CALIFORNIA_CENTER, getCountyCoordinate } from "./lib/caCountyCoordinate
 type TabId = "manual" | "bulk" | "analytics" | "notifications" | "settings" | "apis" | "cdcNhsn" | "facilityDetails" | "aiHelper" | "heatMap";
 type ApiTabId = "rest" | "graphql" | "fhir" | "sftp" | "bulk";
 type IncomingApiFilter = "all" | "rest" | "graphql" | "fhir";
-type IncomingWindowId = "1m" | "15m" | "60m" | "12h" | "24h";
+type IncomingWindowId = "1m" | "15m" | "60m" | "12h" | "24h" | "7d" | "30d";
 type OutgoingWindowId = "1d" | "7d" | "30d";
 type ManualViewMode = "facilities" | "beds";
 type FacilityModalMode = "create" | "edit";
@@ -109,6 +109,39 @@ interface SessionUser {
   facilityId?: string;
   facilityCode?: string;
   facilityName?: string;
+}
+
+function parseSessionUser(value: unknown): SessionUser | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+  const email = typeof raw.email === "string" ? raw.email.trim() : "";
+  const role = raw.role;
+
+  if (!email || (role !== "cdph" && role !== "hospital")) {
+    return null;
+  }
+
+  const facilityId = typeof raw.facilityId === "string" ? raw.facilityId.trim() : undefined;
+  const facilityCode = typeof raw.facilityCode === "string" ? raw.facilityCode.trim() : undefined;
+  const facilityName = typeof raw.facilityName === "string" ? raw.facilityName.trim() : undefined;
+
+  if (role === "hospital") {
+    return {
+      email,
+      role,
+      facilityId: facilityId || DEMO_HOSPITAL_FACILITY_ID,
+      facilityCode: facilityCode || DEMO_HOSPITAL_FACILITY_CODE,
+      facilityName: facilityName || undefined
+    };
+  }
+
+  return {
+    email,
+    role
+  };
 }
 
 interface RestQueryState {
@@ -200,6 +233,11 @@ interface HeatMapFacility {
 
 type HeatMapFacilityAggregate = Omit<HeatMapFacility, "markerStatus" | "primaryMetricLabel" | "secondaryMetricLabel">;
 
+interface HeatMapAoiPoint {
+  lat: number;
+  lng: number;
+}
+
 const LOGO_URL = "https://www.michaelcoen.com/images/CDPH-Logo.png";
 const HOSPITAL_BACKDROP_URL = "https://www.michaelcoen.com/images/HBEDS-Background.jpg";
 const DEMO_LOGIN_EMAIL = "cdph.admin@cdph.ca.gov";
@@ -208,6 +246,42 @@ const DEMO_HOSPITAL_LOGIN_EMAIL = "hospital.user.11205@ca-hbeds.org";
 const DEMO_HOSPITAL_LOGIN_PASSWORD = "password";
 const DEMO_HOSPITAL_FACILITY_CODE = "11205";
 const DEMO_HOSPITAL_FACILITY_ID = `fac-${DEMO_HOSPITAL_FACILITY_CODE}`;
+const SESSION_STORAGE_KEY = "hbeds.session.user.v1";
+
+function readSessionUserFromStorage(): SessionUser | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = parseSessionUser(JSON.parse(raw));
+    if (!parsed) {
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
+  } catch {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    return null;
+  }
+}
+
+function writeSessionUserToStorage(user: SessionUser | null): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  if (!user) {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    return;
+  }
+
+  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+}
 
 const EMPTY_FACILITY_FORM: FacilityFormState = {
   code: "",
@@ -276,7 +350,9 @@ const INCOMING_WINDOW_OPTIONS: Array<{
   { id: "15m", label: "Last 15 min", durationMinutes: 15, bucketSeconds: 60 },
   { id: "60m", label: "Last 60 min", durationMinutes: 60, bucketSeconds: 300 },
   { id: "12h", label: "Last 12 hours", durationMinutes: 12 * 60, bucketSeconds: 15 * 60 },
-  { id: "24h", label: "Last 24 hours", durationMinutes: 24 * 60, bucketSeconds: 30 * 60 }
+  { id: "24h", label: "Last 24 hours", durationMinutes: 24 * 60, bucketSeconds: 30 * 60 },
+  { id: "7d", label: "Last 7 days", durationMinutes: 7 * 24 * 60, bucketSeconds: 6 * 60 * 60 },
+  { id: "30d", label: "Last 30 days", durationMinutes: 30 * 24 * 60, bucketSeconds: 24 * 60 * 60 }
 ];
 
 const OUTGOING_WINDOW_OPTIONS: Array<{
@@ -484,6 +560,76 @@ function heatMapCapacityStatus(capacityPercent: number): HeatMapFacility["marker
     return "warning";
   }
   return "good";
+}
+
+function normalizeHeatMapAoiPoints(points: HeatMapAoiPoint[]): HeatMapAoiPoint[] {
+  const normalized: HeatMapAoiPoint[] = [];
+  for (const point of points) {
+    const last = normalized[normalized.length - 1];
+    if (last && Math.abs(last.lat - point.lat) < 0.00001 && Math.abs(last.lng - point.lng) < 0.00001) {
+      continue;
+    }
+    normalized.push(point);
+  }
+  return normalized;
+}
+
+function heatMapPolygonBounds(points: HeatMapAoiPoint[]): [[number, number], [number, number]] | null {
+  if (points.length === 0) {
+    return null;
+  }
+  let south = points[0].lat;
+  let north = points[0].lat;
+  let west = points[0].lng;
+  let east = points[0].lng;
+
+  for (const point of points) {
+    south = Math.min(south, point.lat);
+    north = Math.max(north, point.lat);
+    west = Math.min(west, point.lng);
+    east = Math.max(east, point.lng);
+  }
+
+  return [
+    [south, west],
+    [north, east]
+  ];
+}
+
+function isHeatMapPointOnSegment(point: HeatMapAoiPoint, start: HeatMapAoiPoint, end: HeatMapAoiPoint): boolean {
+  const tolerance = 1e-9;
+  const cross = (point.lat - start.lat) * (end.lng - start.lng) - (point.lng - start.lng) * (end.lat - start.lat);
+  if (Math.abs(cross) > tolerance) {
+    return false;
+  }
+  const dot = (point.lat - start.lat) * (end.lat - start.lat) + (point.lng - start.lng) * (end.lng - start.lng);
+  if (dot < -tolerance) {
+    return false;
+  }
+  const squaredLength = (end.lat - start.lat) ** 2 + (end.lng - start.lng) ** 2;
+  return dot <= squaredLength + tolerance;
+}
+
+function isPointInHeatMapPolygon(point: HeatMapAoiPoint, polygon: HeatMapAoiPoint[]): boolean {
+  if (polygon.length < 3) {
+    return false;
+  }
+
+  let inside = false;
+  for (let index = 0, previousIndex = polygon.length - 1; index < polygon.length; previousIndex = index++) {
+    const current = polygon[index];
+    const previous = polygon[previousIndex];
+    if (isHeatMapPointOnSegment(point, previous, current)) {
+      return true;
+    }
+    const intersects =
+      current.lng > point.lng !== previous.lng > point.lng &&
+      point.lat < ((previous.lat - current.lat) * (point.lng - current.lng)) / (previous.lng - current.lng) + current.lat;
+    if (intersects) {
+      inside = !inside;
+    }
+  }
+  return inside;
 }
 
 function formatDurationFromMinutes(minutes: number): string {
@@ -762,6 +908,7 @@ function apiTabIcon(tabId: ApiTabId) {
 }
 
 export default function App() {
+  const initialSessionUser = readSessionUserFromStorage();
   const [activeTab, setActiveTab] = useState<TabId>("manual");
   const [activeApiTab, setActiveApiTab] = useState<ApiTabId>("fhir");
   const [manualViewMode, setManualViewMode] = useState<ManualViewMode>("beds");
@@ -769,8 +916,8 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [sessionUser, setSessionUser] = useState<SessionUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialSessionUser));
+  const [sessionUser, setSessionUser] = useState<SessionUser | null>(initialSessionUser);
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginBackdropAvailable, setLoginBackdropAvailable] = useState(true);
@@ -782,6 +929,7 @@ export default function App() {
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [bedStatuses, setBedStatuses] = useState<BedStatusRecord[]>([]);
   const [selectedFacilityDetailsId, setSelectedFacilityDetailsId] = useState<string | null>(null);
+  const [facilityDetailsModalOpen, setFacilityDetailsModalOpen] = useState(false);
   const [facilityDetailsMetrics, setFacilityDetailsMetrics] = useState<FacilitySubmissionMetricsResponse | null>(null);
   const [facilityDetailsLoading, setFacilityDetailsLoading] = useState(false);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -799,7 +947,11 @@ export default function App() {
   });
   const [outgoingCdcSubmissions, setOutgoingCdcSubmissions] = useState<AnalyticsSubmissionsResponse | null>(null);
   const [analyticsLastRefreshedAt, setAnalyticsLastRefreshedAt] = useState<string | null>(null);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(() => buildInitialNotifications("cdph"));
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() =>
+    initialSessionUser?.role === "hospital"
+      ? buildInitialNotifications("hospital", initialSessionUser.facilityCode ?? DEMO_HOSPITAL_FACILITY_CODE)
+      : buildInitialNotifications("cdph")
+  );
   const [apiMetrics, setApiMetrics] = useState<ApiMetricsResponse | null>(null);
   const [cdcNhsnDashboard, setCdcNhsnDashboard] = useState<CdcNhsnDashboard | null>(null);
   const [revision, setRevision] = useState<number>(1);
@@ -807,6 +959,8 @@ export default function App() {
   const [heatMapCapacityThreshold, setHeatMapCapacityThreshold] =
     useState<number>(DEFAULT_HEAT_MAP_CAPACITY_THRESHOLD);
   const [heatMapViewId, setHeatMapViewId] = useState<HeatMapViewId>("occupancy");
+  const [heatMapAoiPolygon, setHeatMapAoiPolygon] = useState<HeatMapAoiPoint[] | null>(null);
+  const [heatMapAoiDrawMode, setHeatMapAoiDrawMode] = useState(false);
 
   const [filters, setFilters] = useState({
     facilityId: "",
@@ -862,14 +1016,18 @@ export default function App() {
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [simulationActionBusy, setSimulationActionBusy] = useState(false);
   const [lastComplianceAlertSignature, setLastComplianceAlertSignature] = useState("");
-  const [aiScopeFacilityId, setAiScopeFacilityId] = useState("all");
+  const [aiScopeFacilityId, setAiScopeFacilityId] = useState(
+    initialSessionUser?.role === "hospital"
+      ? initialSessionUser.facilityId ?? DEMO_HOSPITAL_FACILITY_ID
+      : "all"
+  );
   const [aiQuestion, setAiQuestion] = useState("");
   const [aiThinking, setAiThinking] = useState(false);
   const [aiHelperError, setAiHelperError] = useState<string | null>(null);
   const [aiLatestResponse, setAiLatestResponse] = useState<AiHelperEntry | null>(null);
   const [aiHistory, setAiHistory] = useState<AiHelperEntry[]>([]);
   const [userSettings, setUserSettings] = useState<UserSettings>({
-    email: DEMO_LOGIN_EMAIL,
+    email: initialSessionUser?.email ?? DEMO_LOGIN_EMAIL,
     phone: "+1",
     emailNotifications: true,
     smsNotifications: false,
@@ -882,6 +1040,10 @@ export default function App() {
   const heatMapContainerRef = useRef<HTMLDivElement>(null);
   const heatMapRef = useRef<unknown>(null);
   const heatMapLayerRef = useRef<unknown>(null);
+  const heatMapAoiLayerRef = useRef<unknown>(null);
+  const heatMapAoiPreviewLayerRef = useRef<unknown>(null);
+  const heatMapAoiDrawingRef = useRef<{ active: boolean; points: HeatMapAoiPoint[] }>({ active: false, points: [] });
+  const heatMapAoiDrawModeRef = useRef(heatMapAoiDrawMode);
 
   const isHospitalUser = sessionUser?.role === "hospital";
   const hospitalFacilityId = sessionUser?.facilityId ?? "";
@@ -1159,7 +1321,7 @@ export default function App() {
         ...(!isHospitalUser ? [safeLoad("CDC/NHSN Dashboard", loadCdcNhsnDashboard, resetCdcNhsn)] : []),
         ...(!isHospitalUser ? [safeLoad("Simulation Status", loadSimulationStatus, resetSimulationStatus)] : []),
         ...(activeTab === "analytics" ? [safeLoad("Analytics", loadAnalyticsSubmissions, () => setAnalyticsLastRefreshedAt(null))] : []),
-        ...(activeTab === "facilityDetails" && selectedFacilityDetailsId
+        ...((activeTab === "facilityDetails" || facilityDetailsModalOpen) && selectedFacilityDetailsId
           ? [safeLoad("Facility Details", () => loadFacilityDetails(selectedFacilityDetailsId))]
           : [])
       ]);
@@ -1195,6 +1357,7 @@ export default function App() {
     resetCdcNhsn,
     resetSimulationStatus,
     setNotice,
+    facilityDetailsModalOpen,
     isHospitalUser,
     selectedFacilityDetailsId
   ]);
@@ -1207,11 +1370,14 @@ export default function App() {
   }, [isAuthenticated, refreshAll]);
 
   useEffect(() => {
-    if (!isAuthenticated || activeTab !== "facilityDetails" || !selectedFacilityDetailsId) {
+    if (!isAuthenticated || !selectedFacilityDetailsId) {
+      return;
+    }
+    if (activeTab !== "facilityDetails" && !facilityDetailsModalOpen) {
       return;
     }
     void loadFacilityDetails(selectedFacilityDetailsId);
-  }, [activeTab, isAuthenticated, loadFacilityDetails, selectedFacilityDetailsId]);
+  }, [activeTab, facilityDetailsModalOpen, isAuthenticated, loadFacilityDetails, selectedFacilityDetailsId]);
 
   useEffect(() => {
     if (!isAuthenticated || isHospitalUser || activeTab !== "cdcNhsn") {
@@ -1765,6 +1931,32 @@ export default function App() {
       };
     });
   }, [facilityHeatMapAggregates, heatMapCapacityThreshold, heatMapViewId]);
+  const heatMapFacilitiesInAoi = useMemo(() => {
+    if (!heatMapAoiPolygon || heatMapAoiPolygon.length < 3) {
+      return heatMapFacilities;
+    }
+    return heatMapFacilities.filter((facility) =>
+      isPointInHeatMapPolygon(
+        {
+          lat: facility.lat,
+          lng: facility.lng
+        },
+        heatMapAoiPolygon
+      )
+    );
+  }, [heatMapAoiPolygon, heatMapFacilities]);
+  const heatMapAoiLabel = useMemo(() => {
+    if (!heatMapAoiPolygon || heatMapAoiPolygon.length < 3) {
+      return "No AOI selected";
+    }
+    const bounds = heatMapPolygonBounds(heatMapAoiPolygon);
+    if (!bounds) {
+      return "No AOI selected";
+    }
+    return `AOI: ${heatMapAoiPolygon.length} points (${bounds[0][0].toFixed(2)}, ${bounds[0][1].toFixed(2)} to ${bounds[1][0].toFixed(
+      2
+    )}, ${bounds[1][1].toFixed(2)})`;
+  }, [heatMapAoiPolygon]);
   const heatMapLegendItems = useMemo<Array<{ status: HeatMapFacility["markerStatus"]; label: string }>>(() => {
     if (heatMapViewId === "occupancy") {
       return [
@@ -1860,6 +2052,7 @@ export default function App() {
       availablePercent: percentOfTotal(available, totalBeds)
     };
   }, [effectiveSummary]);
+  const manualMetricsReady = Boolean(effectiveSummary);
   const visibleIncomingApis = useMemo<Array<Exclude<IncomingApiFilter, "all">>>(
     () => (incomingApiFilter === "all" ? INCOMING_API_ORDER : [incomingApiFilter]),
     [incomingApiFilter]
@@ -2073,6 +2266,9 @@ export default function App() {
     }
     heatMapRef.current = null;
     heatMapLayerRef.current = null;
+    heatMapAoiLayerRef.current = null;
+    heatMapAoiPreviewLayerRef.current = null;
+    heatMapAoiDrawingRef.current = { active: false, points: [] };
   }, []);
 
   const redrawHeatMap = useCallback(async () => {
@@ -2095,6 +2291,8 @@ export default function App() {
       layerGroup: (layers?: unknown[]) => { addTo: (map: unknown) => void; clearLayers: () => void; remove: () => void; eachLayer?: (callback: (layer: unknown) => void) => void };
       divIcon: (options: Record<string, unknown>) => unknown;
       marker: (position: [number, number], options: Record<string, unknown>) => { bindPopup: (content: string) => void; addTo: (layer: unknown) => void };
+      polygon: (latLngs: [number, number][], options: Record<string, unknown>) => unknown;
+      polyline: (latLngs: [number, number][], options: Record<string, unknown>) => unknown;
     };
 
     if (!mapContainer || !Leaflet) {
@@ -2114,22 +2312,143 @@ export default function App() {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
+      const mapWithEvents = map as {
+        on?: (event: string, handler: (event: { latlng?: { lat: number; lng: number } }) => void) => void;
+        addLayer: (layer: unknown) => void;
+        removeLayer: (layer: unknown) => void;
+        dragging?: { disable?: () => void; enable?: () => void };
+      };
+      const clearPreviewLayer = () => {
+        if (!heatMapAoiPreviewLayerRef.current) {
+          return;
+        }
+        mapWithEvents.removeLayer(heatMapAoiPreviewLayerRef.current as never);
+        heatMapAoiPreviewLayerRef.current = null;
+      };
+      const updatePreviewLayer = (points: HeatMapAoiPoint[]) => {
+        const latLngs = points.map((point) => [point.lat, point.lng] as [number, number]);
+        const previewLayer = heatMapAoiPreviewLayerRef.current as { setLatLngs?: (latLngList: [number, number][]) => void } | null;
+        if (previewLayer?.setLatLngs) {
+          previewLayer.setLatLngs(latLngs);
+          return;
+        }
+        const layer = Leaflet.polyline(latLngs, {
+          color: "#2563eb",
+          weight: 2,
+          dashArray: "5 4",
+          interactive: false
+        });
+        mapWithEvents.addLayer(layer as never);
+        heatMapAoiPreviewLayerRef.current = layer;
+      };
+      const finishDrawing = (event?: { latlng?: { lat: number; lng: number } }) => {
+        const drawing = heatMapAoiDrawingRef.current;
+        if (!drawing.active) {
+          return;
+        }
+        if (event?.latlng) {
+          drawing.points.push({
+            lat: event.latlng.lat,
+            lng: event.latlng.lng
+          });
+        }
+        const normalized = normalizeHeatMapAoiPoints(drawing.points);
+        if (normalized.length >= 3) {
+          setHeatMapAoiPolygon(normalized);
+        }
+        heatMapAoiDrawingRef.current = { active: false, points: [] };
+        mapWithEvents.dragging?.enable?.();
+        clearPreviewLayer();
+        setHeatMapAoiDrawMode(false);
+      };
+
+      mapWithEvents.on?.("mousedown", (event) => {
+        if (!heatMapAoiDrawModeRef.current || !event.latlng) {
+          return;
+        }
+        mapWithEvents.dragging?.disable?.();
+        heatMapAoiDrawingRef.current = {
+          active: true,
+          points: [
+            {
+              lat: event.latlng.lat,
+              lng: event.latlng.lng
+            }
+          ]
+        };
+        clearPreviewLayer();
+        updatePreviewLayer(heatMapAoiDrawingRef.current.points);
+      });
+
+      mapWithEvents.on?.("mousemove", (event) => {
+        const drawing = heatMapAoiDrawingRef.current;
+        if (!drawing.active || !event.latlng) {
+          return;
+        }
+        const lastPoint = drawing.points[drawing.points.length - 1];
+        const distance = Math.abs(lastPoint.lat - event.latlng.lat) + Math.abs(lastPoint.lng - event.latlng.lng);
+        if (distance < 0.0012) {
+          return;
+        }
+        drawing.points.push({
+          lat: event.latlng.lat,
+          lng: event.latlng.lng
+        });
+        updatePreviewLayer(drawing.points);
+      });
+
+      mapWithEvents.on?.("mouseup", (event) => {
+        finishDrawing(event);
+      });
+      mapWithEvents.on?.("mouseout", () => {
+        finishDrawing();
+      });
       heatMapRef.current = map;
     }
 
     const map = heatMapRef.current as {
       invalidateSize?: () => void;
-      setView: (coords: [number, number], zoom?: number) => void;
       addLayer: (layer: unknown) => void;
       removeLayer: (layer: unknown) => void;
+      getContainer?: () => HTMLElement;
+      dragging?: { enable?: () => void };
     };
 
-    map.setView([CALIFORNIA_CENTER.lat, CALIFORNIA_CENTER.lng], 6);
     map.invalidateSize?.();
+    if (map.getContainer) {
+      map.getContainer().style.cursor = heatMapAoiDrawMode ? "crosshair" : "";
+    }
 
     if (heatMapLayerRef.current) {
       map.removeLayer(heatMapLayerRef.current as never);
       heatMapLayerRef.current = null;
+    }
+    if (heatMapAoiLayerRef.current) {
+      map.removeLayer(heatMapAoiLayerRef.current as never);
+      heatMapAoiLayerRef.current = null;
+    }
+    if (!heatMapAoiDrawMode && heatMapAoiDrawingRef.current.active) {
+      heatMapAoiDrawingRef.current = { active: false, points: [] };
+      if (heatMapAoiPreviewLayerRef.current) {
+        map.removeLayer(heatMapAoiPreviewLayerRef.current as never);
+        heatMapAoiPreviewLayerRef.current = null;
+      }
+      map.dragging?.enable?.();
+    }
+
+    if (heatMapAoiPolygon && heatMapAoiPolygon.length >= 3) {
+      const aoiLayer = Leaflet.polygon(
+        heatMapAoiPolygon.map((point) => [point.lat, point.lng] as [number, number]),
+        {
+          color: "#2563eb",
+          weight: 2,
+          fillColor: "#60a5fa",
+          fillOpacity: 0.12,
+          interactive: false
+        }
+      );
+      map.addLayer(aoiLayer as never);
+      heatMapAoiLayerRef.current = aoiLayer;
     }
 
     const layerGroup = Leaflet.layerGroup() as unknown as {
@@ -2137,7 +2456,7 @@ export default function App() {
       addTo: (mapInstance: unknown) => void;
       clearLayers: () => void;
     };
-    for (const facility of heatMapFacilities) {
+    for (const facility of heatMapFacilitiesInAoi) {
       const markerIcon = Leaflet.divIcon({
         className: "",
         html: hospitalIconHtml(heatMapFillColor(facility.markerStatus)),
@@ -2161,7 +2480,11 @@ export default function App() {
 
     map.addLayer(layerGroup as never);
     heatMapLayerRef.current = layerGroup;
-  }, [activeTab, heatMapFacilities, isAuthenticated, loadLeafletAssets]);
+  }, [activeTab, heatMapAoiDrawMode, heatMapAoiPolygon, heatMapFacilitiesInAoi, isAuthenticated, loadLeafletAssets]);
+
+  useEffect(() => {
+    heatMapAoiDrawModeRef.current = heatMapAoiDrawMode;
+  }, [heatMapAoiDrawMode]);
 
   useEffect(() => {
     if (sortedNotifications.length === 0) {
@@ -2248,6 +2571,20 @@ export default function App() {
   }, [activeTab, destroyHeatMap, isAuthenticated, redrawHeatMap]);
 
   useEffect(() => {
+    if (!isAuthenticated || activeTab !== "heatMap" || !heatMapAoiPolygon || heatMapAoiPolygon.length < 3) {
+      return;
+    }
+    const bounds = heatMapPolygonBounds(heatMapAoiPolygon);
+    if (!bounds) {
+      return;
+    }
+    const map = heatMapRef.current as {
+      fitBounds?: (bounds: [[number, number], [number, number]], options?: Record<string, unknown>) => void;
+    } | null;
+    map?.fitBounds?.(bounds, { padding: [18, 18] });
+  }, [activeTab, heatMapAoiPolygon, isAuthenticated]);
+
+  useEffect(() => {
     if (!isAuthenticated || !complianceAlertSignature) {
       return;
     }
@@ -2284,6 +2621,14 @@ export default function App() {
       destroyHeatMap();
     };
   }, [destroyHeatMap]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !sessionUser) {
+      writeSessionUserToStorage(null);
+      return;
+    }
+    writeSessionUserToStorage(sessionUser);
+  }, [isAuthenticated, sessionUser]);
 
   function clearNoticeSoon(): void {
     window.setTimeout(() => setNotice(null), 4000);
@@ -2379,8 +2724,15 @@ export default function App() {
   }
 
   function openFacilityDetails(facilityId: string): void {
+    if (selectedFacilityDetailsId !== facilityId) {
+      setFacilityDetailsMetrics(null);
+    }
     setSelectedFacilityDetailsId(facilityId);
-    setActiveTab("facilityDetails");
+    setFacilityDetailsModalOpen(true);
+  }
+
+  function closeFacilityDetailsModal(): void {
+    setFacilityDetailsModalOpen(false);
   }
 
   async function handleLoginSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -3259,7 +3611,25 @@ export default function App() {
               </svg>
               <span>Sign Out</span>
             </button>
-            <p className="text-center text-sm font-extrabold text-slate-800">Powered by TeleTracking</p>
+            <p className="inline-flex w-full items-center justify-center gap-1 text-center text-sm font-extrabold text-slate-800">
+              <span>Powered by</span>
+              <img
+                src="https://www.michaelcoen.com/images/TeleLogoFullBlack.png"
+                alt="TeleTracking"
+                className="h-5 w-auto"
+                style={{ filter: "brightness(0)" }}
+                referrerPolicy="no-referrer"
+                onError={(event) => {
+                  const target = event.currentTarget;
+                  if (target.dataset.fallbackApplied === "1") {
+                    target.style.display = "none";
+                    return;
+                  }
+                  target.dataset.fallbackApplied = "1";
+                  target.src = "https://www.michaelcoen.com/images/TeleTrackingWhiteLogo.png";
+                }}
+              />
+            </p>
           </div>
         </aside>
 
@@ -3362,33 +3732,33 @@ export default function App() {
               </div>
             ) : null}
 
-            <div className="min-h-0 flex-1 overflow-auto overflow-x-hidden pr-1">
+            <div className="min-h-0 flex flex-1 flex-col overflow-auto overflow-x-hidden pr-1">
 
             {activeTab === "manual" && (
-              <section className="surface-panel stagger-in flex min-h-0 flex-1 flex-col space-y-4">
+              <section className="surface-panel stagger-in flex h-full min-h-0 flex-1 flex-col space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Facilities</p>
-                    <p className="text-2xl font-bold">{effectiveSummary?.totalFacilities ?? 0}</p>
+                    <p className="text-2xl font-bold">{manualMetricsReady ? effectiveSummary!.totalFacilities : "—"}</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Total Beds</p>
-                    <p className="text-2xl font-bold">{manualBedMetrics.totalBeds}</p>
+                    <p className="text-2xl font-bold">{manualMetricsReady ? manualBedMetrics.totalBeds : "—"}</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Staffed Beds</p>
-                    <p className="text-2xl font-bold">{effectiveSummary?.totalStaffedBeds ?? 0}</p>
-                    <p className="text-xs text-slate-500">{manualBedMetrics.staffedPercent} of total</p>
+                    <p className="text-2xl font-bold">{manualMetricsReady ? effectiveSummary!.totalStaffedBeds : "—"}</p>
+                    <p className="text-xs text-slate-500">{manualMetricsReady ? `${manualBedMetrics.staffedPercent} of total` : "—"}</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Occupied Beds</p>
-                    <p className="text-2xl font-bold">{effectiveSummary?.totalOccupiedBeds ?? 0}</p>
-                    <p className="text-xs text-slate-500">{manualBedMetrics.occupiedPercent} of total</p>
+                    <p className="text-2xl font-bold">{manualMetricsReady ? effectiveSummary!.totalOccupiedBeds : "—"}</p>
+                    <p className="text-xs text-slate-500">{manualMetricsReady ? `${manualBedMetrics.occupiedPercent} of total` : "—"}</p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Available Beds</p>
-                    <p className="text-2xl font-bold">{effectiveSummary?.totalAvailableBeds ?? 0}</p>
-                    <p className="text-xs text-slate-500">{manualBedMetrics.availablePercent} of total</p>
+                    <p className="text-2xl font-bold">{manualMetricsReady ? effectiveSummary!.totalAvailableBeds : "—"}</p>
+                    <p className="text-xs text-slate-500">{manualMetricsReady ? `${manualBedMetrics.availablePercent} of total` : "—"}</p>
                   </article>
                 </div>
 
@@ -3564,63 +3934,69 @@ export default function App() {
                       </thead>
                       <tbody>
                         {hasFacilityRows ? (
-                          filteredFacilities.map((facility) => (
-                            <tr
-                              key={facility.id}
-                              className="cursor-pointer border-t border-slate-100 align-top transition hover:bg-blue-50/55"
-                              onClick={() => openFacilityDetails(facility.id)}
-                              onKeyDown={(event) => {
-                                if (event.key === "Enter" || event.key === " ") {
-                                  event.preventDefault();
-                                  openFacilityDetails(facility.id);
-                                }
-                              }}
-                              role="button"
-                              tabIndex={0}
-                            >
-                              <td className="px-3 py-2">
-                                <p className="font-semibold text-slate-900">{facility.name}</p>
-                                <p className="text-xs text-slate-500">Facility ID {facility.code}</p>
-                              </td>
-                              <td className="px-3 py-2 text-xs">{facilityTypeLabel(facility.facilityType)}</td>
-                              <td className="px-3 py-2 text-xs text-slate-700">
-                                <p>{facility.addressLine1}</p>
-                                {facility.addressLine2 ? <p>{facility.addressLine2}</p> : null}
-                              </td>
-                              <td className="px-3 py-2 text-xs text-slate-700">
-                                <p>
-                                  {facility.city}, {facility.state} {facility.zip}
-                                </p>
-                                <p className="text-slate-500">
-                                  {facility.county} • {facility.region}
-                                </p>
-                              </td>
-                              <td className="px-3 py-2 text-xs text-slate-700">{facility.phone || "N/A"}</td>
-                              <td className="px-3 py-2 text-xs text-slate-600">{new Date(facility.updatedAt).toLocaleString()}</td>
-                              {!isHospitalUser && (
+                          filteredFacilities.map((facility) => {
+                            const isSelected = selectedFacilityDetailsId === facility.id;
+                            return (
+                              <tr
+                                key={facility.id}
+                                className={`cursor-pointer border-t border-slate-100 align-top transition ${
+                                  isSelected ? "bg-blue-100/75 ring-1 ring-inset ring-blue-300" : "hover:bg-blue-50/55"
+                                }`}
+                                onClick={() => openFacilityDetails(facility.id)}
+                                onKeyDown={(event) => {
+                                  if (event.key === "Enter" || event.key === " ") {
+                                    event.preventDefault();
+                                    openFacilityDetails(facility.id);
+                                  }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                aria-selected={isSelected}
+                              >
                                 <td className="px-3 py-2">
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      className="icon-subtle-button"
-                                      title="Edit facility"
-                                      aria-label="Edit facility"
-                                      onClick={(event) => {
-                                        event.stopPropagation();
-                                        openEditFacilityModal(facility);
-                                      }}
-                                      disabled={saving}
-                                    >
-                                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                                        <path d="m4.2 13.9 1.2 1.9 2.3-.5 7.2-7.2a1.6 1.6 0 0 0 0-2.2l-.8-.8a1.6 1.6 0 0 0-2.2 0l-7.2 7.2-.5 2.3Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-                                        <path d="M10.7 6.3 13.7 9.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                                      </svg>
-                                    </button>
-                                  </div>
+                                  <p className={`font-semibold ${isSelected ? "text-blue-900" : "text-slate-900"}`}>{facility.name}</p>
+                                  <p className={`text-xs ${isSelected ? "text-blue-700" : "text-slate-500"}`}>Facility ID {facility.code}</p>
                                 </td>
-                              )}
-                            </tr>
-                          ))
+                                <td className="px-3 py-2 text-xs">{facilityTypeLabel(facility.facilityType)}</td>
+                                <td className="px-3 py-2 text-xs text-slate-700">
+                                  <p>{facility.addressLine1}</p>
+                                  {facility.addressLine2 ? <p>{facility.addressLine2}</p> : null}
+                                </td>
+                                <td className="px-3 py-2 text-xs text-slate-700">
+                                  <p>
+                                    {facility.city}, {facility.state} {facility.zip}
+                                  </p>
+                                  <p className="text-slate-500">
+                                    {facility.county} • {facility.region}
+                                  </p>
+                                </td>
+                                <td className="px-3 py-2 text-xs text-slate-700">{facility.phone || "N/A"}</td>
+                                <td className="px-3 py-2 text-xs text-slate-600">{new Date(facility.updatedAt).toLocaleString()}</td>
+                                {!isHospitalUser && (
+                                  <td className="px-3 py-2">
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        className="icon-subtle-button"
+                                        title="Edit facility"
+                                        aria-label="Edit facility"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          openEditFacilityModal(facility);
+                                        }}
+                                        disabled={saving}
+                                      >
+                                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                          <path d="m4.2 13.9 1.2 1.9 2.3-.5 7.2-7.2a1.6 1.6 0 0 0 0-2.2l-.8-.8a1.6 1.6 0 0 0-2.2 0l-7.2 7.2-.5 2.3Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                          <path d="M10.7 6.3 13.7 9.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                                        </svg>
+                                      </button>
+                                    </div>
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })
                         ) : (
                           <tr>
                             <td className="px-3 py-8 text-center text-sm text-slate-500" colSpan={isHospitalUser ? 6 : 7}>
@@ -3712,39 +4088,36 @@ export default function App() {
                               onChange={(event) => setFilters((current) => ({ ...current, unit: event.target.value }))}
                             />
                           </th>
-                          <th className="px-3 py-2">
-                            <select
-                              className="soft-select w-full text-xs"
-                              value={filters.bedType}
-                              onChange={(event) => setFilters((current) => ({ ...current, bedType: event.target.value }))}
-                            >
-                              <option value="">All Bed Types</option>
-                              {BED_TYPES.map((bedType) => (
-                                <option key={bedType} value={bedType}>
-                                  {bedTypeLabel(bedType)}
-                                </option>
-                              ))}
-                            </select>
+                          <th className="px-3 py-2" colSpan={5}>
+                            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                              <select
+                                className="soft-select w-full text-xs"
+                                value={filters.bedType}
+                                onChange={(event) => setFilters((current) => ({ ...current, bedType: event.target.value }))}
+                              >
+                                <option value="">All Bed Types</option>
+                                {BED_TYPES.map((bedType) => (
+                                  <option key={bedType} value={bedType}>
+                                    {bedTypeLabel(bedType)}
+                                  </option>
+                                ))}
+                              </select>
+                              <select
+                                className="soft-select w-full text-xs"
+                                value={filters.operationalStatus}
+                                onChange={(event) =>
+                                  setFilters((current) => ({ ...current, operationalStatus: event.target.value }))
+                                }
+                              >
+                                <option value="">All Statuses</option>
+                                {OPERATIONAL_STATUSES.map((status) => (
+                                  <option key={status} value={status}>
+                                    {statusLabel(status)}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </th>
-                          <th className="px-3 py-2">
-                            <select
-                              className="soft-select w-full text-xs"
-                              value={filters.operationalStatus}
-                              onChange={(event) =>
-                                setFilters((current) => ({ ...current, operationalStatus: event.target.value }))
-                              }
-                            >
-                              <option value="">All Statuses</option>
-                              {OPERATIONAL_STATUSES.map((status) => (
-                                <option key={status} value={status}>
-                                  {statusLabel(status)}
-                                </option>
-                              ))}
-                            </select>
-                          </th>
-                          <th className="px-3 py-2" />
-                          <th className="px-3 py-2" />
-                          <th className="px-3 py-2" />
                           <th className="px-3 py-2 text-slate-500">Use General Search for county and region.</th>
                           <th className="px-3 py-2">
                             <button
@@ -3836,7 +4209,7 @@ export default function App() {
                                     <rect x="3.2" y="4.2" width="13.6" height="11.6" rx="2.2" stroke="currentColor" strokeWidth="1.4" />
                                     <path d="M10 7v6m-3-3h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                                   </svg>
-                                  <span>Add Bed &amp; Status</span>
+                                  <span>Add Bed Status</span>
                                 </button>
                               </div>
                             </td>
@@ -3861,7 +4234,7 @@ export default function App() {
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       <article className="rounded-xl border border-slate-200 bg-white p-2.5">
                         <p className="text-xs uppercase tracking-wide text-slate-500">{selectedHeatMapView.countLabel}</p>
-                        <p className="text-2xl font-bold text-rose-700">{heatMapFacilities.length}</p>
+                        <p className="text-2xl font-bold text-rose-700">{heatMapFacilitiesInAoi.length}</p>
                       </article>
                       <article className="rounded-xl border border-slate-200 bg-white p-2.5">
                         <p className="text-xs uppercase tracking-wide text-slate-500">Selected View</p>
@@ -3922,11 +4295,45 @@ export default function App() {
                 <article className="surface-panel-strong stagger-in space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="section-heading">Geospatial Map</h2>
-                    <p className="text-xs text-slate-500">Tip: zoom and pan to inspect county/city-level clusters.</p>
+                    <p className="text-xs text-slate-500">Tip: Click and drag to freehand an AOI, then zoom/pan for city-level inspection.</p>
                   </div>
                   <div className="relative">
-                    <div ref={heatMapContainerRef} className="h-[64dvh] min-h-[420px] rounded-xl border border-slate-300" />
-                    {heatMapFacilities.length === 0 && !leafletLoadError ? (
+                    <div ref={heatMapContainerRef} className="relative z-0 h-[64dvh] min-h-[420px] rounded-xl border border-slate-300" />
+                    <div className="absolute right-3 top-3 z-40 flex items-center gap-2 rounded-xl border border-slate-200/95 bg-white/95 p-2 shadow-sm backdrop-blur-sm">
+                      <button
+                        type="button"
+                        className={`subtle-button inline-flex h-9 w-9 items-center justify-center p-0 ${
+                          heatMapAoiDrawMode ? "border-blue-500 bg-blue-50 text-blue-700" : ""
+                        }`}
+                        onClick={() => setHeatMapAoiDrawMode((current) => !current)}
+                        title={heatMapAoiDrawMode ? "Drawing AOI" : "Draw AOI"}
+                        aria-label={heatMapAoiDrawMode ? "Drawing AOI" : "Draw AOI"}
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                          <path d="M4.8 14.8 6.7 16.7l1.9-5.9 6.6-6.6a1.4 1.4 0 1 0-2-2l-6.6 6.6-1.8 6Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                          <path d="m10.9 4.1 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="subtle-button inline-flex h-9 w-9 items-center justify-center p-0"
+                        onClick={() => {
+                          setHeatMapAoiPolygon(null);
+                          setHeatMapAoiDrawMode(false);
+                        }}
+                        disabled={!heatMapAoiPolygon}
+                        title="Clear AOI"
+                        aria-label="Clear AOI"
+                      >
+                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                          <path d="M5.6 5.6 14.4 14.4M14.4 5.6 5.6 14.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="absolute left-3 top-3 z-40 rounded-lg border border-slate-200/95 bg-white/95 px-2.5 py-1.5 text-xs text-slate-700 shadow-sm backdrop-blur-sm">
+                      {heatMapAoiDrawMode ? "Drawing AOI: click and drag on map" : heatMapAoiLabel}
+                    </div>
+                    {heatMapFacilitiesInAoi.length === 0 && !leafletLoadError ? (
                       <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/75 text-sm text-slate-700 backdrop-blur-sm">
                         {selectedHeatMapView.emptyMessage}
                       </div>
@@ -5657,6 +6064,174 @@ export default function App() {
         </main>
       </div>
 
+      {facilityDetailsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
+          <div className="surface-panel flex max-h-[88dvh] w-full max-w-5xl flex-col space-y-3 overflow-hidden">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">
+                {facilityDetailsMetrics?.facility.name
+                  ? `${facilityDetailsMetrics.facility.name} · Facility ID ${facilityDetailsMetrics.facility.code}`
+                  : "Facility Details"}
+              </h2>
+              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeFacilityDetailsModal}>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                  <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+                <span>Close</span>
+              </button>
+            </div>
+
+            <div className="min-h-0 flex-1 space-y-3 overflow-auto pr-1">
+              {facilityDetailsLoading ? (
+                <p className="text-xs font-semibold text-blue-700">Loading facility metrics...</p>
+              ) : null}
+
+              {facilityDetailsMetrics ? (
+                <>
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Total Submissions</p>
+                      <p className="text-2xl font-bold">{facilityDetailsMetrics.totalSubmissions}</p>
+                    </article>
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Expected Submissions</p>
+                      <p className="text-2xl font-bold">{facilityDetailsMetrics.expectedSubmissions}</p>
+                    </article>
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Average Interval (Min)</p>
+                      <p className="text-2xl font-bold">{facilityDetailsMetrics.averageMinutesBetweenSubmissions ?? "N/A"}</p>
+                    </article>
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">On-Time Interval Rate</p>
+                      <p className="text-2xl font-bold">{facilityDetailsMetrics.onTimeRate !== null ? `${facilityDetailsMetrics.onTimeRate}%` : "N/A"}</p>
+                    </article>
+                  </div>
+
+                  <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+                    <article className="surface-panel space-y-3">
+                      <h3 className="section-heading">Facility Metadata</h3>
+                      <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3 text-sm text-slate-700">
+                        <p>
+                          <span className="font-semibold">Facility Type:</span> {facilityTypeLabel(facilityDetailsMetrics.facility.facilityType)}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Address:</span> {facilityDetailsMetrics.facility.addressLine1}
+                          {facilityDetailsMetrics.facility.addressLine2 ? `, ${facilityDetailsMetrics.facility.addressLine2}` : ""}
+                        </p>
+                        <p>
+                          <span className="font-semibold">City/State/ZIP:</span>{" "}
+                          {facilityDetailsMetrics.facility.city}, {facilityDetailsMetrics.facility.state} {facilityDetailsMetrics.facility.zip}
+                        </p>
+                        <p>
+                          <span className="font-semibold">County/Region:</span> {facilityDetailsMetrics.facility.county} /{" "}
+                          {facilityDetailsMetrics.facility.region}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Phone:</span> {facilityDetailsMetrics.facility.phone || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Tracking Since:</span>{" "}
+                          {new Date(facilityDetailsMetrics.sinceStartedAt).toLocaleString()}
+                        </p>
+                        <p>
+                          <span className="font-semibold">First Submission:</span>{" "}
+                          {facilityDetailsMetrics.firstSubmissionAt ? new Date(facilityDetailsMetrics.firstSubmissionAt).toLocaleString() : "None"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Last Submission:</span>{" "}
+                          {facilityDetailsMetrics.lastSubmissionAt ? new Date(facilityDetailsMetrics.lastSubmissionAt).toLocaleString() : "None"}
+                        </p>
+                      </div>
+                    </article>
+
+                    <article className="surface-panel-strong space-y-3">
+                      <h3 className="section-heading">Submission Metrics Since Start</h3>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <article className="rounded-xl border border-slate-200 bg-white p-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500">On-Time Intervals</p>
+                          <p className="text-xl font-bold text-emerald-700">{facilityDetailsMetrics.onTimeIntervals}</p>
+                        </article>
+                        <article className="rounded-xl border border-slate-200 bg-white p-3">
+                          <p className="text-xs uppercase tracking-wide text-slate-500">Late Intervals</p>
+                          <p className="text-xl font-bold text-rose-700">{facilityDetailsMetrics.lateIntervals}</p>
+                        </article>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Submission Sources</p>
+                        <div className="mt-2 overflow-auto rounded-lg border border-slate-200">
+                          <table className="w-full min-w-[360px] border-collapse text-sm">
+                            <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+                              <tr>
+                                <th className="px-3 py-2">Source</th>
+                                <th className="px-3 py-2">Count</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Object.entries(facilityDetailsMetrics.sourceCounts).length === 0 ? (
+                                <tr>
+                                  <td className="px-3 py-3 text-slate-500" colSpan={2}>
+                                    No submissions recorded.
+                                  </td>
+                                </tr>
+                              ) : (
+                                Object.entries(facilityDetailsMetrics.sourceCounts)
+                                  .sort((a, b) => b[1] - a[1])
+                                  .map(([source, count]) => (
+                                    <tr key={source} className="border-t border-slate-100">
+                                      <td className="px-3 py-2 font-mono text-xs">{source}</td>
+                                      <td className="px-3 py-2 font-semibold">{count}</td>
+                                    </tr>
+                                  ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
+
+                  <article className="surface-panel">
+                    <h3 className="section-heading">Recent Submissions</h3>
+                    <p className="section-subtitle">Most recent facility submissions captured by the platform.</p>
+                    <div className="mt-3 max-h-[32dvh] overflow-auto rounded-xl border border-slate-200 bg-white">
+                      <table className="w-full min-w-[560px] border-collapse text-sm">
+                        <thead className="sticky top-0 bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+                          <tr>
+                            <th className="px-3 py-2">Submitted At</th>
+                            <th className="px-3 py-2">Source</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {facilityDetailsMetrics.recentSubmissions.length === 0 ? (
+                            <tr>
+                              <td className="px-3 py-4 text-slate-500" colSpan={2}>
+                                No submissions yet.
+                              </td>
+                            </tr>
+                          ) : (
+                            facilityDetailsMetrics.recentSubmissions.map((item, idx) => (
+                              <tr key={`${item.submittedAt}-${idx}`} className="border-t border-slate-100">
+                                <td className="px-3 py-2 text-xs">{new Date(item.submittedAt).toLocaleString()}</td>
+                                <td className="px-3 py-2 font-mono text-xs">{item.source}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </article>
+                </>
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+                  {selectedFacilityDetailsId ? "No details available for this facility yet." : "Select a facility to view details."}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {facilityModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
           <div className="surface-panel w-full max-w-lg space-y-3">
@@ -5830,7 +6405,7 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
           <div className="surface-panel w-full max-w-2xl space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold">Bed Status</h2>
+              <h2 className="text-lg font-bold">{bedModalMode === "edit" ? "Edit Bed Status" : "Add Bed Status"}</h2>
               <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeBedModal}>
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                   <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -5991,7 +6566,7 @@ export default function App() {
                   <path d="M4.2 4.2h9.2l2.4 2.4v9.2H4.2V4.2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
                   <path d="M7 4.2v5h5.2v-5M7.4 13h5.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                 </svg>
-                <span>{bedModalMode === "edit" ? "Save Bed &amp; Status Changes" : "Save Bed &amp; Status"}</span>
+                <span>{bedModalMode === "edit" ? "Save Bed Status Changes" : "Save Bed Status"}</span>
               </button>
             </form>
           </div>
