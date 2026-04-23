@@ -3460,7 +3460,7 @@ export default function App() {
               src={HOSPITAL_BACKDROP_URL}
               alt=""
               aria-hidden="true"
-              className="absolute inset-0 h-full w-full object-cover opacity-[0.50]"
+              className="absolute inset-0 h-full w-full object-fill object-center opacity-[0.52]"
               onError={() => setLoginBackdropAvailable(false)}
             />
           )}
@@ -3468,84 +3468,76 @@ export default function App() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(37,99,235,0.28),transparent_46%),radial-gradient(circle_at_85%_84%,rgba(8,145,178,0.22),transparent_52%)]" />
         </div>
 
-        <section className="relative mx-auto flex min-h-screen w-[94vw] max-w-6xl items-center py-8">
-          <div className="grid w-full gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-            <article className="hidden w-full rounded-3xl border border-white/45 bg-gradient-to-br from-white/58 via-blue-50/45 to-indigo-50/48 p-4 shadow-[0_18px_48px_-22px_rgba(35,80,180,0.52)] backdrop-blur-md lg:block">
-              <div className="space-y-6">
-                <div className="inline-flex rounded-[1.45rem] bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-800 p-[1px] shadow-[0_24px_44px_-24px_rgba(30,64,175,0.85)] ring-1 ring-blue-400/45">
-                  <div className="relative overflow-hidden rounded-[1.35rem] bg-[radial-gradient(circle_at_18%_15%,rgba(191,219,254,0.45),transparent_50%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(239,246,255,0.96))] px-5 py-3.5">
-                    <img src={LOGO_URL} alt="CDPH" className="h-16 w-auto drop-shadow-[0_5px_10px_rgba(30,64,175,0.22)]" loading="eager" />
-                  </div>
+        <section className="relative mx-auto flex min-h-screen w-[94vw] max-w-6xl items-center justify-center py-8">
+          <section className="stagger-in w-full max-w-xl space-y-5 rounded-3xl border border-white/45 bg-gradient-to-br from-white/58 via-blue-50/45 to-indigo-50/48 p-4 shadow-[0_18px_48px_-22px_rgba(35,80,180,0.52)] backdrop-blur-md">
+            <div className="space-y-3">
+              <div className="inline-flex rounded-[1.3rem] bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-800 p-[1px] shadow-[0_16px_32px_-20px_rgba(30,64,175,0.82)] ring-1 ring-blue-400/45">
+                <div className="relative overflow-hidden rounded-[1.2rem] bg-[radial-gradient(circle_at_20%_14%,rgba(191,219,254,0.45),transparent_52%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(239,246,255,0.96))] px-4 py-2.5">
+                  <img src={LOGO_URL} alt="CDPH" className="h-12 w-auto drop-shadow-[0_5px_10px_rgba(30,64,175,0.22)]" loading="eager" />
                 </div>
-                <h1 className="text-4xl font-bold tracking-tight text-slate-900">California HBEDS Operations</h1>
-                <p className="max-w-lg text-base leading-relaxed text-slate-700">
-                  Monitor statewide acute-care bed availability and status updates through one secure command center.
-                </p>
-                <p className="text-sm text-slate-600">Sign in to manage facilities, beds, status updates, and API interoperability.</p>
               </div>
-            </article>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900">California HBEDS Operations</h1>
+              <p className="text-base leading-relaxed text-slate-700">
+                Monitor statewide acute-care bed availability and status updates through one secure command center.
+              </p>
+              <p className="text-sm text-slate-600">Sign in to manage facilities, beds, status updates, and API interoperability.</p>
+            </div>
 
-            <section className="stagger-in mx-auto w-full max-w-xl space-y-5 rounded-3xl border border-white/45 bg-gradient-to-br from-white/58 via-blue-50/45 to-indigo-50/48 p-4 shadow-[0_18px_48px_-22px_rgba(35,80,180,0.52)] backdrop-blur-md">
+            <div className="h-px w-full bg-slate-300/70" />
+
+            <div className="space-y-2">
+              <h2 className="section-heading">Sign In</h2>
+              <p className="section-subtitle">Authenticate with your account to access HBEDS.</p>
+            </div>
+
+            <form className="space-y-3" onSubmit={(event) => void handleLoginSubmit(event)}>
               <div className="space-y-3">
-                <div className="inline-flex rounded-[1.3rem] bg-gradient-to-br from-blue-900 via-blue-800 to-cyan-800 p-[1px] shadow-[0_16px_32px_-20px_rgba(30,64,175,0.82)] ring-1 ring-blue-400/45 lg:hidden">
-                  <div className="relative overflow-hidden rounded-[1.2rem] bg-[radial-gradient(circle_at_20%_14%,rgba(191,219,254,0.45),transparent_52%),linear-gradient(135deg,rgba(255,255,255,0.98),rgba(239,246,255,0.96))] px-4 py-2.5">
-                    <img src={LOGO_URL} alt="CDPH" className="h-11 w-auto drop-shadow-[0_5px_10px_rgba(30,64,175,0.22)]" loading="eager" />
-                  </div>
-                </div>
-                <h2 className="section-heading">Sign In</h2>
-                <p className="section-subtitle">Authenticate with your account to access HBEDS FacilityIQ.</p>
-                <p className="text-sm font-medium text-blue-700 lg:hidden">California HBEDS Operations</p>
+                <label className="block text-sm font-medium">
+                  Email
+                  <input
+                    className="soft-input mt-1 w-full"
+                    type="email"
+                    value={loginForm.email}
+                    onChange={(event) => setLoginForm((current) => ({ ...current, email: event.target.value }))}
+                    autoComplete="username"
+                    required
+                  />
+                </label>
+                <label className="block text-sm font-medium">
+                  Password
+                  <input
+                    className="soft-input mt-1 w-full"
+                    type="password"
+                    value={loginForm.password}
+                    onChange={(event) => setLoginForm((current) => ({ ...current, password: event.target.value }))}
+                    autoComplete="current-password"
+                    required
+                  />
+                </label>
+                <button type="submit" className="action-button inline-flex w-full items-center justify-center gap-2 py-2" disabled={loginSubmitting}>
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                    <path d="M7 10h8m0 0-2.7-2.7M15 10l-2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M11 4.2H6.2A2.2 2.2 0 0 0 4 6.4v7.2a2.2 2.2 0 0 0 2.2 2.2H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  </svg>
+                  <span>{loginSubmitting ? "Signing in..." : "Sign In"}</span>
+                </button>
               </div>
 
-              <form className="space-y-3" onSubmit={(event) => void handleLoginSubmit(event)}>
-                <div className="space-y-3">
-                  <label className="block text-sm font-medium">
-                    Email
-                    <input
-                      className="soft-input mt-1 w-full"
-                      type="email"
-                      value={loginForm.email}
-                      onChange={(event) => setLoginForm((current) => ({ ...current, email: event.target.value }))}
-                      autoComplete="username"
-                      required
-                    />
-                  </label>
-                  <label className="block text-sm font-medium">
-                    Password
-                    <input
-                      className="soft-input mt-1 w-full"
-                      type="password"
-                      value={loginForm.password}
-                      onChange={(event) => setLoginForm((current) => ({ ...current, password: event.target.value }))}
-                      autoComplete="current-password"
-                      required
-                    />
-                  </label>
-                  <button type="submit" className="action-button inline-flex w-full items-center justify-center gap-2 py-2" disabled={loginSubmitting}>
-                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                      <path d="M7 10h8m0 0-2.7-2.7M15 10l-2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M11 4.2H6.2A2.2 2.2 0 0 0 4 6.4v7.2a2.2 2.2 0 0 0 2.2 2.2H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                    </svg>
-                    <span>{loginSubmitting ? "Signing in..." : "Sign In"}</span>
-                  </button>
-                </div>
+              {loginError ? (
+                <p className="rounded-lg border border-rose-300/75 bg-rose-100/80 px-3 py-2 text-sm text-rose-800">{loginError}</p>
+              ) : null}
+            </form>
 
-                {loginError ? (
-                  <p className="rounded-lg border border-rose-300/75 bg-rose-100/80 px-3 py-2 text-sm text-rose-800">{loginError}</p>
-                ) : null}
-              </form>
-
-              <div className="rounded-xl border border-slate-300/70 bg-white/80 p-3 text-xs text-slate-700">
-                <p className="font-semibold">Demo accounts</p>
-                <p>
-                  <code>{DEMO_LOGIN_EMAIL}</code> / <code>{DEMO_LOGIN_PASSWORD}</code>
-                </p>
-                <p className="mt-1">
-                  <code>{DEMO_HOSPITAL_LOGIN_EMAIL}</code> / <code>{DEMO_HOSPITAL_LOGIN_PASSWORD}</code>
-                </p>
-              </div>
-            </section>
-          </div>
+            <div className="rounded-xl border border-slate-300/70 bg-white/80 p-3 text-xs text-slate-700">
+              <p className="font-semibold">Demo accounts</p>
+              <p>
+                <code>{DEMO_LOGIN_EMAIL}</code> / <code>{DEMO_LOGIN_PASSWORD}</code>
+              </p>
+              <p className="mt-1">
+                <code>{DEMO_HOSPITAL_LOGIN_EMAIL}</code> / <code>{DEMO_HOSPITAL_LOGIN_PASSWORD}</code>
+              </p>
+            </div>
+          </section>
         </section>
       </main>
     );
