@@ -1148,6 +1148,7 @@ export default function App() {
   const [facilityForm, setFacilityForm] = useState<FacilityFormState>(EMPTY_FACILITY_FORM);
   const [facilityModalMode, setFacilityModalMode] = useState<FacilityModalMode>("create");
   const [editingFacilityId, setEditingFacilityId] = useState<string | null>(null);
+  const [facilityPendingDelete, setFacilityPendingDelete] = useState<Facility | null>(null);
 
   const [bedModalOpen, setBedModalOpen] = useState(false);
   const [bedModalMode, setBedModalMode] = useState<BedModalMode>("create");
@@ -3233,6 +3234,7 @@ export default function App() {
     setBedModalMode("create");
     setEditingBedStatusId(null);
     setBedModalForm(EMPTY_BED_MODAL_FORM);
+    setFacilityPendingDelete(null);
     setLoginSubmitting(false);
     setLoginError(null);
     setFilters({
@@ -3321,17 +3323,25 @@ export default function App() {
     }
   }
 
-  async function handleDeleteFacility(facility: Facility): Promise<void> {
+  function requestDeleteFacility(facility: Facility): void {
     if (isHospitalUser) {
       setNotice({ type: "error", message: "Hospital users cannot delete facilities." });
       clearNoticeSoon();
       return;
     }
+    setFacilityPendingDelete(facility);
+  }
 
-    const confirmed = window.confirm(
-      `Delete facility ${facility.name} (ID ${facility.code})?\n\nThis will remove the facility and all associated bed/status records. This action cannot be undone.`
-    );
-    if (!confirmed) {
+  function closeFacilityDeleteModal(): void {
+    if (saving) {
+      return;
+    }
+    setFacilityPendingDelete(null);
+  }
+
+  async function handleDeleteFacility(): Promise<void> {
+    const facility = facilityPendingDelete;
+    if (!facility) {
       return;
     }
 
@@ -3356,6 +3366,7 @@ export default function App() {
         message: `Facility ${deleted.facility.code} deleted. Removed ${deleted.removedBedStatuses} bed/status records.`
       });
       clearNoticeSoon();
+      setFacilityPendingDelete(null);
       await Promise.all([loadFacilities(), loadSummary(), loadBedStatuses()]);
     } catch (error) {
       setError(error);
@@ -4501,7 +4512,7 @@ export default function App() {
                                         aria-label="Delete facility"
                                         onClick={(event) => {
                                           event.stopPropagation();
-                                          void handleDeleteFacility(facility);
+                                          requestDeleteFacility(facility);
                                         }}
                                         disabled={saving}
                                       >
@@ -7219,6 +7230,51 @@ export default function App() {
                 <span>{facilityModalMode === "edit" ? "Save Facility Changes" : "Save Facility"}</span>
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {facilityPendingDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
+          <div className="surface-panel w-full max-w-md space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="text-lg font-bold">Delete Facility</h2>
+              <button
+                type="button"
+                className="icon-subtle-button"
+                onClick={closeFacilityDeleteModal}
+                disabled={saving}
+                aria-label="Close"
+              >
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                  <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className="rounded-xl border border-rose-300/80 bg-rose-50 p-3 text-sm text-rose-900">
+              <p className="font-semibold">
+                {facilityPendingDelete.name} (Facility ID {facilityPendingDelete.code})
+              </p>
+              <p className="mt-2">
+                This will permanently remove the facility and all associated bed/status records. This action cannot be undone.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2">
+              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeFacilityDeleteModal} disabled={saving}>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                  <circle cx="10" cy="10" r="6.4" stroke="currentColor" strokeWidth="1.4" />
+                  <path d="M8.2 8.2 11.8 11.8M11.8 8.2 8.2 11.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+                <span>Cancel</span>
+              </button>
+              <button type="button" className="danger-button inline-flex items-center gap-2" onClick={() => void handleDeleteFacility()} disabled={saving}>
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                  <path d="M5.7 6h8.6m-7.8 0 .5 9.1c.03.6.52 1.1 1.13 1.1h4.4c.61 0 1.1-.5 1.13-1.1L14.3 6M8 6V4.7c0-.5.4-.9.9-.9h2.2c.5 0 .9.4.9.9V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 8.4v5.8M11 8.4v5.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+                <span>{saving ? "Deleting..." : "Delete Facility"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
