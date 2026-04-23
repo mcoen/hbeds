@@ -609,6 +609,16 @@ function heatMapCapacityStatus(capacityPercent: number): HeatMapFacility["marker
   return "good";
 }
 
+function surgeCapabilityTone(status: HeatMapFacility["markerStatus"]): string {
+  if (status === "good") {
+    return "border-emerald-300 bg-emerald-100 text-emerald-800";
+  }
+  if (status === "warning") {
+    return "border-amber-300 bg-amber-100 text-amber-800";
+  }
+  return "border-rose-300 bg-rose-100 text-rose-800";
+}
+
 function evaluateSurgeCapability(row: HeatMapFacilityAggregate): SurgeCapabilityAssessment {
   if (row.staffedBeds <= 0) {
     return {
@@ -671,6 +681,35 @@ function evaluateSurgeCapability(row: HeatMapFacilityAggregate): SurgeCapability
     score: 85,
     detail: "Stable occupancy, healthy availability, and current submissions."
   };
+}
+
+function buildSurgeCapabilityDescription(
+  surge: SurgeCapabilityAssessment | null,
+  aggregate: HeatMapFacilityAggregate | null
+): string {
+  if (!surge || !aggregate) {
+    return "Surge readiness is not available yet for this facility.";
+  }
+
+  const occupancyPercent = Math.round(aggregate.capacityPercent);
+  const availablePercent = Math.max(0, Math.round(aggregate.availablePercent));
+  const disruptions = aggregate.limitedUnits + aggregate.diversionUnits + aggregate.closedUnits;
+  const disruptionText =
+    disruptions === 0
+      ? "No limited, diversion, or closed units are active."
+      : `${disruptions} operating unit${disruptions === 1 ? "" : "s"} currently flagged (limited/diversion/closed).`;
+  const submissionText =
+    aggregate.minutesSinceUpdate === null
+      ? "No recent submission timestamp has been received."
+      : `Most recent submission was ${formatDurationFromMinutes(aggregate.minutesSinceUpdate)} ago.`;
+
+  if (surge.label === "High") {
+    return `High readiness: ${occupancyPercent}% occupancy with ${aggregate.availableBeds} of ${aggregate.staffedBeds} staffed beds available (${availablePercent}% available). ${disruptionText} ${submissionText}`;
+  }
+  if (surge.label === "Moderate") {
+    return `Moderate readiness: current pressure is elevated at ${occupancyPercent}% occupancy with ${availablePercent}% available capacity. ${disruptionText} ${submissionText}`;
+  }
+  return `Low readiness: the facility is under surge stress at ${occupancyPercent}% occupancy with ${availablePercent}% available capacity. ${disruptionText} ${submissionText}`;
 }
 
 function normalizeHeatMapAoiPoints(points: HeatMapAoiPoint[]): HeatMapAoiPoint[] {
@@ -2033,6 +2072,10 @@ export default function App() {
       ),
     [facilityHeatMapAggregates]
   );
+  const facilityHeatMapAggregateById = useMemo(
+    () => new Map<string, HeatMapFacilityAggregate>(facilityHeatMapAggregates.map((facility) => [facility.id, facility])),
+    [facilityHeatMapAggregates]
+  );
   const selectedHeatMapView = useMemo(
     () => HEAT_MAP_VIEW_OPTIONS.find((view) => view.id === heatMapViewId) ?? HEAT_MAP_VIEW_OPTIONS[0],
     [heatMapViewId]
@@ -2347,6 +2390,23 @@ export default function App() {
   const selectedUnitTrendRange = useMemo(
     () => UNIT_TREND_RANGE_OPTIONS.find((option) => option.id === unitTrendRangeId) ?? UNIT_TREND_RANGE_OPTIONS[0],
     [unitTrendRangeId]
+  );
+  const selectedFacilityDetailsFacilityId = useMemo(
+    () => facilityDetailsMetrics?.facility.id ?? selectedFacilityPreview?.id ?? selectedFacilityDetailsId ?? null,
+    [facilityDetailsMetrics?.facility.id, selectedFacilityDetailsId, selectedFacilityPreview?.id]
+  );
+  const selectedFacilitySurgeAggregate = useMemo(
+    () =>
+      selectedFacilityDetailsFacilityId ? facilityHeatMapAggregateById.get(selectedFacilityDetailsFacilityId) ?? null : null,
+    [facilityHeatMapAggregateById, selectedFacilityDetailsFacilityId]
+  );
+  const selectedFacilitySurgeCapability = useMemo(
+    () => (selectedFacilityDetailsFacilityId ? facilitySurgeCapabilityById.get(selectedFacilityDetailsFacilityId) ?? null : null),
+    [facilitySurgeCapabilityById, selectedFacilityDetailsFacilityId]
+  );
+  const selectedFacilitySurgeDescription = useMemo(
+    () => buildSurgeCapabilityDescription(selectedFacilitySurgeCapability, selectedFacilitySurgeAggregate),
+    [selectedFacilitySurgeAggregate, selectedFacilitySurgeCapability]
   );
   const unitCapacityTrendSeries = useMemo<Array<{ timestampMs: number; occupancyPercent: number }>>(() => {
     if (!selectedBedStatusDetails) {
@@ -6522,6 +6582,21 @@ export default function App() {
                     <article className="surface-panel space-y-3">
                       <h3 className="section-heading">Facility Metadata</h3>
                       <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3 text-sm text-slate-700">
+                        <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50/70 p-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Emergent Surge Capability</p>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <span
+                              className={`status-badge ${
+                                selectedFacilitySurgeCapability
+                                  ? surgeCapabilityTone(selectedFacilitySurgeCapability.markerStatus)
+                                  : "border-slate-300 bg-slate-100 text-slate-700"
+                              }`}
+                            >
+                              {selectedFacilitySurgeCapability?.label ?? "Unknown"}
+                            </span>
+                          </div>
+                          <p className="mt-1.5 text-xs leading-relaxed text-slate-600">{selectedFacilitySurgeDescription}</p>
+                        </div>
                         <p>
                           <span className="font-semibold">Facility Type:</span> {facilityTypeLabel(facilityDetailsMetrics.facility.facilityType)}
                         </p>
