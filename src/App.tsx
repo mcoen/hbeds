@@ -15,6 +15,7 @@ import {
 import {
   askHbedsAiHelper,
   createBedStatus,
+  deleteFacility,
   createFacility,
   getApiMetrics,
   getAnalyticsSubmissionsOverTime,
@@ -1118,7 +1119,9 @@ export default function App() {
     facilityId: "",
     bedType: "",
     operationalStatus: "",
-    unit: ""
+    unit: "",
+    county: "",
+    region: ""
   });
   const [facilityGridFilters, setFacilityGridFilters] = useState<{
     facilityType: string;
@@ -1797,6 +1800,12 @@ export default function App() {
       if (filters.operationalStatus && row.operationalStatus !== filters.operationalStatus) {
         return false;
       }
+      if (filters.county && row.county !== filters.county) {
+        return false;
+      }
+      if (filters.region && row.region !== filters.region) {
+        return false;
+      }
       if (unitQuery && !row.unit.toLowerCase().includes(unitQuery)) {
         return false;
       }
@@ -1851,7 +1860,18 @@ export default function App() {
 
       return bedGridSort.direction === "asc" ? result : -result;
     });
-  }, [bedGridSort.direction, bedGridSort.key, filters.bedType, filters.facilityId, filters.operationalStatus, filters.unit, generalSearch, scopedBedStatuses]);
+  }, [
+    bedGridSort.direction,
+    bedGridSort.key,
+    filters.bedType,
+    filters.county,
+    filters.facilityId,
+    filters.operationalStatus,
+    filters.region,
+    filters.unit,
+    generalSearch,
+    scopedBedStatuses
+  ]);
   const filteredFacilities = useMemo(() => {
     const query = generalSearch.trim().toLowerCase();
     const timestamp = (value: string): number => {
@@ -3219,7 +3239,9 @@ export default function App() {
       facilityId: "",
       bedType: "",
       operationalStatus: "",
-      unit: ""
+      unit: "",
+      county: "",
+      region: ""
     });
     setFacilityGridFilters({
       facilityType: "",
@@ -3290,6 +3312,49 @@ export default function App() {
         setNotice({ type: "success", message: "Facility created." });
       }
       closeFacilityModal();
+      clearNoticeSoon();
+      await Promise.all([loadFacilities(), loadSummary(), loadBedStatuses()]);
+    } catch (error) {
+      setError(error);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteFacility(facility: Facility): Promise<void> {
+    if (isHospitalUser) {
+      setNotice({ type: "error", message: "Hospital users cannot delete facilities." });
+      clearNoticeSoon();
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete facility ${facility.name} (ID ${facility.code})?\n\nThis will remove the facility and all associated bed/status records. This action cannot be undone.`
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const deleted = await deleteFacility(facility.id);
+      setFilters((current) => (current.facilityId === facility.id ? { ...current, facilityId: "" } : current));
+
+      if (selectedFacilityDetailsId === facility.id) {
+        setFacilityDetailsModalOpen(false);
+        setFacilityDetailsLoading(false);
+        setFacilityDetailsMetrics(null);
+        setSelectedFacilityDetailsId(null);
+      }
+      if (selectedBedStatusDetails?.facilityId === facility.id) {
+        closeBedStatusDetailsModal();
+        setSelectedBedStatusId(null);
+      }
+
+      setNotice({
+        type: "success",
+        message: `Facility ${deleted.facility.code} deleted. Removed ${deleted.removedBedStatuses} bed/status records.`
+      });
       clearNoticeSoon();
       await Promise.all([loadFacilities(), loadSummary(), loadBedStatuses()]);
     } catch (error) {
@@ -4429,6 +4494,22 @@ export default function App() {
                                           <path d="M10.7 6.3 13.7 9.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                                         </svg>
                                       </button>
+                                      <button
+                                        type="button"
+                                        className="icon-subtle-button text-rose-700 hover:border-rose-400 hover:text-rose-800"
+                                        title="Delete facility"
+                                        aria-label="Delete facility"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          void handleDeleteFacility(facility);
+                                        }}
+                                        disabled={saving}
+                                      >
+                                        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                          <path d="M5.7 6h8.6m-7.8 0 .5 9.1c.03.6.52 1.1 1.13 1.1h4.4c.61 0 1.1-.5 1.13-1.1L14.3 6M8 6V4.7c0-.5.4-.9.9-.9h2.2c.5 0 .9.4.9.9V6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M9 8.4v5.8M11 8.4v5.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                                        </svg>
+                                      </button>
                                     </div>
                                   </td>
                                 )}
@@ -4527,7 +4608,7 @@ export default function App() {
                             />
                           </th>
                           <th className="px-3 py-2" colSpan={5}>
-                            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                            <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
                               <select
                                 className="soft-select w-full text-xs"
                                 value={filters.bedType}
@@ -4554,9 +4635,33 @@ export default function App() {
                                   </option>
                                 ))}
                               </select>
+                              <select
+                                className="soft-select w-full text-xs"
+                                value={filters.county}
+                                onChange={(event) => setFilters((current) => ({ ...current, county: event.target.value }))}
+                              >
+                                <option value="">All Counties</option>
+                                {facilityCountyOptions.map((county) => (
+                                  <option key={county} value={county}>
+                                    {county}
+                                  </option>
+                                ))}
+                              </select>
+                              <select
+                                className="soft-select w-full text-xs"
+                                value={filters.region}
+                                onChange={(event) => setFilters((current) => ({ ...current, region: event.target.value }))}
+                              >
+                                <option value="">All Regions</option>
+                                {facilityRegionOptions.map((region) => (
+                                  <option key={region} value={region}>
+                                    {region}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                           </th>
-                          <th className="px-3 py-2 text-slate-500">Use General Search for county and region.</th>
+                          <th className="px-3 py-2 text-slate-500">Use General Search for free text.</th>
                           <th className="px-3 py-2">
                             <button
                               type="button"
@@ -4567,7 +4672,9 @@ export default function App() {
                                   facilityId: isHospitalUser ? hospitalFacilityId : "",
                                   bedType: "",
                                   operationalStatus: "",
-                                  unit: ""
+                                  unit: "",
+                                  county: "",
+                                  region: ""
                                 }))
                               }
                             >

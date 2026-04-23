@@ -78,5 +78,15 @@ export function createFacilitiesRestRouter(options: CreateFacilitiesRestRouterOp
     }
   });
 
+  router.delete("/v1/facilities/:id", (req, res) => {
+    try {
+      const deleted = options.store.deleteFacility(normalizeText(req.params.id));
+      res.json(deleted);
+    } catch (error) {
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
+      sendError(res, error, message.includes("not found") ? 404 : undefined);
+    }
+  });
+
   return router;
 }

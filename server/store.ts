@@ -155,6 +155,34 @@ export class HBedsStore {
     return this.facilities.get(id);
   }
 
+  deleteFacility(idOrCode: string): { facility: Facility; removedBedStatuses: number } {
+    const lookup = idOrCode.trim();
+    if (!lookup) {
+      throw new Error("facility id is required.");
+    }
+
+    const facility =
+      this.facilities.get(lookup) ??
+      Array.from(this.facilities.values()).find((item) => item.code === lookup);
+    if (!facility) {
+      throw new Error(`Facility "${lookup}" was not found.`);
+    }
+
+    this.facilities.delete(facility.id);
+    this.facilitySubmissions.delete(facility.id);
+
+    let removedBedStatuses = 0;
+    for (const [bedStatusId, record] of this.bedStatuses.entries()) {
+      if (record.facilityId === facility.id) {
+        this.bedStatuses.delete(bedStatusId);
+        removedBedStatuses += 1;
+      }
+    }
+
+    this.touch();
+    return { facility, removedBedStatuses };
+  }
+
   createFacility(input: CreateFacilityInput): Facility {
     const facility = createFacilityRecord({
       facilities: this.facilities,

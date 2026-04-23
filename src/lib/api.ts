@@ -201,6 +201,12 @@ export function updateFacility(
   });
 }
 
+export function deleteFacility(id: string): Promise<{ facility: Facility; removedBedStatuses: number }> {
+  return request<{ facility: Facility; removedBedStatuses: number }>(`/api/v1/facilities/${id}`, {
+    method: "DELETE"
+  });
+}
+
 export function getBedStatuses(filters?: {
   facilityId?: string;
   bedType?: string;
