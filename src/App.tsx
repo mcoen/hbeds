@@ -374,8 +374,7 @@ const CDPH_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
   { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
   { id: "aiHelper", label: "AI Helper" },
   { id: "analytics", label: "Analytics" },
-  { id: "notifications", label: "Notifications" },
-  { id: "settings", label: "Settings" }
+  { id: "notifications", label: "Notifications" }
 ];
 
 const HOSPITAL_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
@@ -393,8 +392,7 @@ const CDPH_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
   { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
   { id: "aiHelper", label: "AI" },
   { id: "analytics", label: "Metrics" },
-  { id: "notifications", label: "Alerts" },
-  { id: "settings", label: "Settings" }
+  { id: "notifications", label: "Alerts" }
 ];
 
 const HOSPITAL_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
@@ -1018,6 +1016,7 @@ export default function App() {
   const [cdcNhsnBulkRowsText, setCdcNhsnBulkRowsText] = useState("[]");
   const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [simulationActionBusy, setSimulationActionBusy] = useState(false);
   const [lastComplianceAlertSignature, setLastComplianceAlertSignature] = useState("");
@@ -1049,6 +1048,7 @@ export default function App() {
   const heatMapAoiPreviewLayerRef = useRef<unknown>(null);
   const heatMapAoiDrawingRef = useRef<{ active: boolean; points: HeatMapAoiPoint[] }>({ active: false, points: [] });
   const heatMapAoiDrawModeRef = useRef(heatMapAoiDrawMode);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isHospitalUser = sessionUser?.role === "hospital";
   const hospitalFacilityId = sessionUser?.facilityId ?? "";
@@ -1395,7 +1395,7 @@ export default function App() {
     if (!isAuthenticated || !isHospitalUser) {
       return;
     }
-    const hospitalAllowedTabs = new Set<TabId>(["manual", "facilityDetails", "apis", "heatMap", "analytics", "notifications"]);
+    const hospitalAllowedTabs = new Set<TabId>(["manual", "facilityDetails", "apis", "heatMap", "analytics", "notifications", "settings"]);
     if (!hospitalAllowedTabs.has(activeTab)) {
       setActiveTab("manual");
     }
@@ -1476,7 +1476,7 @@ export default function App() {
       return "Notifications and Alerts";
     }
     if (activeTab === "settings") {
-      return "Settings";
+      return "Profile & Settings";
     }
     if (activeTab === "heatMap") {
       return "Geospatial Analysis";
@@ -2523,6 +2523,36 @@ export default function App() {
   }, [selectedNotificationId, sortedNotifications]);
 
   useEffect(() => {
+    setProfileMenuOpen(false);
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!profileMenuOpen) {
+      return;
+    }
+
+    const handleDocumentPointerDown = (event: MouseEvent) => {
+      if (profileMenuRef.current?.contains(event.target as Node)) {
+        return;
+      }
+      setProfileMenuOpen(false);
+    };
+
+    const handleDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleDocumentPointerDown);
+    document.addEventListener("keydown", handleDocumentKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentPointerDown);
+      document.removeEventListener("keydown", handleDocumentKeyDown);
+    };
+  }, [profileMenuOpen]);
+
+  useEffect(() => {
     if (isHospitalUser) {
       if (hospitalFacilityId && aiScopeFacilityId !== hospitalFacilityId) {
         setAiScopeFacilityId(hospitalFacilityId);
@@ -2813,6 +2843,7 @@ export default function App() {
   }
 
   function handleSignOut(): void {
+    setProfileMenuOpen(false);
     setIsAuthenticated(false);
     setSessionUser(null);
     setActiveTab("manual");
@@ -3612,18 +3643,7 @@ export default function App() {
             </nav>
           </div>
 
-          <div className="space-y-3">
-            <button
-              type="button"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-400 hover:text-rose-700"
-              onClick={handleSignOut}
-            >
-              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                <path d="M8 5.5V4.8A1.8 1.8 0 0 1 9.8 3h5.4A1.8 1.8 0 0 1 17 4.8v10.4a1.8 1.8 0 0 1-1.8 1.8H9.8A1.8 1.8 0 0 1 8 15.2v-.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                <path d="M12.5 10H3.5m0 0 2.7-2.7M3.5 10l2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>Sign Out</span>
-            </button>
+          <div className="space-y-1">
             <p className="inline-flex w-full items-center justify-center gap-1 text-center text-sm font-extrabold text-slate-800">
               <span>Powered by</span>
               <img
@@ -3648,7 +3668,7 @@ export default function App() {
 
             <main className="min-w-0 lg:h-[calc(100dvh-2rem)]">
           <div className="flex h-full min-w-0 flex-col gap-4">
-            <header className="surface-panel-strong shrink-0">
+            <header className="surface-panel-strong relative z-10 shrink-0 overflow-visible">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h1 className="text-lg font-bold tracking-tight md:text-2xl">{tabTitle}</h1>
@@ -3698,15 +3718,55 @@ export default function App() {
                       <span className="absolute -top-1 -right-1 inline-flex min-h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[10px] font-semibold text-white">
                         {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
                       </span>
-                    )}
-                  </button>
-                  <button type="button" className="subtle-button inline-flex items-center gap-2 lg:hidden" onClick={handleSignOut}>
-                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                      <path d="M8 5.5V4.8A1.8 1.8 0 0 1 9.8 3h5.4A1.8 1.8 0 0 1 17 4.8v10.4a1.8 1.8 0 0 1-1.8 1.8H9.8A1.8 1.8 0 0 1 8 15.2v-.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                      <path d="M12.5 10H3.5m0 0 2.7-2.7M3.5 10l2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span>Sign Out</span>
-                  </button>
+                  )}
+                </button>
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      type="button"
+                      className={`${activeTab === "settings" || profileMenuOpen ? "icon-action-button" : "icon-subtle-button"} relative`}
+                      onClick={() => setProfileMenuOpen((current) => !current)}
+                      title="Profile Menu"
+                      aria-label="Profile Menu"
+                      aria-haspopup="menu"
+                      aria-expanded={profileMenuOpen}
+                    >
+                      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                        <circle cx="10" cy="7.1" r="2.8" stroke="currentColor" strokeWidth="1.5" />
+                        <path d="M4.7 16.3a5.3 5.3 0 0 1 10.6 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                    {profileMenuOpen ? (
+                      <div className="absolute right-0 z-0 mt-2 w-48 rounded-xl border border-slate-300 bg-white p-1.5 shadow-xl" role="menu">
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => {
+                            setActiveTab("settings");
+                            setProfileMenuOpen(false);
+                          }}
+                          role="menuitem"
+                        >
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                            <circle cx="10" cy="7.1" r="2.8" stroke="currentColor" strokeWidth="1.5" />
+                            <path d="M4.7 16.3a5.3 5.3 0 0 1 10.6 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          </svg>
+                          <span>Profile</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="mt-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-700"
+                          onClick={handleSignOut}
+                          role="menuitem"
+                        >
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                            <path d="M8 5.5V4.8A1.8 1.8 0 0 1 9.8 3h5.4A1.8 1.8 0 0 1 17 4.8v10.4a1.8 1.8 0 0 1-1.8 1.8H9.8A1.8 1.8 0 0 1 8 15.2v-.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                            <path d="M12.5 10H3.5m0 0 2.7-2.7M3.5 10l2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
               <nav className={`mt-3 grid gap-2 lg:hidden ${isHospitalUser ? "grid-cols-5" : "grid-cols-4"}`}>
@@ -5079,8 +5139,8 @@ export default function App() {
             {activeTab === "settings" && (
               <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
                 <article className="surface-panel-strong stagger-in space-y-3">
-                  <h2 className="section-heading">Notification Preferences</h2>
-                  <p className="section-subtitle">Control how alerts are delivered to your account.</p>
+                  <h2 className="section-heading">Profile & Notification Preferences</h2>
+                  <p className="section-subtitle">Manage your account contact details and alert delivery channels.</p>
 
                   <label className="block text-sm font-medium text-slate-700">
                     Email
