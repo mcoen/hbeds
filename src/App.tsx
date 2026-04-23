@@ -412,10 +412,10 @@ const OUTGOING_WINDOW_OPTIONS: Array<{
 const CDPH_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
   { id: "manual", label: "Facilities, Beds, and Statuses" },
   { id: "apis", label: "Submission Options" },
-  { id: "heatMap", label: "Geospatial Analysis" },
   { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
-  { id: "aiHelper", label: "AI Helper" },
+  { id: "heatMap", label: "Geospatial Analysis" },
   { id: "analytics", label: "Analytics" },
+  { id: "aiHelper", label: "AI Helper" },
   { id: "notifications", label: "Notifications" }
 ];
 
@@ -430,10 +430,10 @@ const HOSPITAL_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
 const CDPH_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
   { id: "manual", label: "Facilities" },
   { id: "apis", label: "Submit" },
-  { id: "heatMap", label: "Geospatial Analysis" },
   { id: "cdcNhsn", label: "NHSN Bed Connectivy" },
-  { id: "aiHelper", label: "AI" },
+  { id: "heatMap", label: "Geospatial Analysis" },
   { id: "analytics", label: "Metrics" },
+  { id: "aiHelper", label: "AI" },
   { id: "notifications", label: "Alerts" }
 ];
 
