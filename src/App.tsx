@@ -38,6 +38,7 @@ import {
   type HbedsAiHelperResponse,
   type SimulationStatus
 } from "./lib/api";
+import { getAuthProviderWarning, initializeAuth0Session, loginWithAuth0, logoutFromAuth0 } from "./lib/auth0";
 import { CALIFORNIA_CENTER, getCountyCoordinate } from "./lib/caCountyCoordinates";
 
 type TabId = "manual" | "bulk" | "analytics" | "notifications" | "settings" | "apis" | "cdcNhsn" | "facilityDetails" | "aiHelper" | "heatMap";
@@ -45,6 +46,7 @@ type ApiTabId = "rest" | "graphql" | "fhir" | "sftp" | "bulk";
 type IncomingApiFilter = "all" | "rest" | "graphql" | "fhir";
 type IncomingWindowId = "1m" | "15m" | "60m" | "12h" | "24h" | "7d" | "30d";
 type OutgoingWindowId = "1d" | "7d" | "30d";
+type UnitTrendRangeId = "12h" | "24h" | "7d" | "30d" | "1y";
 type ManualViewMode = "facilities" | "beds";
 type FacilityModalMode = "create" | "edit";
 type BedModalMode = "create" | "edit";
@@ -59,7 +61,8 @@ type HeatMapViewId =
   | "staleWeek"
   | "lowAvailability"
   | "operationalRisk"
-  | "respiratoryPressure";
+  | "respiratoryPressure"
+  | "surgeReadiness";
 
 interface Notice {
   type: "success" | "error";
@@ -96,11 +99,6 @@ interface BedModalFormState {
   newCovidAdmissions: string;
   newInfluenzaAdmissions: string;
   newRsvAdmissions: string;
-}
-
-interface LoginFormState {
-  email: string;
-  password: string;
 }
 
 interface SessionUser {
@@ -238,16 +236,51 @@ interface HeatMapAoiPoint {
   lng: number;
 }
 
+interface SurgeCapabilityAssessment {
+  markerStatus: HeatMapFacility["markerStatus"];
+  label: "High" | "Moderate" | "Low";
+  score: number;
+  detail: string;
+}
+
 const LOGO_URL = "https://www.michaelcoen.com/images/CDPH-Logo.png";
 const HOSPITAL_BACKDROP_URL = "https://www.michaelcoen.com/images/HBEDS-Background.jpg";
-const DEMO_LOGIN_EMAIL = "cdph.admin@cdph.ca.gov";
-const DEMO_LOGIN_PASSWORD = "password";
-const DEMO_HOSPITAL_LOGIN_EMAIL = "hospital.user.11205@ca-hbeds.org";
-const DEMO_HOSPITAL_LOGIN_PASSWORD = "password";
 const DEMO_HOSPITAL_FACILITY_CODE = "11205";
 const DEMO_HOSPITAL_FACILITY_ID = `fac-${DEMO_HOSPITAL_FACILITY_CODE}`;
+const DEFAULT_ADMIN_EMAIL = "cdph.admin@cdph.ca.gov";
+const AUTH0_ADMIN_EMAILS = new Set(["cdph.admin@cdph.ca.gov", "michael.coen@gmail.com"]);
+const AUTH0_HOSPITAL_EMAIL_TO_FACILITY: Record<string, { facilityCode: string }> = {
+  "hospital.user.11205@ca-hbeds.org": { facilityCode: DEMO_HOSPITAL_FACILITY_CODE }
+};
+const AUTH0_ALLOWED_EMAILS = new Set([...AUTH0_ADMIN_EMAILS, ...Object.keys(AUTH0_HOSPITAL_EMAIL_TO_FACILITY)]);
 const SESSION_STORAGE_KEY = "hbeds.session.user.v1";
 const FORCED_HIGH_OCCUPANCY_FACILITY_CODES = new Set(["11205", "12881", "10247", "12765", "11668"]);
+
+function resolveSessionUserForEmail(email: string): SessionUser | null {
+  const normalized = email.trim().toLowerCase();
+  if (!AUTH0_ALLOWED_EMAILS.has(normalized)) {
+    return null;
+  }
+
+  const hospitalMapping = AUTH0_HOSPITAL_EMAIL_TO_FACILITY[normalized];
+  if (hospitalMapping) {
+    return {
+      email: normalized,
+      role: "hospital",
+      facilityCode: hospitalMapping.facilityCode,
+      facilityId: `fac-${hospitalMapping.facilityCode}`
+    };
+  }
+
+  if (AUTH0_ADMIN_EMAILS.has(normalized)) {
+    return {
+      email: normalized,
+      role: "cdph"
+    };
+  }
+
+  return null;
+}
 
 function readSessionUserFromStorage(): SessionUser | null {
   if (typeof window === "undefined") {
@@ -354,6 +387,14 @@ const INCOMING_WINDOW_OPTIONS: Array<{
   { id: "24h", label: "Last 24 hours", durationMinutes: 24 * 60, bucketSeconds: 30 * 60 },
   { id: "7d", label: "Last 7 days", durationMinutes: 7 * 24 * 60, bucketSeconds: 6 * 60 * 60 },
   { id: "30d", label: "Last 30 days", durationMinutes: 30 * 24 * 60, bucketSeconds: 24 * 60 * 60 }
+];
+
+const UNIT_TREND_RANGE_OPTIONS: Array<{ id: UnitTrendRangeId; label: string; durationMs: number; points: number }> = [
+  { id: "12h", label: "Past 12 Hours", durationMs: 12 * 60 * 60 * 1000, points: 24 },
+  { id: "24h", label: "Past 24 Hours", durationMs: 24 * 60 * 60 * 1000, points: 24 },
+  { id: "7d", label: "Past 7 Days", durationMs: 7 * 24 * 60 * 60 * 1000, points: 28 },
+  { id: "30d", label: "Past 30 Days", durationMs: 30 * 24 * 60 * 60 * 1000, points: 30 },
+  { id: "1y", label: "Past 1 Year", durationMs: 365 * 24 * 60 * 60 * 1000, points: 52 }
 ];
 
 const OUTGOING_WINDOW_OPTIONS: Array<{
@@ -480,6 +521,13 @@ const HEAT_MAP_VIEW_OPTIONS: Array<{ id: HeatMapViewId; label: string; descripti
     description: "Facilities with elevated respiratory census relative to staffed beds.",
     countLabel: "Respiratory Pressure",
     emptyMessage: "No facilities currently exceed respiratory pressure thresholds."
+  },
+  {
+    id: "surgeReadiness",
+    label: "Emergent Surge Capability",
+    description: "Facility readiness to absorb an emergent surge based on occupancy, availability, disruptions, and data recency.",
+    countLabel: "Surge Profiles",
+    emptyMessage: "No facilities are currently available for surge capability evaluation."
   }
 ];
 const LEAFLET_SCRIPT_ID = "leaflet-script";
@@ -559,6 +607,70 @@ function heatMapCapacityStatus(capacityPercent: number): HeatMapFacility["marker
     return "warning";
   }
   return "good";
+}
+
+function evaluateSurgeCapability(row: HeatMapFacilityAggregate): SurgeCapabilityAssessment {
+  if (row.staffedBeds <= 0) {
+    return {
+      markerStatus: "warning",
+      label: "Moderate",
+      score: 40,
+      detail: "No staffed bed capacity reported for this facility."
+    };
+  }
+
+  const constraints: string[] = [];
+  if (row.capacityPercent >= 95) {
+    constraints.push("occupancy >= 95%");
+  }
+  if (row.availablePercent < 5) {
+    constraints.push("available capacity < 5%");
+  }
+  if (row.diversionUnits + row.closedUnits > 0) {
+    constraints.push("diversion/closed units present");
+  }
+  if (row.minutesSinceUpdate === null || row.minutesSinceUpdate > 60) {
+    constraints.push("stale submissions");
+  }
+
+  if (constraints.length > 0) {
+    return {
+      markerStatus: "critical",
+      label: "Low",
+      score: 20,
+      detail: constraints.join(", ")
+    };
+  }
+
+  const moderateSignals: string[] = [];
+  if (row.capacityPercent >= 88) {
+    moderateSignals.push("occupancy above 88%");
+  }
+  if (row.availablePercent < 12) {
+    moderateSignals.push("available capacity below 12%");
+  }
+  if (row.limitedUnits > 0) {
+    moderateSignals.push("limited units active");
+  }
+  if (row.minutesSinceUpdate !== null && row.minutesSinceUpdate > 30) {
+    moderateSignals.push("update older than 30 minutes");
+  }
+
+  if (moderateSignals.length > 0) {
+    return {
+      markerStatus: "warning",
+      label: "Moderate",
+      score: 55,
+      detail: moderateSignals.join(", ")
+    };
+  }
+
+  return {
+    markerStatus: "good",
+    label: "High",
+    score: 85,
+    detail: "Stable occupancy, healthy availability, and current submissions."
+  };
 }
 
 function normalizeHeatMapAoiPoints(points: HeatMapAoiPoint[]): HeatMapAoiPoint[] {
@@ -908,6 +1020,7 @@ function apiTabIcon(tabId: ApiTabId) {
 
 export default function App() {
   const initialSessionUser = readSessionUserFromStorage();
+  const authProviderWarning = getAuthProviderWarning();
   const [activeTab, setActiveTab] = useState<TabId>("manual");
   const [activeApiTab, setActiveApiTab] = useState<ApiTabId>("fhir");
   const [manualViewMode, setManualViewMode] = useState<ManualViewMode>("beds");
@@ -915,15 +1028,12 @@ export default function App() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(initialSessionUser));
+  const [authInitializing, setAuthInitializing] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [sessionUser, setSessionUser] = useState<SessionUser | null>(initialSessionUser);
   const [loginSubmitting, setLoginSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginBackdropAvailable, setLoginBackdropAvailable] = useState(true);
-  const [loginForm, setLoginForm] = useState<LoginFormState>({
-    email: DEMO_LOGIN_EMAIL,
-    password: DEMO_LOGIN_PASSWORD
-  });
 
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [bedStatuses, setBedStatuses] = useState<BedStatusRecord[]>([]);
@@ -940,6 +1050,7 @@ export default function App() {
   const [incomingApiFilter, setIncomingApiFilter] = useState<IncomingApiFilter>("all");
   const [incomingWindowId, setIncomingWindowId] = useState<IncomingWindowId>("24h");
   const [outgoingWindowId, setOutgoingWindowId] = useState<OutgoingWindowId>("1d");
+  const [unitTrendRangeId, setUnitTrendRangeId] = useState<UnitTrendRangeId>("12h");
   const [incomingSubmissionsByApi, setIncomingSubmissionsByApi] = useState<
     Record<Exclude<IncomingApiFilter, "all">, AnalyticsSubmissionsResponse | null>
   >({
@@ -1031,7 +1142,7 @@ export default function App() {
   const [aiLatestResponse, setAiLatestResponse] = useState<AiHelperEntry | null>(null);
   const [aiHistory, setAiHistory] = useState<AiHelperEntry[]>([]);
   const [userSettings, setUserSettings] = useState<UserSettings>({
-    email: initialSessionUser?.email ?? DEMO_LOGIN_EMAIL,
+    email: initialSessionUser?.email ?? DEFAULT_ADMIN_EMAIL,
     phone: "+1",
     emailNotifications: true,
     smsNotifications: false,
@@ -1067,6 +1178,30 @@ export default function App() {
       type: "error",
       message: error instanceof Error ? error.message : "Unexpected error."
     });
+  }, []);
+
+  const applyAuthenticatedSession = useCallback((nextUser: SessionUser) => {
+    setSessionUser(nextUser);
+    setUserSettings((current) => ({ ...current, email: nextUser.email }));
+    setActiveApiTab("fhir");
+    setLoginError(null);
+
+    if (nextUser.role === "hospital") {
+      const resolvedFacilityCode = nextUser.facilityCode ?? DEMO_HOSPITAL_FACILITY_CODE;
+      const resolvedFacilityId = nextUser.facilityId ?? `fac-${resolvedFacilityCode}`;
+      setNotifications(buildInitialNotifications("hospital", resolvedFacilityCode));
+      setFilters((current) => ({ ...current, facilityId: resolvedFacilityId }));
+      setBedModalForm({ ...EMPTY_BED_MODAL_FORM, facilityId: resolvedFacilityId });
+      setAiScopeFacilityId(resolvedFacilityId);
+      setIsAuthenticated(true);
+      return;
+    }
+
+    setNotifications(buildInitialNotifications("cdph"));
+    setFilters((current) => ({ ...current, facilityId: "" }));
+    setBedModalForm(EMPTY_BED_MODAL_FORM);
+    setAiScopeFacilityId("all");
+    setIsAuthenticated(true);
   }, []);
 
   const loadLeafletAssets = useCallback(async () => {
@@ -1366,6 +1501,61 @@ export default function App() {
     isHospitalUser,
     selectedFacilityDetailsId
   ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAuthInitializing(true);
+    setLoginError(authProviderWarning);
+
+    if (authProviderWarning) {
+      setIsAuthenticated(false);
+      setSessionUser(null);
+      setAuthInitializing(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    (async () => {
+      try {
+        const authIdentity = await initializeAuth0Session();
+        if (cancelled) {
+          return;
+        }
+
+        if (!authIdentity) {
+          setIsAuthenticated(false);
+          setSessionUser(null);
+          return;
+        }
+
+        const mappedSessionUser = resolveSessionUserForEmail(authIdentity.email);
+        if (!mappedSessionUser) {
+          setIsAuthenticated(false);
+          setSessionUser(null);
+          setLoginError("Your Auth0 account is not authorized for this HBEDS environment.");
+          return;
+        }
+
+        applyAuthenticatedSession(mappedSessionUser);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+        setIsAuthenticated(false);
+        setSessionUser(null);
+        setLoginError(error instanceof Error ? error.message : "Unable to initialize secure login.");
+      } finally {
+        if (!cancelled) {
+          setAuthInitializing(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [applyAuthenticatedSession, authProviderWarning]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -1836,6 +2026,13 @@ export default function App() {
       }),
     [facilityHeatMapAggregates]
   );
+  const facilitySurgeCapabilityById = useMemo(
+    () =>
+      new Map<string, SurgeCapabilityAssessment>(
+        facilityHeatMapAggregates.map((facility) => [facility.id, evaluateSurgeCapability(facility)])
+      ),
+    [facilityHeatMapAggregates]
+  );
   const selectedHeatMapView = useMemo(
     () => HEAT_MAP_VIEW_OPTIONS.find((view) => view.id === heatMapViewId) ?? HEAT_MAP_VIEW_OPTIONS[0],
     [heatMapViewId]
@@ -1936,6 +2133,21 @@ export default function App() {
       }));
     }
 
+    if (heatMapViewId === "surgeReadiness") {
+      return facilityHeatMapAggregates
+        .map((row) => ({
+          row,
+          surge: evaluateSurgeCapability(row)
+        }))
+        .sort((a, b) => a.surge.score - b.surge.score || b.row.capacityPercent - a.row.capacityPercent)
+        .map(({ row, surge }) => ({
+          ...row,
+          markerStatus: surge.markerStatus,
+          primaryMetricLabel: `Emergent surge capability: ${surge.label}`,
+          secondaryMetricLabel: surge.detail
+        }));
+    }
+
     const rows = facilityHeatMapAggregates
       .filter((row) => row.staffedBeds > 0 && (row.respiratoryConfirmed / row.staffedBeds) * 100 >= HEAT_MAP_RESPIRATORY_WARNING_THRESHOLD)
       .sort((a, b) => b.respiratoryConfirmed / Math.max(1, b.staffedBeds) - a.respiratoryConfirmed / Math.max(1, a.staffedBeds));
@@ -2012,6 +2224,13 @@ export default function App() {
         { status: "critical", label: "Diversion or closed units present" }
       ];
     }
+    if (heatMapViewId === "surgeReadiness") {
+      return [
+        { status: "good", label: "High emergent surge capability" },
+        { status: "warning", label: "Moderate emergent surge capability" },
+        { status: "critical", label: "Low emergent surge capability" }
+      ];
+    }
     return [
       { status: "warning", label: "Respiratory census over 5% of staffed beds" },
       { status: "critical", label: "Respiratory census over 12% of staffed beds" }
@@ -2035,6 +2254,9 @@ export default function App() {
     }
     if (heatMapViewId === "operationalRisk") {
       return "Live map showing facilities with limited, diversion, or closed unit status.";
+    }
+    if (heatMapViewId === "surgeReadiness") {
+      return "Live map showing each facility's emergent surge handling capability.";
     }
     return "Live map showing facilities with elevated respiratory census pressure.";
   }, [heatMapCapacityThreshold, heatMapViewId]);
@@ -2122,6 +2344,105 @@ export default function App() {
     () => OUTGOING_WINDOW_OPTIONS.find((item) => item.id === outgoingWindowId)?.label ?? "Last 1 day",
     [outgoingWindowId]
   );
+  const selectedUnitTrendRange = useMemo(
+    () => UNIT_TREND_RANGE_OPTIONS.find((option) => option.id === unitTrendRangeId) ?? UNIT_TREND_RANGE_OPTIONS[0],
+    [unitTrendRangeId]
+  );
+  const unitCapacityTrendSeries = useMemo<Array<{ timestampMs: number; occupancyPercent: number }>>(() => {
+    if (!selectedBedStatusDetails) {
+      return [];
+    }
+
+    const points = Math.max(2, selectedUnitTrendRange.points);
+    const nowMs = Number.isFinite(new Date(selectedBedStatusDetails.lastUpdatedAt).getTime())
+      ? new Date(selectedBedStatusDetails.lastUpdatedAt).getTime()
+      : Date.now();
+    const startMs = nowMs - selectedUnitTrendRange.durationMs;
+    const staffed = Math.max(1, selectedBedStatusDetails.staffedBeds);
+    const currentOccupancyPercent = Math.min(100, Math.max(0, (selectedBedStatusDetails.occupiedBeds / staffed) * 100));
+    const phaseOffset = ((hashFacilityToken(`${selectedBedStatusDetails.id}-${unitTrendRangeId}`) % 360) * Math.PI) / 180;
+
+    const rawSeries = Array.from({ length: points }, (_, index) => {
+      const ratio = points <= 1 ? 1 : index / (points - 1);
+      const timestampMs = Math.round(startMs + ratio * selectedUnitTrendRange.durationMs);
+      const longWave = Math.sin(ratio * Math.PI * 2 * 0.85 + phaseOffset) * 4.4;
+      const shortWave = Math.cos(ratio * Math.PI * 2 * 2.4 + phaseOffset * 0.7) * 2.7;
+      const jitterSeed = hashFacilityToken(`${selectedBedStatusDetails.id}-${unitTrendRangeId}-${index}`);
+      const jitter = ((jitterSeed % 1000) / 1000 - 0.5) * 4;
+      return {
+        timestampMs,
+        occupancyPercent: currentOccupancyPercent + longWave + shortWave + jitter
+      };
+    });
+
+    const correction = currentOccupancyPercent - rawSeries[rawSeries.length - 1].occupancyPercent;
+    return rawSeries.map((point, index) => {
+      const ratio = rawSeries.length <= 1 ? 1 : index / (rawSeries.length - 1);
+      const adjusted = point.occupancyPercent + correction * ratio;
+      return {
+        timestampMs: point.timestampMs,
+        occupancyPercent: Math.min(100, Math.max(0, Number(adjusted.toFixed(1))))
+      };
+    });
+  }, [selectedBedStatusDetails, selectedUnitTrendRange, unitTrendRangeId]);
+  const unitCapacityTrendChart = useMemo(() => {
+    if (unitCapacityTrendSeries.length < 2) {
+      return null;
+    }
+
+    const width = 760;
+    const height = 220;
+    const padding = { top: 14, right: 16, bottom: 34, left: 38 };
+    const innerWidth = width - padding.left - padding.right;
+    const innerHeight = height - padding.top - padding.bottom;
+    const baselineY = padding.top + innerHeight;
+    const xForIndex = (index: number) => padding.left + (index / Math.max(1, unitCapacityTrendSeries.length - 1)) * innerWidth;
+    const yForPercent = (percent: number) => padding.top + (1 - percent / 100) * innerHeight;
+    const formatTick = (timestampMs: number): string => {
+      const value = new Date(timestampMs);
+      if (unitTrendRangeId === "12h" || unitTrendRangeId === "24h") {
+        return value.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      }
+      if (unitTrendRangeId === "1y") {
+        return value.toLocaleDateString([], { month: "short", year: "2-digit" });
+      }
+      return value.toLocaleDateString([], { month: "short", day: "numeric" });
+    };
+
+    const linePoints = unitCapacityTrendSeries
+      .map((point, index) => `${xForIndex(index).toFixed(2)},${yForPercent(point.occupancyPercent).toFixed(2)}`)
+      .join(" ");
+    const areaPath = `M ${xForIndex(0).toFixed(2)} ${baselineY.toFixed(2)} L ${linePoints
+      .split(" ")
+      .join(" L ")} L ${xForIndex(unitCapacityTrendSeries.length - 1).toFixed(2)} ${baselineY.toFixed(2)} Z`;
+
+    const values = unitCapacityTrendSeries.map((point) => point.occupancyPercent);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const current = values[values.length - 1];
+    const latestPoint = unitCapacityTrendSeries[unitCapacityTrendSeries.length - 1];
+
+    const tickIndexes = [...new Set([0, Math.round((unitCapacityTrendSeries.length - 1) / 2), unitCapacityTrendSeries.length - 1])];
+    const yTicks = [0, 25, 50, 75, 100];
+
+    return {
+      width,
+      height,
+      linePoints,
+      areaPath,
+      tickIndexes,
+      yTicks,
+      xForIndex,
+      yForPercent,
+      formatTick,
+      current,
+      avg,
+      min,
+      max,
+      latestPoint
+    };
+  }, [unitCapacityTrendSeries, unitTrendRangeId]);
   const aiScopeLabel = useMemo(() => {
     if (aiScopeFacilityId === "all") {
       return "All Facilities";
@@ -2787,62 +3108,32 @@ export default function App() {
   function openBedStatusDetailsModal(row: BedStatusRecord): void {
     setSelectedBedStatusId(row.id);
     setSelectedBedStatusDetails(row);
+    setUnitTrendRangeId("12h");
     setBedStatusDetailsModalOpen(true);
   }
 
   function closeBedStatusDetailsModal(): void {
     setBedStatusDetailsModalOpen(false);
+    setSelectedBedStatusDetails(null);
   }
 
-  async function handleLoginSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
-    setLoginSubmitting(true);
-    setLoginError(null);
-
-    await new Promise((resolve) => window.setTimeout(resolve, 350));
-
-    const normalizedEmail = loginForm.email.trim().toLowerCase();
-    const isCdphLogin = normalizedEmail === DEMO_LOGIN_EMAIL && loginForm.password === DEMO_LOGIN_PASSWORD;
-    const isHospitalLogin =
-      normalizedEmail === DEMO_HOSPITAL_LOGIN_EMAIL && loginForm.password === DEMO_HOSPITAL_LOGIN_PASSWORD;
-
-    if (!isCdphLogin && !isHospitalLogin) {
-      setLoginError("Invalid credentials. Use the demo credentials shown below.");
-      setLoginSubmitting(false);
+  async function handleAuth0Login(): Promise<void> {
+    if (authProviderWarning) {
+      setLoginError(authProviderWarning);
       return;
     }
 
-    if (isCdphLogin) {
-      setSessionUser({
-        email: DEMO_LOGIN_EMAIL,
-        role: "cdph"
-      });
-      setUserSettings((current) => ({ ...current, email: DEMO_LOGIN_EMAIL }));
-      setNotifications(buildInitialNotifications("cdph"));
-      setFilters((current) => ({ ...current, facilityId: "" }));
-      setBedModalForm(EMPTY_BED_MODAL_FORM);
-      setAiScopeFacilityId("all");
-      setActiveApiTab("fhir");
-    } else {
-      setSessionUser({
-        email: DEMO_HOSPITAL_LOGIN_EMAIL,
-        role: "hospital",
-        facilityId: DEMO_HOSPITAL_FACILITY_ID,
-        facilityCode: DEMO_HOSPITAL_FACILITY_CODE
-      });
-      setUserSettings((current) => ({ ...current, email: DEMO_HOSPITAL_LOGIN_EMAIL }));
-      setNotifications(buildInitialNotifications("hospital", DEMO_HOSPITAL_FACILITY_CODE));
-      setFilters((current) => ({ ...current, facilityId: DEMO_HOSPITAL_FACILITY_ID }));
-      setBedModalForm({ ...EMPTY_BED_MODAL_FORM, facilityId: DEMO_HOSPITAL_FACILITY_ID });
-      setAiScopeFacilityId(DEMO_HOSPITAL_FACILITY_ID);
-      setActiveApiTab("fhir");
+    setLoginSubmitting(true);
+    setLoginError(null);
+    try {
+      await loginWithAuth0();
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : "Unable to start secure login.");
+      setLoginSubmitting(false);
     }
-
-    setIsAuthenticated(true);
-    setLoginSubmitting(false);
   }
 
-  function handleSignOut(): void {
+  async function handleSignOut(): Promise<void> {
     setProfileMenuOpen(false);
     setIsAuthenticated(false);
     setSessionUser(null);
@@ -2862,7 +3153,8 @@ export default function App() {
     setBedModalMode("create");
     setEditingBedStatusId(null);
     setBedModalForm(EMPTY_BED_MODAL_FORM);
-    setLoginForm({ email: DEMO_LOGIN_EMAIL, password: DEMO_LOGIN_PASSWORD });
+    setLoginSubmitting(false);
+    setLoginError(null);
     setFilters({
       facilityId: "",
       bedType: "",
@@ -2876,6 +3168,15 @@ export default function App() {
     });
     setFacilityGridSort({ key: "name", direction: "asc" });
     setBedGridSort({ key: "facilityName", direction: "asc" });
+
+    try {
+      await logoutFromAuth0();
+    } catch (error) {
+      setNotice({
+        type: "error",
+        message: error instanceof Error ? error.message : "Unable to complete Auth0 logout."
+      });
+    }
   }
 
   async function handleSaveFacility(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -3521,52 +3822,27 @@ export default function App() {
               <p className="section-subtitle">Authenticate with your account to access HBEDS.</p>
             </div>
 
-            <form className="space-y-3" onSubmit={(event) => void handleLoginSubmit(event)}>
-              <div className="space-y-3">
-                <label className="block text-sm font-medium">
-                  Email
-                  <input
-                    className="soft-input mt-1 w-full"
-                    type="email"
-                    value={loginForm.email}
-                    onChange={(event) => setLoginForm((current) => ({ ...current, email: event.target.value }))}
-                    autoComplete="username"
-                    required
-                  />
-                </label>
-                <label className="block text-sm font-medium">
-                  Password
-                  <input
-                    className="soft-input mt-1 w-full"
-                    type="password"
-                    value={loginForm.password}
-                    onChange={(event) => setLoginForm((current) => ({ ...current, password: event.target.value }))}
-                    autoComplete="current-password"
-                    required
-                  />
-                </label>
-                <button type="submit" className="action-button inline-flex w-full items-center justify-center gap-2 py-2" disabled={loginSubmitting}>
-                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                    <path d="M7 10h8m0 0-2.7-2.7M15 10l-2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M11 4.2H6.2A2.2 2.2 0 0 0 4 6.4v7.2a2.2 2.2 0 0 0 2.2 2.2H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                  </svg>
-                  <span>{loginSubmitting ? "Signing in..." : "Sign In"}</span>
-                </button>
-              </div>
+            <div className="space-y-3">
+              <button
+                type="button"
+                className="action-button inline-flex w-full items-center justify-center gap-2 py-2"
+                disabled={loginSubmitting || authInitializing || Boolean(authProviderWarning)}
+                onClick={() => void handleAuth0Login()}
+              >
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                  <path d="M7 10h8m0 0-2.7-2.7M15 10l-2.7 2.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M11 4.2H6.2A2.2 2.2 0 0 0 4 6.4v7.2a2.2 2.2 0 0 0 2.2 2.2H11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                </svg>
+                <span>{authInitializing ? "Checking secure session..." : loginSubmitting ? "Redirecting..." : "Sign In"}</span>
+              </button>
+
+              <p className="rounded-xl border border-slate-300/70 bg-white/80 px-3 py-2 text-xs text-slate-700">
+                Use your secure account credentials to access HBEDS.
+              </p>
 
               {loginError ? (
                 <p className="rounded-lg border border-rose-300/75 bg-rose-100/80 px-3 py-2 text-sm text-rose-800">{loginError}</p>
               ) : null}
-            </form>
-
-            <div className="rounded-xl border border-slate-300/70 bg-white/80 p-3 text-xs text-slate-700">
-              <p className="font-semibold">Demo accounts</p>
-              <p>
-                <code>{DEMO_LOGIN_EMAIL}</code> / <code>{DEMO_LOGIN_PASSWORD}</code>
-              </p>
-              <p className="mt-1">
-                <code>{DEMO_HOSPITAL_LOGIN_EMAIL}</code> / <code>{DEMO_HOSPITAL_LOGIN_PASSWORD}</code>
-              </p>
             </div>
           </section>
         </section>
@@ -3755,7 +4031,7 @@ export default function App() {
                         <button
                           type="button"
                           className="mt-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm font-medium text-slate-700 transition hover:bg-rose-50 hover:text-rose-700"
-                          onClick={handleSignOut}
+                          onClick={() => void handleSignOut()}
                           role="menuitem"
                         >
                           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
@@ -3926,6 +4202,7 @@ export default function App() {
                               <span className="text-[10px]">{gridSortIndicator(facilityGridSort.key === "county", facilityGridSort.direction)}</span>
                             </button>
                           </th>
+                          <th className="px-3 py-2">Surge</th>
                           <th className="px-3 py-2">Contact</th>
                           <th className="px-3 py-2">
                             <button type="button" className="inline-flex items-center gap-1 hover:text-blue-700" onClick={() => toggleFacilityGridSort("updatedAt")}>
@@ -3987,6 +4264,7 @@ export default function App() {
                             </div>
                           </th>
                           <th className="px-3 py-2" />
+                          <th className="px-3 py-2" />
                           <th className="px-3 py-2">
                             <button
                               type="button"
@@ -4009,6 +4287,7 @@ export default function App() {
                         {hasFacilityRows ? (
                           filteredFacilities.map((facility) => {
                             const isSelected = selectedFacilityDetailsId === facility.id;
+                            const surgeCapability = facilitySurgeCapabilityById.get(facility.id);
                             return (
                               <tr
                                 key={facility.id}
@@ -4043,6 +4322,32 @@ export default function App() {
                                     {facility.county} • {facility.region}
                                   </p>
                                 </td>
+                                <td className="px-3 py-2">
+                                  <span
+                                    className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold ${
+                                      surgeCapability?.markerStatus === "good"
+                                        ? "border-emerald-300 bg-emerald-100 text-emerald-800"
+                                        : surgeCapability?.markerStatus === "warning"
+                                          ? "border-amber-300 bg-amber-100 text-amber-800"
+                                          : "border-rose-300 bg-rose-100 text-rose-800"
+                                    }`}
+                                    title={`Emergent surge capability: ${surgeCapability?.label ?? "Low"}${
+                                      surgeCapability?.detail ? ` (${surgeCapability.detail})` : ""
+                                    }`}
+                                  >
+                                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-3.5 w-3.5">
+                                      <path
+                                        d="M6 16.6V6.1c0-.66.54-1.2 1.2-1.2h5.6c.66 0 1.2.54 1.2 1.2v10.5M8.8 8.6h2.4m-1.2-1.2v2.4"
+                                        stroke="currentColor"
+                                        strokeWidth="1.4"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                      <path d="M8.9 16.6v-2.1h2.2v2.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                    <span>{surgeCapability?.label ?? "Low"}</span>
+                                  </span>
+                                </td>
                                 <td className="px-3 py-2 text-xs text-slate-700">{facility.phone || "N/A"}</td>
                                 <td className="px-3 py-2 text-xs text-slate-600">{new Date(facility.updatedAt).toLocaleString()}</td>
                                 {!isHospitalUser && (
@@ -4072,7 +4377,7 @@ export default function App() {
                           })
                         ) : (
                           <tr>
-                            <td className="px-3 py-8 text-center text-sm text-slate-500" colSpan={isHospitalUser ? 6 : 7}>
+                            <td className="px-3 py-8 text-center text-sm text-slate-500" colSpan={isHospitalUser ? 7 : 8}>
                               No facilities match the current search.
                             </td>
                           </tr>
@@ -6396,7 +6701,7 @@ export default function App() {
 
       {bedStatusDetailsModalOpen && selectedBedStatusDetails && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="surface-panel w-full max-w-3xl space-y-3">
+          <div className="surface-panel w-full max-w-3xl max-h-[90dvh] space-y-3 overflow-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">Unit Details</h2>
               <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeBedStatusDetailsModal}>
@@ -6436,6 +6741,100 @@ export default function App() {
                 <p className="text-xl font-bold">{selectedBedStatusDetails.occupiedBeds}</p>
               </article>
             </div>
+            <article className="rounded-xl border border-slate-200 bg-white p-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Capacity Trend</p>
+                  <p className="text-sm text-slate-600">Historical occupancy utilization for this unit.</p>
+                </div>
+                <label className="text-xs font-medium text-slate-600">
+                  Time Period
+                  <select
+                    className="soft-select mt-1 min-w-[180px]"
+                    value={unitTrendRangeId}
+                    onChange={(event) => setUnitTrendRangeId(event.target.value as UnitTrendRangeId)}
+                  >
+                    {UNIT_TREND_RANGE_OPTIONS.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              {unitCapacityTrendChart ? (
+                <>
+                  <svg viewBox={`0 0 ${unitCapacityTrendChart.width} ${unitCapacityTrendChart.height}`} className="mt-3 h-52 w-full">
+                    {unitCapacityTrendChart.yTicks.map((tick) => (
+                      <g key={`capacity-tick-${tick}`}>
+                        <line
+                          x1={unitCapacityTrendChart.xForIndex(0)}
+                          x2={unitCapacityTrendChart.xForIndex(unitCapacityTrendSeries.length - 1)}
+                          y1={unitCapacityTrendChart.yForPercent(tick)}
+                          y2={unitCapacityTrendChart.yForPercent(tick)}
+                          stroke="#dbeafe"
+                          strokeDasharray="3 3"
+                        />
+                        <text
+                          x={8}
+                          y={unitCapacityTrendChart.yForPercent(tick) + 4}
+                          fill="#64748b"
+                          fontSize="10"
+                        >
+                          {tick}%
+                        </text>
+                      </g>
+                    ))}
+                    <path d={unitCapacityTrendChart.areaPath} fill="#bfdbfe" opacity="0.5" />
+                    <polyline
+                      points={unitCapacityTrendChart.linePoints}
+                      fill="none"
+                      stroke="#2563eb"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx={unitCapacityTrendChart.xForIndex(unitCapacityTrendSeries.length - 1)}
+                      cy={unitCapacityTrendChart.yForPercent(unitCapacityTrendChart.latestPoint.occupancyPercent)}
+                      r="4.2"
+                      fill="#1d4ed8"
+                    />
+                    {unitCapacityTrendChart.tickIndexes.map((index) => {
+                      const point = unitCapacityTrendSeries[index];
+                      return (
+                        <text
+                          key={`capacity-label-${point.timestampMs}-${index}`}
+                          x={unitCapacityTrendChart.xForIndex(index)}
+                          y={unitCapacityTrendChart.height - 10}
+                          textAnchor={index === 0 ? "start" : index === unitCapacityTrendSeries.length - 1 ? "end" : "middle"}
+                          fill="#64748b"
+                          fontSize="10.5"
+                        >
+                          {unitCapacityTrendChart.formatTick(point.timestampMs)}
+                        </text>
+                      );
+                    })}
+                  </svg>
+                  <div className="mt-2 grid gap-2 text-xs text-slate-600 sm:grid-cols-4">
+                    <p>
+                      <span className="font-semibold text-slate-800">Current:</span> {unitCapacityTrendChart.current.toFixed(1)}%
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">Average:</span> {unitCapacityTrendChart.avg.toFixed(1)}%
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">Peak:</span> {unitCapacityTrendChart.max.toFixed(1)}%
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-800">Low:</span> {unitCapacityTrendChart.min.toFixed(1)}%
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="mt-2 text-sm text-slate-500">No trendline data available.</p>
+              )}
+            </article>
             <div className="grid gap-3 sm:grid-cols-4">
               <article className="rounded-xl border border-slate-200 bg-white p-3">
                 <p className="text-xs uppercase tracking-wide text-slate-500">Available Beds</p>

@@ -21,21 +21,42 @@ The UI theme mirrors the FacilityIQ style and uses the CDPH logo from:
 npm install
 ```
 
-2. Configure OpenAI for AI Helper (server-side):
+2. Configure environment variables:
 
 ```bash
-export OPENAI_API_KEY=your_key_here
+cp .env.example .env.local
 ```
 
-Or copy `.env.example` to `.env` and set `OPENAI_API_KEY`.
+Set Auth0 values in `.env.local`:
 
-3. Start web + API servers:
+- `VITE_AUTH0_DOMAIN`
+- `VITE_AUTH0_CLIENT_ID`
+- `AUTH0_MANAGEMENT_CLIENT_ID`
+- `AUTH0_MANAGEMENT_CLIENT_SECRET`
+
+Optional:
+
+- `OPENAI_API_KEY` for AI Helper live responses.
+
+3. Bootstrap Auth0 local users and callback URLs:
+
+```bash
+npm run auth0:bootstrap-local
+```
+
+This bootstraps:
+
+- `cdph.admin@cdph.ca.gov` (CDPH admin, password login)
+- `hospital.user.11205@ca-hbeds.org` (hospital-scoped user, password login)
+- `michael.coen@gmail.com` (admin metadata if the social user already exists)
+
+4. Start web + API servers:
 
 ```bash
 npm run dev
 ```
 
-4. Open:
+5. Open:
 
 - Web app: http://localhost:5280
 - REST API base: http://localhost:4110/api
@@ -49,13 +70,6 @@ If you already use these ports, run with:
 ```bash
 API_PORT=4111 WEB_PORT=5281 npm run dev
 ```
-
-### Demo Login
-
-Use:
-
-- Email: `cdph.admin@cdph.ca.gov`
-- Password: `password`
 
 ## AWS Deploy (Elastic Beanstalk)
 
