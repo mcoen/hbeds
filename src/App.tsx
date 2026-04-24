@@ -1091,6 +1091,7 @@ export default function App() {
   const [incomingWindowId, setIncomingWindowId] = useState<IncomingWindowId>("24h");
   const [outgoingWindowId, setOutgoingWindowId] = useState<OutgoingWindowId>("1d");
   const [unitTrendRangeId, setUnitTrendRangeId] = useState<UnitTrendRangeId>("12h");
+  const [facilityTrendRangeId, setFacilityTrendRangeId] = useState<UnitTrendRangeId>("12h");
   const [incomingSubmissionsByApi, setIncomingSubmissionsByApi] = useState<
     Record<Exclude<IncomingApiFilter, "all">, AnalyticsSubmissionsResponse | null>
   >({
@@ -2408,6 +2409,10 @@ export default function App() {
     () => OUTGOING_WINDOW_OPTIONS.find((item) => item.id === outgoingWindowId)?.label ?? "Last 1 day",
     [outgoingWindowId]
   );
+  const selectedFacilityTrendRange = useMemo(
+    () => UNIT_TREND_RANGE_OPTIONS.find((option) => option.id === facilityTrendRangeId) ?? UNIT_TREND_RANGE_OPTIONS[0],
+    [facilityTrendRangeId]
+  );
   const selectedUnitTrendRange = useMemo(
     () => UNIT_TREND_RANGE_OPTIONS.find((option) => option.id === unitTrendRangeId) ?? UNIT_TREND_RANGE_OPTIONS[0],
     [unitTrendRangeId]
@@ -2429,6 +2434,109 @@ export default function App() {
     () => buildSurgeCapabilityDescription(selectedFacilitySurgeCapability, selectedFacilitySurgeAggregate),
     [selectedFacilitySurgeAggregate, selectedFacilitySurgeCapability]
   );
+  const facilityCapacityTrendSeries = useMemo<Array<{ timestampMs: number; occupancyPercent: number }>>(() => {
+    if (!selectedFacilitySurgeAggregate || !selectedFacilityDetailsFacilityId) {
+      return [];
+    }
+    if (selectedFacilitySurgeAggregate.staffedBeds <= 0) {
+      return [];
+    }
+
+    const points = Math.max(2, selectedFacilityTrendRange.points);
+    const lastUpdatedMs = selectedFacilitySurgeAggregate.lastUpdatedAt
+      ? new Date(selectedFacilitySurgeAggregate.lastUpdatedAt).getTime()
+      : NaN;
+    const nowMs = Number.isFinite(lastUpdatedMs) ? lastUpdatedMs : Date.now();
+    const startMs = nowMs - selectedFacilityTrendRange.durationMs;
+    const currentOccupancyPercent = Math.min(100, Math.max(0, selectedFacilitySurgeAggregate.capacityPercent));
+    const phaseOffset = ((hashFacilityToken(`${selectedFacilityDetailsFacilityId}-${facilityTrendRangeId}`) % 360) * Math.PI) / 180;
+
+    const rawSeries = Array.from({ length: points }, (_, index) => {
+      const ratio = points <= 1 ? 1 : index / (points - 1);
+      const timestampMs = Math.round(startMs + ratio * selectedFacilityTrendRange.durationMs);
+      const longWave = Math.sin(ratio * Math.PI * 2 * 0.9 + phaseOffset) * 3.8;
+      const shortWave = Math.cos(ratio * Math.PI * 2 * 2.1 + phaseOffset * 0.8) * 2.2;
+      const jitterSeed = hashFacilityToken(`${selectedFacilityDetailsFacilityId}-${facilityTrendRangeId}-${index}`);
+      const jitter = ((jitterSeed % 1000) / 1000 - 0.5) * 3;
+      return {
+        timestampMs,
+        occupancyPercent: currentOccupancyPercent + longWave + shortWave + jitter
+      };
+    });
+
+    const correction = currentOccupancyPercent - rawSeries[rawSeries.length - 1].occupancyPercent;
+    return rawSeries.map((point, index) => {
+      const ratio = rawSeries.length <= 1 ? 1 : index / (rawSeries.length - 1);
+      const adjusted = point.occupancyPercent + correction * ratio;
+      return {
+        timestampMs: point.timestampMs,
+        occupancyPercent: Math.min(100, Math.max(0, Number(adjusted.toFixed(1))))
+      };
+    });
+  }, [
+    facilityTrendRangeId,
+    selectedFacilityDetailsFacilityId,
+    selectedFacilitySurgeAggregate,
+    selectedFacilityTrendRange
+  ]);
+  const facilityCapacityTrendChart = useMemo(() => {
+    if (facilityCapacityTrendSeries.length < 2) {
+      return null;
+    }
+
+    const width = 760;
+    const height = 220;
+    const padding = { top: 14, right: 16, bottom: 34, left: 38 };
+    const innerWidth = width - padding.left - padding.right;
+    const innerHeight = height - padding.top - padding.bottom;
+    const baselineY = padding.top + innerHeight;
+    const xForIndex = (index: number) => padding.left + (index / Math.max(1, facilityCapacityTrendSeries.length - 1)) * innerWidth;
+    const yForPercent = (percent: number) => padding.top + (1 - percent / 100) * innerHeight;
+    const formatTick = (timestampMs: number): string => {
+      const value = new Date(timestampMs);
+      if (facilityTrendRangeId === "12h" || facilityTrendRangeId === "24h") {
+        return value.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+      }
+      if (facilityTrendRangeId === "1y") {
+        return value.toLocaleDateString([], { month: "short", year: "2-digit" });
+      }
+      return value.toLocaleDateString([], { month: "short", day: "numeric" });
+    };
+
+    const linePoints = facilityCapacityTrendSeries
+      .map((point, index) => `${xForIndex(index).toFixed(2)},${yForPercent(point.occupancyPercent).toFixed(2)}`)
+      .join(" ");
+    const areaPath = `M ${xForIndex(0).toFixed(2)} ${baselineY.toFixed(2)} L ${linePoints
+      .split(" ")
+      .join(" L ")} L ${xForIndex(facilityCapacityTrendSeries.length - 1).toFixed(2)} ${baselineY.toFixed(2)} Z`;
+
+    const values = facilityCapacityTrendSeries.map((point) => point.occupancyPercent);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
+    const current = values[values.length - 1];
+    const latestPoint = facilityCapacityTrendSeries[facilityCapacityTrendSeries.length - 1];
+
+    const tickIndexes = [...new Set([0, Math.round((facilityCapacityTrendSeries.length - 1) / 2), facilityCapacityTrendSeries.length - 1])];
+    const yTicks = [0, 25, 50, 75, 100];
+
+    return {
+      width,
+      height,
+      linePoints,
+      areaPath,
+      tickIndexes,
+      yTicks,
+      xForIndex,
+      yForPercent,
+      formatTick,
+      current,
+      avg,
+      min,
+      max,
+      latestPoint
+    };
+  }, [facilityCapacityTrendSeries, facilityTrendRangeId]);
   const unitCapacityTrendSeries = useMemo<Array<{ timestampMs: number; occupancyPercent: number }>>(() => {
     if (!selectedBedStatusDetails) {
       return [];
@@ -3177,6 +3285,7 @@ export default function App() {
       setFacilityDetailsMetrics(null);
     }
     setFacilityDetailsLoading(true);
+    setFacilityTrendRangeId("12h");
     setSelectedFacilityDetailsId(facilityId);
     setFacilityDetailsModalOpen(true);
   }
@@ -3184,6 +3293,44 @@ export default function App() {
   function closeFacilityDetailsModal(): void {
     setFacilityDetailsModalOpen(false);
     setFacilityDetailsLoading(false);
+  }
+
+  function handleDownloadFacilityTrendData(): void {
+    if (facilityCapacityTrendSeries.length === 0) {
+      return;
+    }
+
+    const rows: string[][] = [["timestamp_ms", "timestamp_iso", "occupancy_percent"]];
+    for (const point of facilityCapacityTrendSeries) {
+      rows.push([String(point.timestampMs), new Date(point.timestampMs).toISOString(), point.occupancyPercent.toFixed(1)]);
+    }
+
+    const encodeCell = (value: string): string => {
+      const normalized = value.replace(/\r?\n/g, " ").trim();
+      if (normalized.includes("\"") || normalized.includes(",") || normalized.includes("\n")) {
+        return `"${normalized.replace(/"/g, "\"\"")}"`;
+      }
+      return normalized;
+    };
+
+    const csvContent = rows.map((row) => row.map((cell) => encodeCell(cell)).join(",")).join("\n");
+    const facilityToken = (
+      facilityDetailsMetrics?.facility.code ?? selectedFacilityPreview?.code ?? selectedFacilityDetailsId ?? "facility"
+    )
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const timestampToken = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = `hbeds-facility-${facilityToken}-capacity-trend-${timestampToken}.csv`;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = downloadUrl;
+    anchor.download = fileName;
+    document.body.append(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(downloadUrl);
   }
 
   function openBedStatusDetailsModal(row: BedStatusRecord): void {
@@ -6624,12 +6771,13 @@ export default function App() {
                     }`
                   : "Facility Details"}
               </h2>
-              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeFacilityDetailsModal}>
-                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
-                  <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
-                <span>Close</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button type="button" className="close-icon-button" onClick={closeFacilityDetailsModal} aria-label="Close">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                    <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div className="min-h-0 flex-1 space-y-3 overflow-auto pr-1">
@@ -6695,6 +6843,118 @@ export default function App() {
                       <p className="text-2xl font-bold">{facilityDetailsMetrics.onTimeRate !== null ? `${facilityDetailsMetrics.onTimeRate}%` : "N/A"}</p>
                     </article>
                   </div>
+
+                  <article className="rounded-xl border border-slate-200 bg-white p-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-slate-500">Capacity Trend</p>
+                        <p className="text-sm text-slate-600">Historical occupancy utilization aggregated across all units in this facility.</p>
+                      </div>
+                      <div className="flex flex-wrap items-end gap-2">
+                        <label className="flex flex-col gap-2 text-xs font-medium text-slate-600">
+                          Time Period
+                          <select
+                            className="soft-select min-w-[180px]"
+                            value={facilityTrendRangeId}
+                            onChange={(event) => setFacilityTrendRangeId(event.target.value as UnitTrendRangeId)}
+                          >
+                            {UNIT_TREND_RANGE_OPTIONS.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button
+                          type="button"
+                          className="subtle-button inline-flex items-center gap-2"
+                          onClick={handleDownloadFacilityTrendData}
+                          disabled={facilityCapacityTrendSeries.length === 0}
+                        >
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                            <path
+                              d="M10 3.8v8m0-8 2.8 2.8M10 3.8 7.2 6.6M4.6 11.8v2.7a1.9 1.9 0 0 0 1.9 1.9h7a1.9 1.9 0 0 0 1.9-1.9v-2.7"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                          <span>Download Trend Data</span>
+                        </button>
+                      </div>
+                    </div>
+                    {facilityCapacityTrendChart ? (
+                      <>
+                        <svg
+                          viewBox={`0 0 ${facilityCapacityTrendChart.width} ${facilityCapacityTrendChart.height}`}
+                          className="mt-3 h-52 w-full"
+                        >
+                          {facilityCapacityTrendChart.yTicks.map((tick) => (
+                            <g key={`facility-capacity-tick-${tick}`}>
+                              <line
+                                x1={facilityCapacityTrendChart.xForIndex(0)}
+                                x2={facilityCapacityTrendChart.xForIndex(facilityCapacityTrendSeries.length - 1)}
+                                y1={facilityCapacityTrendChart.yForPercent(tick)}
+                                y2={facilityCapacityTrendChart.yForPercent(tick)}
+                                stroke="#dbeafe"
+                                strokeDasharray="3 3"
+                              />
+                              <text x={8} y={facilityCapacityTrendChart.yForPercent(tick) + 4} fill="#64748b" fontSize="10">
+                                {tick}%
+                              </text>
+                            </g>
+                          ))}
+                          <path d={facilityCapacityTrendChart.areaPath} fill="#bfdbfe" opacity="0.5" />
+                          <polyline
+                            points={facilityCapacityTrendChart.linePoints}
+                            fill="none"
+                            stroke="#2563eb"
+                            strokeWidth="2.4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <circle
+                            cx={facilityCapacityTrendChart.xForIndex(facilityCapacityTrendSeries.length - 1)}
+                            cy={facilityCapacityTrendChart.yForPercent(facilityCapacityTrendChart.latestPoint.occupancyPercent)}
+                            r="4.2"
+                            fill="#1d4ed8"
+                          />
+                          {facilityCapacityTrendChart.tickIndexes.map((index) => {
+                            const point = facilityCapacityTrendSeries[index];
+                            return (
+                              <text
+                                key={`facility-capacity-label-${point.timestampMs}-${index}`}
+                                x={facilityCapacityTrendChart.xForIndex(index)}
+                                y={facilityCapacityTrendChart.height - 10}
+                                textAnchor={index === 0 ? "start" : index === facilityCapacityTrendSeries.length - 1 ? "end" : "middle"}
+                                fill="#64748b"
+                                fontSize="10.5"
+                              >
+                                {facilityCapacityTrendChart.formatTick(point.timestampMs)}
+                              </text>
+                            );
+                          })}
+                        </svg>
+                        <div className="mt-2 grid gap-2 text-xs text-slate-600 sm:grid-cols-4">
+                          <p>
+                            <span className="font-semibold text-slate-800">Current:</span> {facilityCapacityTrendChart.current.toFixed(1)}%
+                          </p>
+                          <p>
+                            <span className="font-semibold text-slate-800">Average:</span> {facilityCapacityTrendChart.avg.toFixed(1)}%
+                          </p>
+                          <p>
+                            <span className="font-semibold text-slate-800">Peak:</span> {facilityCapacityTrendChart.max.toFixed(1)}%
+                          </p>
+                          <p>
+                            <span className="font-semibold text-slate-800">Low:</span> {facilityCapacityTrendChart.min.toFixed(1)}%
+                          </p>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="mt-2 text-sm text-slate-500">No trendline data available.</p>
+                    )}
+                  </article>
 
                   <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
                     <article className="surface-panel space-y-3">
@@ -6843,13 +7103,13 @@ export default function App() {
               <h2 className="text-lg font-bold">Notification</h2>
               <button
                 type="button"
-                className="subtle-button inline-flex items-center gap-2"
+                className="close-icon-button"
                 onClick={() => setNotificationModalOpen(false)}
+                aria-label="Close"
               >
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                   <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
-                <span>Close</span>
               </button>
             </div>
             <div className="space-y-3 rounded-xl border border-slate-300/80 bg-white/90 p-4">
@@ -6897,11 +7157,10 @@ export default function App() {
           <div className="surface-panel w-full max-w-3xl max-h-[90dvh] space-y-3 overflow-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">Unit Details</h2>
-              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeBedStatusDetailsModal}>
+              <button type="button" className="close-icon-button" onClick={closeBedStatusDetailsModal} aria-label="Close">
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                   <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
-                <span>Close</span>
               </button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -6940,10 +7199,10 @@ export default function App() {
                   <p className="text-xs uppercase tracking-wide text-slate-500">Capacity Trend</p>
                   <p className="text-sm text-slate-600">Historical occupancy utilization for this unit.</p>
                 </div>
-                <label className="text-xs font-medium text-slate-600">
+                <label className="flex flex-col gap-2 text-xs font-medium text-slate-600">
                   Time Period
                   <select
-                    className="soft-select mt-1 min-w-[180px]"
+                    className="soft-select min-w-[180px]"
                     value={unitTrendRangeId}
                     onChange={(event) => setUnitTrendRangeId(event.target.value as UnitTrendRangeId)}
                   >
@@ -7070,11 +7329,10 @@ export default function App() {
           <div className="surface-panel w-full max-w-lg space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">{facilityModalMode === "edit" ? "Edit Facility" : "Add Facility"}</h2>
-              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeFacilityModal}>
+              <button type="button" className="close-icon-button" onClick={closeFacilityModal} aria-label="Close">
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                   <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
-                <span>Close</span>
               </button>
             </div>
             <form className="space-y-3" onSubmit={(event) => void handleSaveFacility(event)}>
@@ -7241,7 +7499,7 @@ export default function App() {
               <h2 className="text-lg font-bold">Delete Facility</h2>
               <button
                 type="button"
-                className="icon-subtle-button"
+                className="close-icon-button"
                 onClick={closeFacilityDeleteModal}
                 disabled={saving}
                 aria-label="Close"
@@ -7284,11 +7542,10 @@ export default function App() {
           <div className="surface-panel w-full max-w-2xl space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold">{bedModalMode === "edit" ? "Edit Bed Status" : "Add Bed Status"}</h2>
-              <button type="button" className="subtle-button inline-flex items-center gap-2" onClick={closeBedModal}>
+              <button type="button" className="close-icon-button" onClick={closeBedModal} aria-label="Close">
                 <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                   <path d="M6 6l8 8m0-8-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
                 </svg>
-                <span>Close</span>
               </button>
             </div>
             <form className="grid gap-2" onSubmit={(event) => void handleSaveBedStatus(event)}>
