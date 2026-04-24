@@ -6082,8 +6082,8 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-                  <article className="surface-panel-strong stagger-in space-y-3">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
+                  <article className="surface-panel-strong stagger-in min-w-0 space-y-3">
                     {activeApiTab === "bulk" && (
                       <>
                         <h2 className="section-heading">Bulk Import</h2>
@@ -6299,7 +6299,7 @@ export default function App() {
                     </div>
                   </article>
 
-                  <article className="surface-panel stagger-in space-y-3">
+                  <article className="surface-panel stagger-in min-w-0 space-y-3">
                     <h2 className="section-heading">
                       {activeApiTab === "bulk" ? "Bulk Upload Console" : activeApiTab === "sftp" ? "SFTP Submission Console" : "API Query"}
                     </h2>
