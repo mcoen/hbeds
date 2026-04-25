@@ -12,16 +12,24 @@
     "name": "Adventist Health Bakersfield",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.38322,
+    "longitude": -119.020019,
+    "addressLine1": "2615 Chester Avenue",
+    "city": "Bakersfield",
+    "state": "CA",
+    "zip": "93301"
   },
   {
     "code": "10247",
     "name": "Adventist Health Clearlake",
     "county": "Lake",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.935275,
+    "longitude": -122.61995,
+    "addressLine1": "15630 18th Avenue",
+    "city": "Clearlake",
+    "state": "CA",
+    "zip": "95422"
   },
   {
     "code": "12765",
@@ -36,32 +44,48 @@
     "name": "Adventist Health Glendale",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.205188,
+    "longitude": -118.219972,
+    "addressLine1": "Verdugo Boulevard",
+    "city": "Glendale",
+    "state": "CA",
+    "zip": "91020"
   },
   {
     "code": "18194",
     "name": "Adventist Health Hanford",
     "county": "Kings",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.323699,
+    "longitude": -119.667266,
+    "addressLine1": "115 Mall Drive",
+    "city": "Hanford",
+    "state": "CA",
+    "zip": "93230"
   },
   {
     "code": "18198",
     "name": "Adventist Health Howard Memorial",
     "county": "Mendocino",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.390107,
+    "longitude": -123.339029,
+    "addressLine1": "1 Haehl Creek Drive",
+    "city": "Willits",
+    "state": "CA",
+    "zip": "95437"
   },
   {
     "code": "10743",
     "name": "Adventist Health Lodi Memorial",
     "county": "San Joaquin",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.121319,
+    "longitude": -121.286967,
+    "addressLine1": "975 South Fairmont Avenue",
+    "city": "Lodi",
+    "state": "CA",
+    "zip": "95240"
   },
   {
     "code": "10301",
@@ -76,16 +100,24 @@
     "name": "Adventist Health Reedley",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.608458,
+    "longitude": -119.452665,
+    "addressLine1": "West Cypress Avenue",
+    "city": "Reedley",
+    "state": "CA",
+    "zip": "93654"
   },
   {
     "code": "10160",
     "name": "Adventist Health Selma",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.567557,
+    "longitude": -119.598445,
+    "addressLine1": "1141 Rose Avenue",
+    "city": "Selma",
+    "state": "CA",
+    "zip": "93662"
   },
   {
     "code": "10778",
@@ -100,24 +132,36 @@
     "name": "Adventist Health Simi Valley",
     "county": "Ventura",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.289077,
+    "longitude": -118.745683,
+    "addressLine1": "Avenida Simi",
+    "city": "Simi Valley",
+    "state": "CA",
+    "zip": "90363"
   },
   {
     "code": "11151",
     "name": "Adventist Health Sonora",
     "county": "Tuolumne",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.976648,
+    "longitude": -120.371019,
+    "addressLine1": "900 Greenley Road",
+    "city": "Sonora",
+    "state": "CA",
+    "zip": "95370"
   },
   {
     "code": "18163",
     "name": "Adventist Health Sonora",
     "county": "Tuolumne",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.976648,
+    "longitude": -120.371019,
+    "addressLine1": "900 Greenley Road",
+    "city": "Sonora",
+    "state": "CA",
+    "zip": "95370"
   },
   {
     "code": "17358",
@@ -132,24 +176,36 @@
     "name": "Adventist Health St. Helena",
     "county": "Napa",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.542069,
+    "longitude": -122.474406,
+    "addressLine1": "10 Woodland Road",
+    "city": "St. Helena",
+    "state": "CA",
+    "zip": "94574"
   },
   {
     "code": "18202",
     "name": "Adventist Health Tehachapi Valley",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.147534,
+    "longitude": -118.450886,
+    "addressLine1": "1100 Magellan Drive",
+    "city": "Tehachapi",
+    "state": "CA",
+    "zip": "93561"
   },
   {
     "code": "11145",
     "name": "Adventist Health Tulare",
     "county": "Tulare",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.221196,
+    "longitude": -119.338661,
+    "addressLine1": "869 North Cherry Street",
+    "city": "Tulare",
+    "state": "CA",
+    "zip": "93274"
   },
   {
     "code": "13999",
@@ -164,8 +220,12 @@
     "name": "Adventist Health Ukiah Valley",
     "county": "Mendocino",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.152491,
+    "longitude": -123.202799,
+    "addressLine1": "275 Hospital Drive",
+    "city": "Ukiah",
+    "state": "CA",
+    "zip": "95482"
   },
   {
     "code": "12198",
@@ -196,8 +256,12 @@
     "name": "AHMC Seton Medical Center",
     "county": "San Mateo",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.679622,
+    "longitude": -122.474293,
+    "addressLine1": "San Fernando Way",
+    "city": "Daly City",
+    "state": "CA",
+    "zip": "94015"
   },
   {
     "code": "12678",
@@ -212,40 +276,60 @@
     "name": "Alameda Hospital",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.762734,
+    "longitude": -122.253912,
+    "addressLine1": "2070 Clinton Avenue",
+    "city": "Alameda",
+    "state": "CA",
+    "zip": "94501"
   },
   {
     "code": "11386",
     "name": "Alhambra Hospital Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.090125,
+    "longitude": -118.144207,
+    "addressLine1": "100 South Raymond Avenue",
+    "city": "Alhambra",
+    "state": "CA",
+    "zip": "91801"
   },
   {
     "code": "11322",
     "name": "Alta Bates Summit Medical Center",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.820209,
+    "longitude": -122.264929,
+    "addressLine1": "350 Hawthorne Avenue",
+    "city": "Oakland",
+    "state": "CA",
+    "zip": "94609"
   },
   {
     "code": "11338",
     "name": "Alta Bates Summit Medical Center - Summit Campus",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.820209,
+    "longitude": -122.264929,
+    "addressLine1": "350 Hawthorne Avenue",
+    "city": "Oakland",
+    "state": "CA",
+    "zip": "94609"
   },
   {
     "code": "11214",
     "name": "Alta Bates Summit Medical Center-Alta Bates Campus",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.855471,
+    "longitude": -122.257222,
+    "addressLine1": "2450 Ashby Avenue",
+    "city": "Berkeley",
+    "state": "CA",
+    "zip": "94705"
   },
   {
     "code": "10381",
@@ -260,8 +344,12 @@
     "name": "Anaheim Global Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.820504,
+    "longitude": -117.90963,
+    "addressLine1": "South Anaheim Boulevard",
+    "city": "Anaheim",
+    "state": "CA",
+    "zip": "92805"
   },
   {
     "code": "11399",
@@ -276,72 +364,108 @@
     "name": "Arrowhead Regional Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.073703,
+    "longitude": -117.350671,
+    "addressLine1": "Tom Gould Road",
+    "city": "Colton",
+    "state": "CA",
+    "zip": "92410"
   },
   {
     "code": "10207",
     "name": "Bakersfield Memorial Hospital",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.392905,
+    "longitude": -119.006685,
+    "addressLine1": "420 34th Street",
+    "city": "Bakersfield",
+    "state": "CA",
+    "zip": "93301"
   },
   {
     "code": "16877",
     "name": "Ballard Rehabilitation Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.12941,
+    "longitude": -117.325489,
+    "addressLine1": "1760 West 16th Street",
+    "city": "San Bernardino",
+    "state": "CA",
+    "zip": "92411"
   },
   {
     "code": "17940",
     "name": "Banner Lassen Medical Center",
     "county": "Lassen",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.436293,
+    "longitude": -120.62727,
+    "addressLine1": "1800 Spring Ridge Drive",
+    "city": "Susanville",
+    "state": "CA",
+    "zip": "96130"
   },
   {
     "code": "11417",
     "name": "Barlow Respiratory Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.075234,
+    "longitude": -118.247376,
+    "addressLine1": "2000 Stadium Way",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90026"
   },
   {
     "code": "18197",
     "name": "Barstow Community Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.892528,
+    "longitude": -117.017369,
+    "addressLine1": "820 East Mountain View Street",
+    "city": "Barstow",
+    "state": "CA",
+    "zip": "92311"
   },
   {
     "code": "10109",
     "name": "Barton Memorial Hospital",
     "county": "El Dorado",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.911773,
+    "longitude": -119.996649,
+    "addressLine1": "2170 South Avenue",
+    "city": "South Lake Tahoe",
+    "state": "CA",
+    "zip": "96150"
   },
   {
     "code": "13035",
     "name": "Bear Valley Community Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.246499,
+    "longitude": -116.88864,
+    "addressLine1": "41870 Garstin Drive",
+    "city": "Big Bear Lake",
+    "state": "CA",
+    "zip": "92315"
   },
   {
     "code": "11480",
     "name": "California Hospital Medical Center - Los Angeles",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.037928,
+    "longitude": -118.265831,
+    "addressLine1": "1332 South Hope Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90015"
   },
   {
     "code": "10027",
@@ -380,32 +504,48 @@
     "name": "California Rehabilitation Institute  LLC",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.059131,
+    "longitude": -118.411745,
+    "addressLine1": "2070 Century Park East",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90067"
   },
   {
     "code": "11496",
     "name": "Casa Colina Hospital",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.097608,
+    "longitude": -117.746973,
+    "addressLine1": "255 East Bonita Avenue",
+    "city": "Pomona",
+    "state": "CA",
+    "zip": "91767"
   },
   {
     "code": "11410",
     "name": "Catalina Island Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.339157,
+    "longitude": -118.330768,
+    "addressLine1": "100 Falls Canyon Road",
+    "city": "Avalon",
+    "state": "CA",
+    "zip": "90704"
   },
   {
     "code": "10095",
     "name": "Catalina Island Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.339157,
+    "longitude": -118.330768,
+    "addressLine1": "100 Falls Canyon Road",
+    "city": "Avalon",
+    "state": "CA",
+    "zip": "90704"
   },
   {
     "code": "12744",
@@ -420,16 +560,24 @@
     "name": "Cedars-Sinai Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.07516,
+    "longitude": -118.381094,
+    "addressLine1": "Gracie Allen Drive",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90211"
   },
   {
     "code": "11510",
     "name": "Centinela Hospital Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.950461,
+    "longitude": -118.348307,
+    "addressLine1": "555 East Hardy Street",
+    "city": "Inglewood",
+    "state": "CA",
+    "zip": "90301"
   },
   {
     "code": "10820",
@@ -444,24 +592,36 @@
     "name": "Central Valley Specialty Hospital",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.643255,
+    "longitude": -120.99047,
+    "addressLine1": "730 17th Street",
+    "city": "Modesto",
+    "state": "CA",
+    "zip": "95354"
   },
   {
     "code": "10400",
     "name": "Chapman Global Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.788688,
+    "longitude": -117.826761,
+    "addressLine1": "2601 East Chapman Avenue",
+    "city": "Orange",
+    "state": "CA",
+    "zip": "92869"
   },
   {
     "code": "16713",
     "name": "Children's Healthcare Organization of Northern California - Pediatric Hospital",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.259856,
+    "longitude": -121.947518,
+    "addressLine1": "3777 South Bascom Avenue",
+    "city": "Campbell",
+    "state": "CA",
+    "zip": "95008"
   },
   {
     "code": "10922",
@@ -476,32 +636,48 @@
     "name": "Children's Hospital Los Angeles",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.097691,
+    "longitude": -118.29008,
+    "addressLine1": "4650 West Sunset Boulevard",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90029"
   },
   {
     "code": "14370",
     "name": "Children's Hospital of Orange County",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.780905,
+    "longitude": -117.86609,
+    "addressLine1": "1201 West La Veta Avenue",
+    "city": "Orange",
+    "state": "CA",
+    "zip": "92868"
   },
   {
     "code": "14621",
     "name": "Chinese Hospital",
     "county": "San Francisco",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.795477,
+    "longitude": -122.409004,
+    "addressLine1": "845 Jackson Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94133"
   },
   {
     "code": "13072",
     "name": "Chino Valley Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.025703,
+    "longitude": -117.685014,
+    "addressLine1": "5451 Walnut Avenue",
+    "city": "Chino",
+    "state": "CA",
+    "zip": "91710"
   },
   {
     "code": "11527",
@@ -524,80 +700,120 @@
     "name": "Clovis Community Medical Center",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.841285,
+    "longitude": -119.66061,
+    "addressLine1": "2755 Herndon Avenue",
+    "city": "Clovis",
+    "state": "CA",
+    "zip": "93611"
   },
   {
     "code": "10122",
     "name": "Coalinga Regional Medical Center",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.152647,
+    "longitude": -120.341178,
+    "addressLine1": "1191 West Phelps Avenue",
+    "city": "Coalinga",
+    "state": "CA",
+    "zip": "93210"
   },
   {
     "code": "12088",
     "name": "Coast Plaza Hospital",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.912307,
+    "longitude": -118.098475,
+    "addressLine1": "13100 Studebaker Road",
+    "city": "Norwalk",
+    "state": "CA",
+    "zip": "90650"
   },
   {
     "code": "10405",
     "name": "College Hospital Costa Mesa",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.6521,
+    "longitude": -117.911956,
+    "addressLine1": "301 Victoria Street",
+    "city": "Costa Mesa",
+    "state": "CA",
+    "zip": "92627"
   },
   {
     "code": "11927",
     "name": "College Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.807112,
+    "longitude": -118.193071,
+    "addressLine1": "2776 Pacific Avenue",
+    "city": "Long Beach",
+    "state": "CA",
+    "zip": "90806"
   },
   {
     "code": "10684",
     "name": "Colorado River Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.83283,
+    "longitude": -114.617452,
+    "addressLine1": "1401 Bailey Avenue",
+    "city": "Needles",
+    "state": "CA",
+    "zip": "92363"
   },
   {
     "code": "10032",
     "name": "Colusa Medical Center",
     "county": "Colusa",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.206741,
+    "longitude": -122.000376,
+    "addressLine1": "C Street",
+    "city": "Arbee",
+    "state": "CA",
+    "zip": "95932"
   },
   {
     "code": "11549",
     "name": "Community Hospital Of Huntington Park",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.989714,
+    "longitude": -118.223879,
+    "addressLine1": "2623 East Slauson Avenue",
+    "city": "Huntington Park",
+    "state": "CA",
+    "zip": "90255"
   },
   {
     "code": "10697",
     "name": "Community Hospital of San Bernardino",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.131438,
+    "longitude": -117.320373,
+    "addressLine1": "1805 Medical Center Drive",
+    "city": "San Bernardino",
+    "state": "CA",
+    "zip": "92411"
   },
   {
     "code": "10330",
     "name": "Community Hospital of the Monterey Peninsula",
     "county": "Monterey",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.578987,
+    "longitude": -121.91282,
+    "addressLine1": "23625 Scenic Drive",
+    "city": "Monterey",
+    "state": "CA",
+    "zip": "93940"
   },
   {
     "code": "11169",
@@ -612,40 +828,60 @@
     "name": "Community Memorial Hospital - San Buenaventura",
     "county": "Ventura",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.27396,
+    "longitude": -119.25821,
+    "addressLine1": "Hospital Way",
+    "city": "Ventura",
+    "state": "CA",
+    "zip": "93003"
   },
   {
     "code": "10127",
     "name": "Community Regional Medical Center",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.743444,
+    "longitude": -119.784909,
+    "addressLine1": "East Kashian Lane",
+    "city": "Fresno",
+    "state": "CA",
+    "zip": "93724"
   },
   {
     "code": "10049",
     "name": "Contra Costa Regional Medical Center",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.006696,
+    "longitude": -122.132502,
+    "addressLine1": "2500 Alhambra Avenue",
+    "city": "Martinez",
+    "state": "CA",
+    "zip": "94553"
   },
   {
     "code": "10526",
     "name": "Corona Regional Medical Center",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.873393,
+    "longitude": -117.569247,
+    "addressLine1": "West 9th Street",
+    "city": "Corona",
+    "state": "CA",
+    "zip": "92882"
   },
   {
     "code": "10529",
     "name": "Corona Regional Medical Center",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.873393,
+    "longitude": -117.569247,
+    "addressLine1": "West 9th Street",
+    "city": "Corona",
+    "state": "CA",
+    "zip": "92882"
   },
   {
     "code": "17662",
@@ -660,24 +896,36 @@
     "name": "Dameron Hospital",
     "county": "San Joaquin",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.961545,
+    "longitude": -121.301733,
+    "addressLine1": "525 Edison Street",
+    "city": "Stockton",
+    "state": "CA",
+    "zip": "95203"
   },
   {
     "code": "10537",
     "name": "Desert Regional Medical Center",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.839248,
+    "longitude": -116.542441,
+    "addressLine1": "1150 North Indian Canyon Drive",
+    "city": "Palm Springs",
+    "state": "CA",
+    "zip": "92262"
   },
   {
     "code": "12763",
     "name": "Desert Valley Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.47175,
+    "longitude": -117.297825,
+    "addressLine1": "16850 Bear Valley Road",
+    "city": "Hesperia",
+    "state": "CA",
+    "zip": "92395"
   },
   {
     "code": "10054",
@@ -700,8 +948,12 @@
     "name": "Doctors Hospital of Manteca",
     "county": "San Joaquin",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.801053,
+    "longitude": -121.197471,
+    "addressLine1": "1205 East North Street",
+    "city": "Manteca",
+    "state": "CA",
+    "zip": "95336"
   },
   {
     "code": "10554",
@@ -716,64 +968,96 @@
     "name": "Doctors Medical Center",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.665563,
+    "longitude": -120.997371,
+    "addressLine1": "1441 Florida Avenue",
+    "city": "Modesto",
+    "state": "CA",
+    "zip": "95350"
   },
   {
     "code": "10972",
     "name": "Dominican Hospital",
     "county": "Santa Cruz",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.990113,
+    "longitude": -121.983554,
+    "addressLine1": "1555 Soquel Drive",
+    "city": "Live Oak",
+    "state": "CA",
+    "zip": "95065"
   },
   {
     "code": "11598",
     "name": "East Los Angeles Doctors Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.023349,
+    "longitude": -118.184374,
+    "addressLine1": "4060 Whittier Boulevard",
+    "city": "East Los Angeles",
+    "state": "CA",
+    "zip": "90023"
   },
   {
     "code": "10514",
     "name": "Eastern Plumas Hospital-Portola Campus",
     "county": "Plumas",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.805484,
+    "longitude": -120.46284,
+    "addressLine1": "500 1st Avenue",
+    "city": "Portola",
+    "state": "CA",
+    "zip": "96122"
   },
   {
     "code": "18180",
     "name": "Eden Medical Center",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.698084,
+    "longitude": -122.089271,
+    "addressLine1": "20103 Lake Chabot Road",
+    "city": "Castro Valley",
+    "state": "CA",
+    "zip": "94546"
   },
   {
     "code": "12662",
     "name": "Eisenhower Medical Center",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.763365,
+    "longitude": -116.406171,
+    "addressLine1": "Emergency Room Access Road",
+    "city": "Rancho Mirage",
+    "state": "CA",
+    "zip": "92770"
   },
   {
     "code": "10883",
     "name": "El Camino Health",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.312405,
+    "longitude": -121.949676,
+    "addressLine1": "828 Winchester Boulevard",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95128"
   },
   {
     "code": "10874",
     "name": "El Camino Hospital Los Gatos",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.263057,
+    "longitude": -121.969141,
+    "addressLine1": "815 Pollard Road",
+    "city": "Los Gatos",
+    "state": "CA",
+    "zip": "95032"
   },
   {
     "code": "10042",
@@ -788,8 +1072,12 @@
     "name": "El Centro Regional Medical Center",
     "county": "Imperial",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.78048,
+    "longitude": -115.56853,
+    "addressLine1": "1415 Ross Avenue",
+    "city": "El Centro",
+    "state": "CA",
+    "zip": "92243"
   },
   {
     "code": "13093",
@@ -820,40 +1108,60 @@
     "name": "Emanuel Medical Center",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.511719,
+    "longitude": -120.838077,
+    "addressLine1": "Delbon Avenue",
+    "city": "Turlock",
+    "state": "CA",
+    "zip": "95381"
   },
   {
     "code": "11621",
     "name": "Encino Hospital Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.157368,
+    "longitude": -118.486871,
+    "addressLine1": "16237 Ventura Boulevard",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91436"
   },
   {
     "code": "16245",
     "name": "Encompass Health Rehabilitation Hospital of Bakersfield",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.367191,
+    "longitude": -119.057672,
+    "addressLine1": "5001 Commerce Drive",
+    "city": "Bakersfield",
+    "state": "CA",
+    "zip": "93309"
   },
   {
     "code": "18204",
     "name": "Encompass Health Rehabilitation Hospital Of Modesto",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.697028,
+    "longitude": -120.975785,
+    "addressLine1": "1303 Mable Avenue",
+    "city": "Modesto",
+    "state": "CA",
+    "zip": "95355"
   },
   {
     "code": "18213",
     "name": "Encompass Health Rehabilitation Hospital of Murrieta",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.606581,
+    "longitude": -117.16202,
+    "addressLine1": "35470 Whitewood Road",
+    "city": "Murrieta",
+    "state": "CA",
+    "zip": "92563"
   },
   {
     "code": "18226",
@@ -868,8 +1176,12 @@
     "name": "Enloe Health",
     "county": "Butte",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.776049,
+    "longitude": -121.838855,
+    "addressLine1": "3011 Ceres Avenue",
+    "city": "Chico",
+    "state": "CA",
+    "zip": "95973"
   },
   {
     "code": "10009",
@@ -884,32 +1196,48 @@
     "name": "Enloe Rehabilitation Center",
     "county": "Butte",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.754187,
+    "longitude": -121.867532,
+    "addressLine1": "340 West East Avenue",
+    "city": "Chico",
+    "state": "CA",
+    "zip": "95926"
   },
   {
     "code": "14900",
     "name": "Fairchild Medical Center",
     "county": "Siskiyou",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 41.71955,
+    "longitude": -122.645864,
+    "addressLine1": "444 Bruce Street",
+    "city": "Yreka",
+    "state": "CA",
+    "zip": "96097"
   },
   {
     "code": "11268",
     "name": "Fairmont Hospital",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.707592,
+    "longitude": -122.117788,
+    "addressLine1": "Foothill Boulevard",
+    "city": "Ashland",
+    "state": "CA",
+    "zip": "94578"
   },
   {
     "code": "12573",
     "name": "Foothill Regional Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.730223,
+    "longitude": -117.828255,
+    "addressLine1": "14662 Newport Avenue",
+    "city": "Tustin",
+    "state": "CA",
+    "zip": "92780"
   },
   {
     "code": "12964",
@@ -924,40 +1252,60 @@
     "name": "Fresno Heart And Surgical Hospital",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.859947,
+    "longitude": -119.78836,
+    "addressLine1": "15 East Audubon Drive",
+    "city": "Fresno",
+    "state": "CA",
+    "zip": "93720"
   },
   {
     "code": "16878",
     "name": "Fresno Surgical Hospital",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.824914,
+    "longitude": -119.782162,
+    "addressLine1": "6125 North Fresno Street",
+    "city": "Fresno",
+    "state": "CA",
+    "zip": "93710"
   },
   {
     "code": "10450",
     "name": "Garden Grove Hospital and Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.77511,
+    "longitude": -117.912874,
+    "addressLine1": "12601 Garden Grove Boulevard",
+    "city": "Garden Grove",
+    "state": "CA",
+    "zip": "92843"
   },
   {
     "code": "11658",
     "name": "Garfield Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.068338,
+    "longitude": -118.123734,
+    "addressLine1": "525 North Garfield Avenue",
+    "city": "Monterey Park",
+    "state": "CA",
+    "zip": "91754"
   },
   {
     "code": "10338",
     "name": "George L. Mee Memorial Hospital",
     "county": "Monterey",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.206677,
+    "longitude": -121.132797,
+    "addressLine1": "300 Canal Street",
+    "city": "King City",
+    "state": "CA",
+    "zip": "93930"
   },
   {
     "code": "11844",
@@ -972,48 +1320,72 @@
     "name": "Glenn Medical Center",
     "county": "Glenn",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.521427,
+    "longitude": -122.208139,
+    "addressLine1": "West Sycamore Street",
+    "city": "Willows",
+    "state": "CA",
+    "zip": "95988"
   },
   {
     "code": "10831",
     "name": "Goleta Valley Cottage Hospital",
     "county": "Santa Barbara",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.433713,
+    "longitude": -119.809574,
+    "addressLine1": "351 South Patterson Avenue",
+    "city": "Goleta",
+    "state": "CA",
+    "zip": "93111"
   },
   {
     "code": "10890",
     "name": "Good Samaritan Hospital",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.252295,
+    "longitude": -121.945714,
+    "addressLine1": "2425 Samaritan Drive",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95124"
   },
   {
     "code": "10219",
     "name": "Good Samaritan Hospital",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.411731,
+    "longitude": -119.039748,
+    "addressLine1": "901 Olive Drive",
+    "city": "Bakersfield",
+    "state": "CA",
+    "zip": "93309"
   },
   {
     "code": "13224",
     "name": "Greater El Monte Community Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.048151,
+    "longitude": -118.043381,
+    "addressLine1": "1701 Santa Anita Avenue",
+    "city": "El Monte",
+    "state": "CA",
+    "zip": "91733"
   },
   {
     "code": "12322",
     "name": "Grossmont Hospital",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.780938,
+    "longitude": -117.006663,
+    "addressLine1": "5555 Grossmont Center Drive",
+    "city": "La Mesa",
+    "state": "CA",
+    "zip": "91942"
   },
   {
     "code": "10040",
@@ -1028,16 +1400,24 @@
     "name": "Hazel Hawkins Memorial Hospital",
     "county": "San Benito",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.834328,
+    "longitude": -121.386327,
+    "addressLine1": "893 Sunset Drive",
+    "city": "Hollister",
+    "state": "CA",
+    "zip": "95023"
   },
   {
     "code": "12823",
     "name": "Healdsburg Hospital",
     "county": "Sonoma",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.627288,
+    "longitude": -122.864882,
+    "addressLine1": "1375 University Avenue",
+    "city": "Healdsburg",
+    "state": "CA",
+    "zip": "95448"
   },
   {
     "code": "10075",
@@ -1068,8 +1448,12 @@
     "name": "Henry Mayo Newhall Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.398234,
+    "longitude": -118.553087,
+    "addressLine1": "23845 McBean Parkway",
+    "city": "Santa Clarita",
+    "state": "CA",
+    "zip": "91355"
   },
   {
     "code": "33832",
@@ -1084,32 +1468,48 @@
     "name": "Hi-Desert Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.131822,
+    "longitude": -116.275049,
+    "addressLine1": "6601 White Feather Road",
+    "city": "Joshua Tree",
+    "state": "CA",
+    "zip": "92252"
   },
   {
     "code": "11288",
     "name": "Highland Hospital",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.798225,
+    "longitude": -122.231439,
+    "addressLine1": "1411 East 31st Street",
+    "city": "Oakland",
+    "state": "CA",
+    "zip": "94602"
   },
   {
     "code": "16319",
     "name": "Hoag Hospital Irvine",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.660879,
+    "longitude": -117.772591,
+    "addressLine1": "16200 Sand Canyon Avenue",
+    "city": "Irvine",
+    "state": "CA",
+    "zip": "92618"
   },
   {
     "code": "10428",
     "name": "Hoag Memorial Hospital Presbyterian",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.623444,
+    "longitude": -117.929604,
+    "addressLine1": "Hoag Drive",
+    "city": "Newport Beach",
+    "state": "CA",
+    "zip": "92663"
   },
   {
     "code": "18193",
@@ -1124,136 +1524,204 @@
     "name": "Hollywood Presbyterian Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.096256,
+    "longitude": -118.29009,
+    "addressLine1": "1300 North Vermont Avenue",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90029"
   },
   {
     "code": "10431",
     "name": "Huntington Beach Hospital",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.703834,
+    "longitude": -117.987368,
+    "addressLine1": "17772 Beach Boulevard",
+    "city": "Huntington Beach",
+    "state": "CA",
+    "zip": "92647"
   },
   {
     "code": "11733",
     "name": "Huntington Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.133226,
+    "longitude": -118.152244,
+    "addressLine1": "100 West California Boulevard",
+    "city": "Pasadena",
+    "state": "CA",
+    "zip": "91105"
   },
   {
     "code": "10186",
     "name": "Jerold Phelps Community Hospital",
     "county": "Humboldt",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.101622,
+    "longitude": -123.792503,
+    "addressLine1": "733 Cedar Street",
+    "city": "Garberville",
+    "state": "CA",
+    "zip": "95542"
   },
   {
     "code": "10287",
     "name": "John C. Fremont Healthcare District",
     "county": "Mariposa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.50043,
+    "longitude": -119.977678,
+    "addressLine1": "5189 Hospital Road",
+    "city": "Mariposa County",
+    "state": "CA",
+    "zip": "95338"
   },
   {
     "code": "10545",
     "name": "John F. Kennedy Memorial Hospital",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.706125,
+    "longitude": -116.236128,
+    "addressLine1": "Monroe Street",
+    "city": "Indio",
+    "state": "CA",
+    "zip": "92201"
   },
   {
     "code": "10048",
     "name": "John Muir Medical Center-Concord Campus",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.98359,
+    "longitude": -122.033259,
+    "addressLine1": "2540 East Street",
+    "city": "Concord",
+    "state": "CA",
+    "zip": "94520"
   },
   {
     "code": "10081",
     "name": "John Muir Medical Center-Walnut Creek Campus",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.912456,
+    "longitude": -122.040942,
+    "addressLine1": "1601 Ygnacio Canal Trail",
+    "city": "Walnut Creek",
+    "state": "CA",
+    "zip": "94598"
   },
   {
     "code": "18153",
     "name": "Kaiser Foundation Hospital - Antioch",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.950955,
+    "longitude": -121.774857,
+    "addressLine1": "4501 Sand Creek Road",
+    "city": "Antioch",
+    "state": "CA",
+    "zip": "94531"
   },
   {
     "code": "17207",
     "name": "Kaiser Foundation Hospital - Baldwin Park",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.065077,
+    "longitude": -117.98636,
+    "addressLine1": "Bess Avenue",
+    "city": "Baldwin Park",
+    "state": "CA",
+    "zip": "91746"
   },
   {
     "code": "17919",
     "name": "Kaiser Foundation Hospital - Downey",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.919346,
+    "longitude": -118.128576,
+    "addressLine1": "9333 Congressman Steve Horn Way",
+    "city": "Downey",
+    "state": "CA",
+    "zip": "90242"
   },
   {
     "code": "10670",
     "name": "Kaiser Foundation Hospital - Fontana",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.073086,
+    "longitude": -117.432296,
+    "addressLine1": "9961 Sierra Avenue",
+    "city": "Fontana",
+    "state": "CA",
+    "zip": "92335"
   },
   {
     "code": "14509",
     "name": "Kaiser Foundation Hospital - Fremont",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.553054,
+    "longitude": -121.975355,
+    "addressLine1": "39400 Paseo Padre Parkway",
+    "city": "Fremont",
+    "state": "CA",
+    "zip": "94538"
   },
   {
     "code": "13018",
     "name": "Kaiser Foundation Hospital - Fresno",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.842828,
+    "longitude": -119.781316,
+    "addressLine1": "7300 North Fresno Street",
+    "city": "Fresno",
+    "state": "CA",
+    "zip": "93720"
   },
   {
     "code": "11760",
     "name": "Kaiser Foundation Hospital - Los Angeles",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.066897,
+    "longitude": -118.243402,
+    "addressLine1": "765 West College Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90012"
   },
   {
     "code": "16324",
     "name": "Kaiser Foundation Hospital - Manteca",
     "county": "San Joaquin",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.797942,
+    "longitude": -121.247124,
+    "addressLine1": "West Yosemite Avenue",
+    "city": "Manteca",
+    "state": "CA",
+    "zip": "95337"
   },
   {
     "code": "16325",
     "name": "Kaiser Foundation Hospital - Moreno Valley",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.896642,
+    "longitude": -117.187726,
+    "addressLine1": "27300 Iris Avenue",
+    "city": "Moreno Valley",
+    "state": "CA",
+    "zip": "92555"
   },
   {
     "code": "18206",
@@ -1268,40 +1736,60 @@
     "name": "Kaiser Foundation Hospital - Ontario",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.032414,
+    "longitude": -117.608803,
+    "addressLine1": "2295 South Vineyard Avenue",
+    "city": "Ontario",
+    "state": "CA",
+    "zip": "91761"
   },
   {
     "code": "18178",
     "name": "Kaiser Foundation Hospital - Orange County - Anaheim",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.852484,
+    "longitude": -117.844456,
+    "addressLine1": "3440 East La Palma Avenue",
+    "city": "Anaheim",
+    "state": "CA",
+    "zip": "92806"
   },
   {
     "code": "18152",
     "name": "Kaiser Foundation Hospital - Orange County - Irvine",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.657477,
+    "longitude": -117.77393,
+    "addressLine1": "6640 Alton Parkway",
+    "city": "Irvine",
+    "state": "CA",
+    "zip": "92618"
   },
   {
     "code": "11759",
     "name": "Kaiser Foundation Hospital - Panorama City",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.218514,
+    "longitude": -118.429892,
+    "addressLine1": "13651 Willard Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91402"
   },
   {
     "code": "18219",
     "name": "Kaiser Foundation Hospital - Redwood City",
     "county": "San Mateo",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.489236,
+    "longitude": -122.224299,
+    "addressLine1": "Veterans Boulevard",
+    "city": "Redwood City",
+    "state": "CA",
+    "zip": "94063"
   },
   {
     "code": "13142",
@@ -1324,144 +1812,216 @@
     "name": "Kaiser Foundation Hospital - Riverside",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.904991,
+    "longitude": -117.469264,
+    "addressLine1": "10800 Magnolia Avenue",
+    "city": "Riverside",
+    "state": "CA",
+    "zip": "92505"
   },
   {
     "code": "14214",
     "name": "Kaiser Foundation Hospital - Roseville",
     "county": "Placer",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.746513,
+    "longitude": -121.250078,
+    "addressLine1": "1600 Eureka Road",
+    "city": "Roseville",
+    "state": "CA",
+    "zip": "95661"
   },
   {
     "code": "10604",
     "name": "Kaiser Foundation Hospital - Sacramento",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.601933,
+    "longitude": -121.393451,
+    "addressLine1": "Morse Avenue",
+    "city": "Arden-Arcade",
+    "state": "CA",
+    "zip": "95825"
   },
   {
     "code": "18199",
     "name": "Kaiser Foundation Hospital - San Diego",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.83013,
+    "longitude": -117.12487,
+    "addressLine1": "Thrive Driveway",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92137"
   },
   {
     "code": "12430",
     "name": "Kaiser Foundation Hospital - San Francisco",
     "county": "San Francisco",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.783511,
+    "longitude": -122.440645,
+    "addressLine1": "2238 Garden Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94115"
   },
   {
     "code": "10044",
     "name": "Kaiser Foundation Hospital - San Jose",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.239807,
+    "longitude": -121.800269,
+    "addressLine1": "International Circle",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95119"
   },
   {
     "code": "18186",
     "name": "Kaiser Foundation Hospital - San Leandro",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.706365,
+    "longitude": -122.164978,
+    "addressLine1": "2500 Merced Street",
+    "city": "San Leandro",
+    "state": "CA",
+    "zip": "94577"
   },
   {
     "code": "10028",
     "name": "Kaiser Foundation Hospital - San Marcos",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.129762,
+    "longitude": -117.17043,
+    "addressLine1": "Tiburon Street",
+    "city": "San Marcos",
+    "state": "CA",
+    "zip": "92096"
   },
   {
     "code": "10268",
     "name": "Kaiser Foundation Hospital - San Rafael",
     "county": "Marin",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.004667,
+    "longitude": -122.555113,
+    "addressLine1": "Montecillo Road",
+    "city": "San Rafael",
+    "state": "CA",
+    "zip": "94903"
   },
   {
     "code": "16242",
     "name": "Kaiser Foundation Hospital - Santa Rosa",
     "county": "Sonoma",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.471813,
+    "longitude": -122.727186,
+    "addressLine1": "3565 Mendocino Avenue",
+    "city": "Santa Rosa",
+    "state": "CA",
+    "zip": "95403"
   },
   {
     "code": "11758",
     "name": "Kaiser Foundation Hospital - South Bay",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.787915,
+    "longitude": -118.29635,
+    "addressLine1": "25825 South Vermont Avenue",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90710"
   },
   {
     "code": "15570",
     "name": "Kaiser Foundation Hospital - South Sacramento",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.469415,
+    "longitude": -121.422832,
+    "addressLine1": "6600 Bruceville Road",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95823"
   },
   {
     "code": "13086",
     "name": "Kaiser Foundation Hospital - South San Francisco",
     "county": "San Mateo",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.659655,
+    "longitude": -122.439857,
+    "addressLine1": "South San Francisco Centennial Way",
+    "city": "South San Francisco",
+    "state": "CA",
+    "zip": "94080"
   },
   {
     "code": "18164",
     "name": "Kaiser Foundation Hospital - Vacaville",
     "county": "Solano",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.388171,
+    "longitude": -121.938101,
+    "addressLine1": "Quality Drive",
+    "city": "Vacaville",
+    "state": "CA",
+    "zip": "95687"
   },
   {
     "code": "10072",
     "name": "Kaiser Foundation Hospital - Walnut Creek",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.891154,
+    "longitude": -122.05853,
+    "addressLine1": "1425 South Main Street",
+    "city": "Walnut Creek",
+    "state": "CA",
+    "zip": "94596"
   },
   {
     "code": "15666",
     "name": "Kaiser Foundation Hospital - Woodland Hills",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.17117,
+    "longitude": -118.589785,
+    "addressLine1": "5601 De Soto Avenue",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91365"
   },
   {
     "code": "13111",
     "name": "Kaiser Foundation Hospital - Zion",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.791412,
+    "longitude": -117.094983,
+    "addressLine1": "4647 Zion Avenue",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92120"
   },
   {
     "code": "18151",
     "name": "Kaiser Foundation Hospital Modesto",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.708013,
+    "longitude": -121.052852,
+    "addressLine1": "Healthcare Way",
+    "city": "Modesto",
+    "state": "CA",
+    "zip": "95356"
   },
   {
     "code": "10022",
@@ -1476,24 +2036,36 @@
     "name": "Kaiser Foundation Hospital-San Jose",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.239807,
+    "longitude": -121.800269,
+    "addressLine1": "International Circle",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95119"
   },
   {
     "code": "17668",
     "name": "Kaiser Foundation Hospital-Santa Clara",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.239807,
+    "longitude": -121.800269,
+    "addressLine1": "International Circle",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95119"
   },
   {
     "code": "12875",
     "name": "Kaiser Foundation Hospital-West LA",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.066897,
+    "longitude": -118.243402,
+    "addressLine1": "765 West College Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90012"
   },
   {
     "code": "12601",
@@ -1516,16 +2088,24 @@
     "name": "Keck Hospital of USC",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.062726,
+    "longitude": -118.201888,
+    "addressLine1": "Norfolk Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90033"
   },
   {
     "code": "10261",
     "name": "Kentfield Hospital",
     "county": "Marin",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.958706,
+    "longitude": -122.552496,
+    "addressLine1": "1125 Sir Francis Drake Boulevard",
+    "city": "Kentfield",
+    "state": "CA",
+    "zip": "94904"
   },
   {
     "code": "18227",
@@ -1540,8 +2120,12 @@
     "name": "Kern Medical Center",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.382671,
+    "longitude": -118.970239,
+    "addressLine1": "Flower Street",
+    "city": "East Bakersfield",
+    "state": "CA",
+    "zip": "93305"
   },
   {
     "code": "10210",
@@ -1556,112 +2140,168 @@
     "name": "Kindred Hospital - La Mirada",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.916283,
+    "longitude": -118.013277,
+    "addressLine1": "Imperial Highway",
+    "city": "La Mirada",
+    "state": "CA",
+    "zip": "90639"
   },
   {
     "code": "11414",
     "name": "Kindred Hospital - Los Angeles",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.990131,
+    "longitude": -118.378451,
+    "addressLine1": "5525 West Slauson Avenue",
+    "city": "Ladera Heights",
+    "state": "CA",
+    "zip": "90056"
   },
   {
     "code": "12328",
     "name": "Kindred Hospital - San Diego",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.756337,
+    "longitude": -117.144399,
+    "addressLine1": "1940 El Cajon Boulevard",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92104"
   },
   {
     "code": "11321",
     "name": "Kindred Hospital - San Francisco Bay Area",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.716703,
+    "longitude": -122.130809,
+    "addressLine1": "2800 Benedict Drive",
+    "city": "San Leandro",
+    "state": "CA",
+    "zip": "94578"
   },
   {
     "code": "11776",
     "name": "Kindred Hospital - San Gabriel Valley",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.087244,
+    "longitude": -117.917263,
+    "addressLine1": "845 North Lark Ellen Avenue",
+    "city": "West Covina",
+    "state": "CA",
+    "zip": "91791"
   },
   {
     "code": "10407",
     "name": "Kindred Hospital - Santa Ana",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.762291,
+    "longitude": -117.891514,
+    "addressLine1": "1901 College Avenue",
+    "city": "Santa Ana",
+    "state": "CA",
+    "zip": "92706"
   },
   {
     "code": "11704",
     "name": "Kindred Hospital Baldwin Park",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.062555,
+    "longitude": -117.967744,
+    "addressLine1": "14148 Francisquito Avenue",
+    "city": "Baldwin Park",
+    "state": "CA",
+    "zip": "91706"
   },
   {
     "code": "13068",
     "name": "Kindred Hospital Brea",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.934916,
+    "longitude": -117.893865,
+    "addressLine1": "North Brea Boulevard",
+    "city": "Brea",
+    "state": "CA",
+    "zip": "92821"
   },
   {
     "code": "10685",
     "name": "Kindred Hospital Ontario",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.06928,
+    "longitude": -117.6426,
+    "addressLine1": "550 North Monterey Avenue",
+    "city": "Ontario",
+    "state": "CA",
+    "zip": "91764"
   },
   {
     "code": "12787",
     "name": "Kindred Hospital Paramount",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.883792,
+    "longitude": -118.162268,
+    "addressLine1": "Harrison Street",
+    "city": "Paramount",
+    "state": "CA",
+    "zip": "90723"
   },
   {
     "code": "14102",
     "name": "Kindred Hospital Rancho",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.103687,
+    "longitude": -117.566315,
+    "addressLine1": "10841 White Oak Avenue",
+    "city": "Rancho Cucamonga",
+    "state": "CA",
+    "zip": "91730"
   },
   {
     "code": "13030",
     "name": "Kindred Hospital Riverside",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.812743,
+    "longitude": -117.222374,
+    "addressLine1": "2224 Medical Center Drive",
+    "city": "Perris",
+    "state": "CA",
+    "zip": "92571"
   },
   {
     "code": "11547",
     "name": "Kindred Hospital South Bay",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.890009,
+    "longitude": -118.297425,
+    "addressLine1": "1246 West 155th Street",
+    "city": "Gardena",
+    "state": "CA",
+    "zip": "90247"
   },
   {
     "code": "10476",
     "name": "Kindred Hospital Westminster",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.763533,
+    "longitude": -117.995256,
+    "addressLine1": "200 Hospital Circle",
+    "city": "Westminster",
+    "state": "CA",
+    "zip": "92683"
   },
   {
     "code": "13225",
@@ -1676,8 +2316,12 @@
     "name": "La Palma Intercommunity Hospital",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.847118,
+    "longitude": -118.038837,
+    "addressLine1": "7901 Walker Street",
+    "city": "La Palma",
+    "state": "CA",
+    "zip": "90623"
   },
   {
     "code": "11809",
@@ -1724,56 +2368,84 @@
     "name": "Loma Linda University Children's Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.049121,
+    "longitude": -117.263821,
+    "addressLine1": "11234 Anderson Street",
+    "city": "Loma Linda",
+    "state": "CA",
+    "zip": "92354"
   },
   {
     "code": "10677",
     "name": "Loma Linda University Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.049112,
+    "longitude": -117.263435,
+    "addressLine1": "11234 Anderson Street",
+    "city": "Loma Linda",
+    "state": "CA",
+    "zip": "92354"
   },
   {
     "code": "18175",
     "name": "Loma Linda University Medical Center - Murrieta",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.614767,
+    "longitude": -117.16858,
+    "addressLine1": "Baxter Road",
+    "city": "Murrieta",
+    "state": "CA",
+    "zip": "95262"
   },
   {
     "code": "13073",
     "name": "Loma Linda University Medical Center East Campus Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.046667,
+    "longitude": -117.250218,
+    "addressLine1": "25333 Barton Road",
+    "city": "Loma Linda",
+    "state": "CA",
+    "zip": "92354"
   },
   {
     "code": "18161",
     "name": "Loma Linda University Surgical Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.048885,
+    "longitude": -117.220508,
+    "addressLine1": "26780 Barton Road",
+    "city": "Redlands",
+    "state": "CA",
+    "zip": "92373"
   },
   {
     "code": "10836",
     "name": "Lompoc Valley Medical Center",
     "county": "Santa Barbara",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.641206,
+    "longitude": -120.439582,
+    "addressLine1": "1515 East Ocean Avenue",
+    "city": "Santa Barbara County",
+    "state": "CA",
+    "zip": "93463"
   },
   {
     "code": "11545",
     "name": "Los Angeles Community Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.01918,
+    "longitude": -118.186461,
+    "addressLine1": "4081 East Olympic Boulevard",
+    "city": "East Los Angeles",
+    "state": "CA",
+    "zip": "90023"
   },
   {
     "code": "11428",
@@ -1788,64 +2460,96 @@
     "name": "Los Angeles General Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.059406,
+    "longitude": -118.209238,
+    "addressLine1": "2051 Marengo Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90033"
   },
   {
     "code": "11164",
     "name": "Los Robles Hospital  Medical Center",
     "county": "Ventura",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.20779,
+    "longitude": -118.883147,
+    "addressLine1": "215 Los Robles Hospital Drive",
+    "city": "Thousand Oaks",
+    "state": "CA",
+    "zip": "91360"
   },
   {
     "code": "16244",
     "name": "Los Robles Hospital  Medical Center - East Campus",
     "county": "Ventura",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.154976,
+    "longitude": -118.815786,
+    "addressLine1": "150 South Via Merida",
+    "city": "Thousand Oaks",
+    "state": "CA",
+    "zip": "91362"
   },
   {
     "code": "16477",
     "name": "Lucile Packard Children's Hospital Stanford",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.436157,
+    "longitude": -122.175251,
+    "addressLine1": "408 Panama Mall",
+    "city": "Stanford",
+    "state": "CA",
+    "zip": "94305"
   },
   {
     "code": "13087",
     "name": "Mad River Community Hospital",
     "county": "Humboldt",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.896345,
+    "longitude": -124.091271,
+    "addressLine1": "3800 Janes Road",
+    "city": "Arcata",
+    "state": "CA",
+    "zip": "95521"
   },
   {
     "code": "10257",
     "name": "Madera Community Hospital",
     "county": "Madera",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.944331,
+    "longitude": -120.04464,
+    "addressLine1": "Golden State Boulevard",
+    "city": "Madera",
+    "state": "CA",
+    "zip": "93637"
   },
   {
     "code": "14304",
     "name": "Mammoth Hospital",
     "county": "Mono",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.643277,
+    "longitude": -118.962722,
+    "addressLine1": "85 Sierra Park Road",
+    "city": "Mammoth Lakes",
+    "state": "CA",
+    "zip": "93546"
   },
   {
     "code": "10838",
     "name": "Marian Regional Medical Center",
     "county": "Santa Barbara",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.951045,
+    "longitude": -120.413318,
+    "addressLine1": "East Church Street",
+    "city": "Santa Maria",
+    "state": "CA",
+    "zip": "93454"
   },
   {
     "code": "10766",
@@ -1868,56 +2572,84 @@
     "name": "Mark Twain Medical Center",
     "county": "Calaveras",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.190253,
+    "longitude": -120.669649,
+    "addressLine1": "768 Mountain Ranch Road",
+    "city": "San Andreas",
+    "state": "CA",
+    "zip": "95249"
   },
   {
     "code": "10112",
     "name": "Marshall Medical Center",
     "county": "El Dorado",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.724752,
+    "longitude": -120.79126,
+    "addressLine1": "Marshall Way",
+    "city": "Placerville",
+    "state": "CA",
+    "zip": "95667"
   },
   {
     "code": "12259",
     "name": "Martin Luther King  Jr. Community Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.923311,
+    "longitude": -118.242697,
+    "addressLine1": "1680 East 120th Street",
+    "city": "Willowbrook",
+    "state": "CA",
+    "zip": "90059"
   },
   {
     "code": "11000",
     "name": "Mayers Memorial Hospital",
     "county": "Shasta",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 41.023334,
+    "longitude": -121.424116,
+    "addressLine1": "43563 CA 299",
+    "city": "Fall River Mills",
+    "state": "CA",
+    "zip": "96028"
   },
   {
     "code": "10309",
     "name": "Memorial Hospital Los Banos",
     "county": "Merced",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.064127,
+    "longitude": -120.859161,
+    "addressLine1": "520 West I Street",
+    "city": "Los Banos",
+    "state": "CA",
+    "zip": "93635"
   },
   {
     "code": "11843",
     "name": "Memorial Hospital of Gardena",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.893122,
+    "longitude": -118.29505,
+    "addressLine1": "1145 West Redondo Beach Boulevard",
+    "city": "Gardena",
+    "state": "CA",
+    "zip": "90247"
   },
   {
     "code": "11111",
     "name": "Memorial Medical Center",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.668568,
+    "longitude": -120.973379,
+    "addressLine1": "1700 Coffee Road",
+    "city": "Modesto",
+    "state": "CA",
+    "zip": "95355"
   },
   {
     "code": "11846",
@@ -1956,160 +2688,240 @@
     "name": "Menifee Global Medical Center",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.719485,
+    "longitude": -117.167822,
+    "addressLine1": "28400 McCall Boulevard",
+    "city": "Menifee",
+    "state": "CA",
+    "zip": "92585"
   },
   {
     "code": "10606",
     "name": "Mercy General Hospital",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.570571,
+    "longitude": -121.45302,
+    "addressLine1": "4001 J Street",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95819"
   },
   {
     "code": "10214",
     "name": "Mercy Hospital",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.35197,
+    "longitude": -119.112841,
+    "addressLine1": "400 Old River Road",
+    "city": "Bakersfield",
+    "state": "CA",
+    "zip": "93311"
   },
   {
     "code": "16150",
     "name": "Mercy Hospital Of Folsom",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.670123,
+    "longitude": -121.146569,
+    "addressLine1": "1650 Creekside Drive",
+    "city": "Folsom",
+    "state": "CA",
+    "zip": "95630"
   },
   {
     "code": "10315",
     "name": "Mercy Medical Center",
     "county": "Merced",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.339914,
+    "longitude": -120.467014,
+    "addressLine1": "333 Mercy Avenue",
+    "city": "Merced",
+    "state": "CA",
+    "zip": "95340"
   },
   {
     "code": "13812",
     "name": "Mercy Medical Center Mt. Shasta",
     "county": "Siskiyou",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 41.318359,
+    "longitude": -122.320706,
+    "addressLine1": "914 Pine Street",
+    "city": "Mount Shasta",
+    "state": "CA",
+    "zip": "96067"
   },
   {
     "code": "11002",
     "name": "Mercy Medical Center Redding",
     "county": "Shasta",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.57175,
+    "longitude": -122.395883,
+    "addressLine1": "2175 Rosaline Avenue",
+    "city": "Redding",
+    "state": "CA",
+    "zip": "96001"
   },
   {
     "code": "10607",
     "name": "Mercy San Juan Medical Center",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.66952,
+    "longitude": -121.313176,
+    "addressLine1": "6511 Coyle Avenue",
+    "city": "Sacramento County",
+    "state": "CA",
+    "zip": "95608"
   },
   {
     "code": "17632",
     "name": "Mercy Southwest Hospital",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.35197,
+    "longitude": -119.112841,
+    "addressLine1": "400 Old River Road",
+    "city": "Bakersfield",
+    "state": "CA",
+    "zip": "93311"
   },
   {
     "code": "13012",
     "name": "Methodist Hospital of Sacramento",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.462897,
+    "longitude": -121.416361,
+    "addressLine1": "7500 Hospital Drive",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95823"
   },
   {
     "code": "10804",
     "name": "Mills-Peninsula Medical Center",
     "county": "San Mateo",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.592017,
+    "longitude": -122.383675,
+    "addressLine1": "Davis Drive",
+    "city": "Burlingame",
+    "state": "CA",
+    "zip": "94030"
   },
   {
     "code": "11847",
     "name": "Mission Community Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.220363,
+    "longitude": -118.456474,
+    "addressLine1": "14850 Roscoe Boulevard",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91402"
   },
   {
     "code": "10878",
     "name": "Mission Oaks Hospital",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.244434,
+    "longitude": -121.948316,
+    "addressLine1": "15891 Los Gatos Almaden Road",
+    "city": "Los Gatos",
+    "state": "CA",
+    "zip": "95032"
   },
   {
     "code": "18231",
     "name": "Modoc Medical Center",
     "county": "Modoc",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 41.480138,
+    "longitude": -120.545385,
+    "addressLine1": "228 West McDowell Avenue",
+    "city": "Alturas",
+    "state": "CA",
+    "zip": "96101"
   },
   {
     "code": "11874",
     "name": "Monrovia Memorial Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.148595,
+    "longitude": -117.992585,
+    "addressLine1": "323 South Heliotrope Avenue",
+    "city": "Monrovia",
+    "state": "CA",
+    "zip": "91016"
   },
   {
     "code": "12992",
     "name": "Montclair Hospital Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.079039,
+    "longitude": -117.6958,
+    "addressLine1": "5000 San Bernardino Street",
+    "city": "Montclair",
+    "state": "CA",
+    "zip": "91763"
   },
   {
     "code": "12878",
     "name": "Monterey Park Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.049805,
+    "longitude": -118.138085,
+    "addressLine1": "900 South Atlantic Boulevard",
+    "city": "Monterey Park",
+    "state": "CA",
+    "zip": "91754"
   },
   {
     "code": "10681",
     "name": "Mountains Community Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.265697,
+    "longitude": -117.168103,
+    "addressLine1": "29101 Hospital Road",
+    "city": "Lake Arrowhead",
+    "state": "CA",
+    "zip": "92352"
   },
   {
     "code": "17353",
     "name": "Natividad Medical Center",
     "county": "Monterey",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.697434,
+    "longitude": -121.63411,
+    "addressLine1": "1441 Constitution Boulevard",
+    "city": "Salinas",
+    "state": "CA",
+    "zip": "93906"
   },
   {
     "code": "11019",
     "name": "Northbay Medical Center",
     "county": "Solano",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.262132,
+    "longitude": -122.047777,
+    "addressLine1": "1200 B Gale Wilson Boulevard",
+    "city": "Fairfield",
+    "state": "CA",
+    "zip": "94533"
   },
   {
     "code": "15807",
@@ -2124,32 +2936,48 @@
     "name": "Northern Inyo Hospital",
     "county": "Inyo",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.362089,
+    "longitude": -118.406024,
+    "addressLine1": "West Line Street",
+    "city": "Inyo County",
+    "state": "CA",
+    "zip": "93514"
   },
   {
     "code": "11906",
     "name": "Northridge Hospital Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.219985,
+    "longitude": -118.533879,
+    "addressLine1": "18300 Roscoe Boulevard",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91328"
   },
   {
     "code": "11910",
     "name": "Norwalk Community Hospital",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.91075,
+    "longitude": -118.063936,
+    "addressLine1": "13222 Bloomfield Avenue",
+    "city": "Norwalk",
+    "state": "CA",
+    "zip": "90650"
   },
   {
     "code": "17672",
     "name": "Novato Community Hospital",
     "county": "Marin",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.098774,
+    "longitude": -122.560389,
+    "addressLine1": "4 Rowland Way",
+    "city": "Novato",
+    "state": "CA",
+    "zip": "94945"
   },
   {
     "code": "13110",
@@ -2164,88 +2992,132 @@
     "name": "O'Connor Hospital",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.328232,
+    "longitude": -121.938481,
+    "addressLine1": "2105 Forest Avenue",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95128"
   },
   {
     "code": "11863",
     "name": "Olympia Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.057252,
+    "longitude": -118.360292,
+    "addressLine1": "West Olympic Boulevard",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90064"
   },
   {
     "code": "18007",
     "name": "Orange County Global Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.753953,
+    "longitude": -117.833038,
+    "addressLine1": "1001 North Tustin Avenue",
+    "city": "Santa Ana",
+    "state": "CA",
+    "zip": "92705"
   },
   {
     "code": "10006",
     "name": "Orchard Hospital",
     "county": "Butte",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.367383,
+    "longitude": -121.689577,
+    "addressLine1": "240 Spruce Street",
+    "city": "Gridley",
+    "state": "CA",
+    "zip": "95948"
   },
   {
     "code": "10019",
     "name": "Oroville Hospital",
     "county": "Butte",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.505583,
+    "longitude": -121.541156,
+    "addressLine1": "2767 Olive Highway",
+    "city": "Oroville",
+    "state": "CA",
+    "zip": "95966"
   },
   {
     "code": "12841",
     "name": "Pacific Gardens Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.833464,
+    "longitude": -118.08018,
+    "addressLine1": "21530 215th Street",
+    "city": "Hawaiian Gardens",
+    "state": "CA",
+    "zip": "90716"
   },
   {
     "code": "12042",
     "name": "Pacifica Hospital of the Valley",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.240333,
+    "longitude": -118.396476,
+    "addressLine1": "9449 San Fernando Road",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91352"
   },
   {
     "code": "18141",
     "name": "Palmdale Regional Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.583194,
+    "longitude": -118.144625,
+    "addressLine1": "38600 Medical Center Drive",
+    "city": "Palmdale",
+    "state": "CA",
+    "zip": "93551"
   },
   {
     "code": "10553",
     "name": "Palo Verde Hospital",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.612775,
+    "longitude": -114.594836,
+    "addressLine1": "North 1st Street",
+    "city": "Blythe",
+    "state": "CA",
+    "zip": "92226"
   },
   {
     "code": "18173",
     "name": "Palomar Medical Center",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.120507,
+    "longitude": -117.121528,
+    "addressLine1": "2185 Citracado Parkway",
+    "city": "Escondido",
+    "state": "CA",
+    "zip": "92029"
   },
   {
     "code": "14190",
     "name": "Palomar Medical Center Poway",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.996822,
+    "longitude": -117.055952,
+    "addressLine1": "15615 Pomerado Road",
+    "city": "Poway",
+    "state": "CA",
+    "zip": "92064"
   },
   {
     "code": "18230",
@@ -2260,24 +3132,36 @@
     "name": "Paradise Valley Hospital",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.684553,
+    "longitude": -117.081097,
+    "addressLine1": "2400 East 4th Street",
+    "city": "National City",
+    "state": "CA",
+    "zip": "91950"
   },
   {
     "code": "16679",
     "name": "Patients' Hospital of Redding",
     "county": "Shasta",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.585878,
+    "longitude": -122.416785,
+    "addressLine1": "2900 Eureka Way",
+    "city": "Redding",
+    "state": "CA",
+    "zip": "90301"
   },
   {
     "code": "14568",
     "name": "Petaluma Valley Hospital",
     "county": "Sonoma",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.254572,
+    "longitude": -122.631871,
+    "addressLine1": "Lynch Creek Trail",
+    "city": "Petaluma",
+    "state": "CA",
+    "zip": "94954"
   },
   {
     "code": "11731",
@@ -2292,40 +3176,60 @@
     "name": "PIH Health Hospital - Downey",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.935216,
+    "longitude": -118.130593,
+    "addressLine1": "11500 Brookshire Avenue",
+    "city": "Downey",
+    "state": "CA",
+    "zip": "90241"
   },
   {
     "code": "11968",
     "name": "PIH Health Whittier Hospital",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.969976,
+    "longitude": -118.049717,
+    "addressLine1": "12401 Washington Boulevard",
+    "city": "Whittier",
+    "state": "CA",
+    "zip": "90602"
   },
   {
     "code": "10192",
     "name": "Pioneers Memorial Hospital",
     "county": "Imperial",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.958674,
+    "longitude": -115.554331,
+    "addressLine1": "207 West Legion Road",
+    "city": "Brawley",
+    "state": "CA",
+    "zip": "92227"
   },
   {
     "code": "10512",
     "name": "Plumas District Hospital",
     "county": "Plumas",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.939801,
+    "longitude": -120.961533,
+    "addressLine1": "1065 Bucks Lake Road",
+    "city": "Quincy",
+    "state": "CA",
+    "zip": "95971"
   },
   {
     "code": "11966",
     "name": "Pomona Valley Hospital Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.07722,
+    "longitude": -117.75059,
+    "addressLine1": "1798 North Garey Avenue",
+    "city": "Pomona",
+    "state": "CA",
+    "zip": "91767"
   },
   {
     "code": "12463",
@@ -2340,32 +3244,48 @@
     "name": "Providence Cedars-Sinai Tarzana Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.170505,
+    "longitude": -118.531909,
+    "addressLine1": "18321 Clark Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91356"
   },
   {
     "code": "11726",
     "name": "Providence Holy Cross Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.280803,
+    "longitude": -118.458883,
+    "addressLine1": "15031 Rinaldi Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91345"
   },
   {
     "code": "12023",
     "name": "Providence Little Company Of Mary Medical Center San Pedro",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.739339,
+    "longitude": -118.306685,
+    "addressLine1": "1300 West 7th Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90732"
   },
   {
     "code": "11787",
     "name": "Providence Little Company of Mary Medical Center Torrance",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.838808,
+    "longitude": -118.357185,
+    "addressLine1": "4101 Torrance Boulevard",
+    "city": "Torrance",
+    "state": "CA",
+    "zip": "90503"
   },
   {
     "code": "12804",
@@ -2388,8 +3308,12 @@
     "name": "Providence Queen Of The Valley Medical Center",
     "county": "Napa",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.324863,
+    "longitude": -122.297053,
+    "addressLine1": "1000 Trancas Street",
+    "city": "Napa",
+    "state": "CA",
+    "zip": "94558"
   },
   {
     "code": "10183",
@@ -2404,8 +3328,12 @@
     "name": "Providence Saint Joseph Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.156235,
+    "longitude": -118.328524,
+    "addressLine1": "501 South Buena Vista Street",
+    "city": "Burbank",
+    "state": "CA",
+    "zip": "91505"
   },
   {
     "code": "11054",
@@ -2428,16 +3356,24 @@
     "name": "Providence St. Joseph Hospital",
     "county": "Humboldt",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.784072,
+    "longitude": -124.142219,
+    "addressLine1": "2700 Dolbeer Street",
+    "city": "Eureka",
+    "state": "CA",
+    "zip": "95501"
   },
   {
     "code": "10457",
     "name": "Providence St. Joseph Hospital",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.156235,
+    "longitude": -118.328524,
+    "addressLine1": "501 South Buena Vista Street",
+    "city": "Burbank",
+    "state": "CA",
+    "zip": "91505"
   },
   {
     "code": "10458",
@@ -2460,24 +3396,36 @@
     "name": "Rady Children's Hospital San Diego",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.79823,
+    "longitude": -117.152113,
+    "addressLine1": "Birmingham Drive",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92133"
   },
   {
     "code": "10691",
     "name": "Redlands Community Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.037542,
+    "longitude": -117.206507,
+    "addressLine1": "250 Terracina Boulevard",
+    "city": "Redlands",
+    "state": "CA",
+    "zip": "92373"
   },
   {
     "code": "10856",
     "name": "Regional Medical Center of San Jose",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.362134,
+    "longitude": -121.849368,
+    "addressLine1": "219 North Jackson Avenue",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95116"
   },
   {
     "code": "18162",
@@ -2492,32 +3440,48 @@
     "name": "Ridgecrest Regional Hospital",
     "county": "Kern",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 35.641292,
+    "longitude": -117.67115,
+    "addressLine1": "1081 North China Lake Boulevard",
+    "city": "Ridgecrest",
+    "state": "CA",
+    "zip": "93555"
   },
   {
     "code": "10556",
     "name": "Riverside Community Hospital",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.97652,
+    "longitude": -117.382596,
+    "addressLine1": "Emergency Vehicles Only",
+    "city": "Riverside",
+    "state": "CA",
+    "zip": "92522"
   },
   {
     "code": "15007",
     "name": "Riverside University Health System - Medical Center",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.911926,
+    "longitude": -117.196379,
+    "addressLine1": "26520 Cactus Avenue",
+    "city": "Moreno Valley",
+    "state": "CA",
+    "zip": "92555"
   },
   {
     "code": "12127",
     "name": "Ronald Reagan UCLA Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.066455,
+    "longitude": -118.446519,
+    "addressLine1": "150 Medical Plaza Driveway",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90095"
   },
   {
     "code": "11326",
@@ -2532,96 +3496,144 @@
     "name": "Saint Agnes Medical Center",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.835127,
+    "longitude": -119.765517,
+    "addressLine1": "1303 East Herndon Avenue",
+    "city": "Fresno",
+    "state": "CA",
+    "zip": "93720"
   },
   {
     "code": "12006",
     "name": "Saint John's Health Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.0306,
+    "longitude": -118.479459,
+    "addressLine1": "2121 Santa Monica Boulevard",
+    "city": "Santa Monica",
+    "state": "CA",
+    "zip": "90404"
   },
   {
     "code": "10348",
     "name": "Salinas Valley Health Medical Center",
     "county": "Monterey",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.659097,
+    "longitude": -121.646335,
+    "addressLine1": "450 East Romie Lane",
+    "city": "Salinas",
+    "state": "CA",
+    "zip": "93901"
   },
   {
     "code": "10696",
     "name": "San Antonio Regional Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.101842,
+    "longitude": -117.637567,
+    "addressLine1": "East F Street",
+    "city": "Upland",
+    "state": "CA",
+    "zip": "91786"
   },
   {
     "code": "13084",
     "name": "San Dimas Community Hospital",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.097127,
+    "longitude": -117.834388,
+    "addressLine1": "1350 West Covina Boulevard",
+    "city": "San Dimas",
+    "state": "CA",
+    "zip": "91773"
   },
   {
     "code": "11548",
     "name": "San Gabriel Valley Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.100979,
+    "longitude": -118.10588,
+    "addressLine1": "438 West Las Tunas Drive",
+    "city": "San Gabriel",
+    "state": "CA",
+    "zip": "91776"
   },
   {
     "code": "10559",
     "name": "San Gorgonio Memorial Hospital",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.932158,
+    "longitude": -116.945673,
+    "addressLine1": "600 Wilson Street",
+    "city": "Banning",
+    "state": "CA",
+    "zip": "92220"
   },
   {
     "code": "10753",
     "name": "San Joaquin General Hospital",
     "county": "San Joaquin",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.886327,
+    "longitude": -121.282976,
+    "addressLine1": "500 West Hospital Road",
+    "city": "San Joaquin County",
+    "state": "CA",
+    "zip": "95231"
   },
   {
     "code": "16404",
     "name": "San Joaquin Valley Rehabilitation Hospital",
     "county": "Fresno",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.83988,
+    "longitude": -119.760401,
+    "addressLine1": "7173 North Sharon Avenue",
+    "city": "Fresno",
+    "state": "CA",
+    "zip": "93720"
   },
   {
     "code": "11256",
     "name": "San Leandro Hospital",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.713341,
+    "longitude": -122.142566,
+    "addressLine1": "13855 East 14th Street",
+    "city": "San Leandro",
+    "state": "CA",
+    "zip": "94578"
   },
   {
     "code": "10810",
     "name": "San Mateo Medical Center",
     "county": "San Mateo",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.530904,
+    "longitude": -122.300209,
+    "addressLine1": "West 39th Avenue",
+    "city": "San Mateo",
+    "state": "CA",
+    "zip": "94403"
   },
   {
     "code": "16228",
     "name": "San Ramon Regional Medical Center",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.776431,
+    "longitude": -121.958782,
+    "addressLine1": "6001 Norris Canyon Road",
+    "city": "San Ramon",
+    "state": "CA",
+    "zip": "94583"
   },
   {
     "code": "16166",
@@ -2636,16 +3648,24 @@
     "name": "Santa Barbara Cottage Hospital",
     "county": "Santa Barbara",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.429806,
+    "longitude": -119.723568,
+    "addressLine1": "400 West Pueblo Street",
+    "city": "Santa Barbara",
+    "state": "CA",
+    "zip": "93105"
   },
   {
     "code": "10935",
     "name": "Santa Clara Valley Medical Center",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.313129,
+    "longitude": -121.935318,
+    "addressLine1": "771 Turner Drive",
+    "city": "San Jose",
+    "state": "CA",
+    "zip": "95128"
   },
   {
     "code": "12033",
@@ -2668,40 +3688,60 @@
     "name": "Scripps Green Hospital",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.896318,
+    "longitude": -117.242639,
+    "addressLine1": "11318 North Torrey Pines Road",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92121"
   },
   {
     "code": "12309",
     "name": "Scripps Memorial Hospital - Encinitas",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.037858,
+    "longitude": -117.284498,
+    "addressLine1": "1011 Devonshire Drive",
+    "city": "Encinitas",
+    "state": "CA",
+    "zip": "92024"
   },
   {
     "code": "12363",
     "name": "Scripps Memorial Hospital - La Jolla",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.884364,
+    "longitude": -117.22494,
+    "addressLine1": "Scripps Hospital Drive",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92161"
   },
   {
     "code": "12339",
     "name": "Scripps Mercy Hospital",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.751328,
+    "longitude": -117.160071,
+    "addressLine1": "Lewis Street",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92103"
   },
   {
     "code": "12268",
     "name": "Scripps Mercy Hospital Chula Vista",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.633678,
+    "longitude": -117.08399,
+    "addressLine1": "465 H Street",
+    "city": "Chula Vista",
+    "state": "CA",
+    "zip": "91910"
   },
   {
     "code": "16703",
@@ -2724,16 +3764,24 @@
     "name": "Sequoia Hospital",
     "county": "San Mateo",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.479511,
+    "longitude": -122.255023,
+    "addressLine1": "170 Alameda de las Pulgas",
+    "city": "Redwood City",
+    "state": "CA",
+    "zip": "94062"
   },
   {
     "code": "13336",
     "name": "Sharp Chula Vista Medical Center",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.618853,
+    "longitude": -117.023019,
+    "addressLine1": "751 Medical Center Court",
+    "city": "Chula Vista",
+    "state": "CA",
+    "zip": "91911"
   },
   {
     "code": "12295",
@@ -2756,48 +3804,72 @@
     "name": "Sharp Memorial Hospital",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.799698,
+    "longitude": -117.154353,
+    "addressLine1": "7901 Frost Street",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92123"
   },
   {
     "code": "11001",
     "name": "Shasta Regional Medical Center",
     "county": "Shasta",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.585182,
+    "longitude": -122.387628,
+    "addressLine1": "East Street",
+    "city": "Redding",
+    "state": "CA",
+    "zip": "96001"
   },
   {
     "code": "12047",
     "name": "Sherman Oaks Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.160208,
+    "longitude": -118.449433,
+    "addressLine1": "4955 Van Nuys Boulevard",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91403"
   },
   {
     "code": "14506",
     "name": "Shriners Hospitals For Children Northern California",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.552962,
+    "longitude": -121.455231,
+    "addressLine1": "2425 Stockton Boulevard",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95817"
   },
   {
     "code": "10375",
     "name": "Sierra Nevada Memorial Hospital",
     "county": "Nevada",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.22818,
+    "longitude": -121.04713,
+    "addressLine1": "155 Glasson Way",
+    "city": "Grass Valley",
+    "state": "CA",
+    "zip": "95945"
   },
   {
     "code": "11140",
     "name": "Sierra View Medical Center",
     "county": "Tulare",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.068604,
+    "longitude": -119.025978,
+    "addressLine1": "465 West Putnam Avenue",
+    "city": "Porterville",
+    "state": "CA",
+    "zip": "93257"
   },
   {
     "code": "11052",
@@ -2812,16 +3884,24 @@
     "name": "Sonoma Valley Hospital",
     "county": "Sonoma",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.288078,
+    "longitude": -122.465362,
+    "addressLine1": "347 Andrieux Street",
+    "city": "Sonoma",
+    "state": "CA",
+    "zip": "95476"
   },
   {
     "code": "13059",
     "name": "South Coast Global Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.711129,
+    "longitude": -117.884372,
+    "addressLine1": "2701 South Bristol Street",
+    "city": "Santa Ana",
+    "state": "CA",
+    "zip": "92704"
   },
   {
     "code": "11848",
@@ -2852,8 +3932,12 @@
     "name": "Southern Inyo Hospital",
     "county": "Inyo",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.609113,
+    "longitude": -118.058025,
+    "addressLine1": "501 East Locust Street",
+    "city": "Lone Pine",
+    "state": "CA",
+    "zip": "93545"
   },
   {
     "code": "15749",
@@ -2884,40 +3968,60 @@
     "name": "St Rose Hospital",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.6332,
+    "longitude": -122.087904,
+    "addressLine1": "27200 Calaroga Avenue",
+    "city": "Hayward",
+    "state": "CA",
+    "zip": "94545"
   },
   {
     "code": "10694",
     "name": "St. Bernardine Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.134695,
+    "longitude": -117.276393,
+    "addressLine1": "399 East Highland Avenue",
+    "city": "San Bernardino",
+    "state": "CA",
+    "zip": "92404"
   },
   {
     "code": "11121",
     "name": "St. Elizabeth Community Hospital",
     "county": "Tehama",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.14828,
+    "longitude": -122.219644,
+    "addressLine1": "2550 Sister Mary Columba Drive",
+    "city": "Red Bluff",
+    "state": "CA",
+    "zip": "96080"
   },
   {
     "code": "12004",
     "name": "St. Francis Medical Center",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.92989,
+    "longitude": -118.203372,
+    "addressLine1": "3630 Imperial Highway",
+    "city": "Lynwood",
+    "state": "CA",
+    "zip": "90262"
   },
   {
     "code": "13181",
     "name": "St. John's Hospital Camarillo",
     "county": "Ventura",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.243528,
+    "longitude": -119.019874,
+    "addressLine1": "Mar Vista Drive",
+    "city": "Camarillo",
+    "state": "CA",
+    "zip": "93011"
   },
   {
     "code": "10750",
@@ -2932,56 +4036,84 @@
     "name": "St. Louise Regional Hospital",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.036565,
+    "longitude": -121.571782,
+    "addressLine1": "Cohansey Avenue",
+    "city": "Gilroy",
+    "state": "CA",
+    "zip": "95020"
   },
   {
     "code": "12012",
     "name": "St. Mary Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.780316,
+    "longitude": -118.187194,
+    "addressLine1": "Elm Avenue",
+    "city": "Long Beach",
+    "state": "CA",
+    "zip": "90813"
   },
   {
     "code": "10943",
     "name": "Stanford Health Care",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.693576,
+    "longitude": -121.880509,
+    "addressLine1": "5555 West Las Positas Boulevard",
+    "city": "Pleasanton",
+    "state": "CA",
+    "zip": "94588"
   },
   {
     "code": "10035",
     "name": "Stanford Health Care",
     "county": "Santa Clara",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.693576,
+    "longitude": -121.880509,
+    "addressLine1": "5555 West Las Positas Boulevard",
+    "city": "Pleasanton",
+    "state": "CA",
+    "zip": "94588"
   },
   {
     "code": "11363",
     "name": "Stanford Health Care Tri-Valley",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.693576,
+    "longitude": -121.880509,
+    "addressLine1": "5555 West Las Positas Boulevard",
+    "city": "Pleasanton",
+    "state": "CA",
+    "zip": "94588"
   },
   {
     "code": "16632",
     "name": "Stanford Health Care Tri-Valley",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.693576,
+    "longitude": -121.880509,
+    "addressLine1": "5555 West Las Positas Boulevard",
+    "city": "Pleasanton",
+    "state": "CA",
+    "zip": "94588"
   },
   {
     "code": "17461",
     "name": "Stanislaus Surgical Hospital",
     "county": "Stanislaus",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.664473,
+    "longitude": -120.958395,
+    "addressLine1": "1421 Oakdale Road",
+    "city": "Modesto",
+    "state": "CA",
+    "zip": "95355"
   },
   {
     "code": "18232",
@@ -3004,48 +4136,72 @@
     "name": "Sutter Amador Hospital",
     "county": "Amador",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.350681,
+    "longitude": -120.764671,
+    "addressLine1": "200 Mission Boulevard",
+    "city": "Jackson",
+    "state": "CA",
+    "zip": "95642"
   },
   {
     "code": "10494",
     "name": "Sutter Auburn Faith Hospital",
     "county": "Placer",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.945048,
+    "longitude": -121.100937,
+    "addressLine1": "11815 Education Street",
+    "city": "Auburn",
+    "state": "CA",
+    "zip": "95602"
   },
   {
     "code": "12784",
     "name": "Sutter Coast Hospital",
     "county": "Del Norte",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 41.774335,
+    "longitude": -124.194175,
+    "addressLine1": "800 East Washington Boulevard",
+    "city": "Crescent City",
+    "state": "CA",
+    "zip": "95531"
   },
   {
     "code": "17725",
     "name": "Sutter Davis Hospital",
     "county": "Yolo",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.562619,
+    "longitude": -121.77121,
+    "addressLine1": "County Road 99D",
+    "city": "Davis",
+    "state": "CA",
+    "zip": "95616"
   },
   {
     "code": "10052",
     "name": "Sutter Delta Medical Center",
     "county": "Contra Costa",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.982741,
+    "longitude": -121.803104,
+    "addressLine1": "3901 Lone Tree Way",
+    "city": "Antioch",
+    "state": "CA",
+    "zip": "94509"
   },
   {
     "code": "14345",
     "name": "Sutter Lakeside Hospital",
     "county": "Lake",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.104822,
+    "longitude": -122.906456,
+    "addressLine1": "5176 Hill Road East",
+    "city": "Lakeport",
+    "state": "CA",
+    "zip": "95453"
   },
   {
     "code": "13901",
@@ -3060,64 +4216,96 @@
     "name": "Sutter Medical Center  Sacramento",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.571525,
+    "longitude": -121.468743,
+    "addressLine1": "L Street",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95816"
   },
   {
     "code": "17700",
     "name": "Sutter Roseville Medical Center",
     "county": "Placer",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.766216,
+    "longitude": -121.249327,
+    "addressLine1": "1 Medical Plaza Drive",
+    "city": "Roseville",
+    "state": "CA",
+    "zip": "95661"
   },
   {
     "code": "18187",
     "name": "Sutter Santa Rosa Regional Hospital",
     "county": "Sonoma",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.494594,
+    "longitude": -122.751902,
+    "addressLine1": "30 Mark West Springs Road",
+    "city": "Santa Rosa",
+    "state": "CA",
+    "zip": "95403"
   },
   {
     "code": "12525",
     "name": "Sutter Solano Medical Center",
     "county": "Solano",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.13114,
+    "longitude": -122.238401,
+    "addressLine1": "300 Hospital Drive",
+    "city": "Vallejo",
+    "state": "CA",
+    "zip": "94589"
   },
   {
     "code": "17724",
     "name": "Sutter Surgical Hospital - North Valley",
     "county": "Sutter",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.132037,
+    "longitude": -121.613306,
+    "addressLine1": "455 Plumas Boulevard",
+    "city": "Yuba City",
+    "state": "CA",
+    "zip": "95991"
   },
   {
     "code": "10757",
     "name": "Sutter Tracy Community Hospital",
     "county": "San Joaquin",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.744228,
+    "longitude": -121.434036,
+    "addressLine1": "1420 North Tracy Boulevard",
+    "city": "Tracy",
+    "state": "CA",
+    "zip": "95376"
   },
   {
     "code": "10377",
     "name": "Tahoe Forest Hospital",
     "county": "Nevada",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 39.324981,
+    "longitude": -120.201363,
+    "addressLine1": "10121 Pine Avenue",
+    "city": "Truckee",
+    "state": "CA",
+    "zip": "96161"
   },
   {
     "code": "18167",
     "name": "Temecula Valley Hospital",
     "county": "Riverside",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.481074,
+    "longitude": -117.10617,
+    "addressLine1": "31700 Temecula Parkway",
+    "city": "Temecula",
+    "state": "CA",
+    "zip": "92592"
   },
   {
     "code": "17669",
@@ -3140,40 +4328,60 @@
     "name": "Totally Kids Rehabilitation Hospital",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.070099,
+    "longitude": -117.245081,
+    "addressLine1": "1720 Mountain View Avenue",
+    "city": "Loma Linda",
+    "state": "CA",
+    "zip": "92354"
   },
   {
     "code": "12372",
     "name": "Tri-City Medical Center",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.185678,
+    "longitude": -117.290798,
+    "addressLine1": "4002 Vista Way",
+    "city": "Oceanside",
+    "state": "CA",
+    "zip": "92056"
   },
   {
     "code": "11125",
     "name": "Trinity Hospital",
     "county": "Trinity",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 40.738204,
+    "longitude": -122.939792,
+    "addressLine1": "60 Easter Avenue",
+    "city": "Weaverville",
+    "state": "CA",
+    "zip": "96093"
   },
   {
     "code": "10025",
     "name": "UC Davis Rehabilitation Hospital",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.547373,
+    "longitude": -121.451062,
+    "addressLine1": "4875 Broadway",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95820"
   },
   {
     "code": "12872",
     "name": "UC San Diego Health - East Campus Medical Center",
     "county": "San Diego",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 32.776616,
+    "longitude": -117.057208,
+    "addressLine1": "Alvarado Road",
+    "city": "San Diego",
+    "state": "CA",
+    "zip": "92182"
   },
   {
     "code": "12359",
@@ -3236,8 +4444,12 @@
     "name": "UCI Health-Orange",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.662651,
+    "longitude": -117.855522,
+    "addressLine1": "19200 Jamboree Road",
+    "city": "Irvine",
+    "state": "CA",
+    "zip": "92612"
   },
   {
     "code": "13077",
@@ -3284,32 +4496,48 @@
     "name": "UCSF Medical Center",
     "county": "San Francisco",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.765939,
+    "longitude": -122.390767,
+    "addressLine1": "4th Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94158"
   },
   {
     "code": "18181",
     "name": "UCSF Medical Center At Mission Bay",
     "county": "San Francisco",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.765939,
+    "longitude": -122.390767,
+    "addressLine1": "4th Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94158"
   },
   {
     "code": "12443",
     "name": "UCSF Medical Center at Mount Zion",
     "county": "San Francisco",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.784803,
+    "longitude": -122.439309,
+    "addressLine1": "1600 Divisadero Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94115"
   },
   {
     "code": "10619",
     "name": "University of California Davis Medical Center",
     "county": "Sacramento",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.552692,
+    "longitude": -121.45179,
+    "addressLine1": "Y Street",
+    "city": "Sacramento",
+    "state": "CA",
+    "zip": "95817"
   },
   {
     "code": "10039",
@@ -3324,8 +4552,12 @@
     "name": "USC Arcadia Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.13412,
+    "longitude": -118.041961,
+    "addressLine1": "300 West Huntington Drive",
+    "city": "Arcadia",
+    "state": "CA",
+    "zip": "91007"
   },
   {
     "code": "15179",
@@ -3340,32 +4572,48 @@
     "name": "USC Verdugo Hills Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.204508,
+    "longitude": -118.216206,
+    "addressLine1": "1812 Verdugo Boulevard",
+    "city": "Glendale",
+    "state": "CA",
+    "zip": "91208"
   },
   {
     "code": "17124",
     "name": "Valley Children's Hospital",
     "county": "Madera",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.884104,
+    "longitude": -119.801513,
+    "addressLine1": "9300 Valley Children's Place",
+    "city": "Madera County",
+    "state": "CA",
+    "zip": "93636"
   },
   {
     "code": "12140",
     "name": "Valley Presbyterian Hospital",
     "county": "Los Angeles",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.194862,
+    "longitude": -118.463492,
+    "addressLine1": "15211 Vanowen Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "91405"
   },
   {
     "code": "11162",
     "name": "Ventura County Medical Center",
     "county": "Ventura",
     "region": "North Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.278998,
+    "longitude": -119.253515,
+    "addressLine1": "300 Hillmont Avenue",
+    "city": "Ventura",
+    "state": "CA",
+    "zip": "93003"
   },
   {
     "code": "11175",
@@ -3396,40 +4644,60 @@
     "name": "Victor Valley Global Medical Center",
     "county": "San Bernardino",
     "region": "South",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.528051,
+    "longitude": -117.293548,
+    "addressLine1": "15248 11th Street",
+    "city": "Victorville",
+    "state": "CA",
+    "zip": "92393"
   },
   {
     "code": "11366",
     "name": "Washington Hospital",
     "county": "Alameda",
     "region": "Central",
-    "latitude": null,
-    "longitude": null
+    "latitude": 37.557179,
+    "longitude": -121.979278,
+    "addressLine1": "2000 Mowry Avenue",
+    "city": "Fremont",
+    "state": "CA",
+    "zip": "94538"
   },
   {
     "code": "15019",
     "name": "Watsonville Community Hospital",
     "county": "Santa Cruz",
     "region": "Coastal",
-    "latitude": null,
-    "longitude": null
+    "latitude": 36.926282,
+    "longitude": -121.793085,
+    "addressLine1": "75 Neilson Street",
+    "city": "Watsonville",
+    "state": "CA",
+    "zip": "95076"
   },
   {
     "code": "10475",
     "name": "West Anaheim Medical Center",
     "county": "Orange",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 33.825629,
+    "longitude": -117.99514,
+    "addressLine1": "South Beach Boulevard",
+    "city": "Anaheim",
+    "state": "CA",
+    "zip": "92804"
   },
   {
     "code": "12180",
     "name": "West Covina Medical Center",
     "county": "Los Angeles",
     "region": "South Los Angeles",
-    "latitude": null,
-    "longitude": null
+    "latitude": 34.071201,
+    "longitude": -117.944697,
+    "addressLine1": "741 South Orange Avenue",
+    "city": "West Covina",
+    "state": "CA",
+    "zip": "91790"
   },
   {
     "code": "12201",
@@ -3444,7 +4712,11 @@
     "name": "Woodland Memorial Hospital",
     "county": "Yolo",
     "region": "North",
-    "latitude": null,
-    "longitude": null
+    "latitude": 38.663992,
+    "longitude": -121.794706,
+    "addressLine1": "Gary Way",
+    "city": "Woodland",
+    "state": "CA",
+    "zip": "95695"
   }
 ]

@@ -5152,6 +5152,18 @@ export default function App() {
                           {facilityDetailsMetrics.facility.region}
                         </p>
                         <p>
+                          <span className="font-semibold">Latitude/Longitude:</span>{" "}
+                          {typeof facilityDetailsMetrics.facility.latitude === "number" &&
+                          Number.isFinite(facilityDetailsMetrics.facility.latitude)
+                            ? facilityDetailsMetrics.facility.latitude.toFixed(6)
+                            : "N/A"}{" "}
+                          /{" "}
+                          {typeof facilityDetailsMetrics.facility.longitude === "number" &&
+                          Number.isFinite(facilityDetailsMetrics.facility.longitude)
+                            ? facilityDetailsMetrics.facility.longitude.toFixed(6)
+                            : "N/A"}
+                        </p>
+                        <p>
                           <span className="font-semibold">Phone:</span> {facilityDetailsMetrics.facility.phone || "N/A"}
                         </p>
                         <p>
@@ -6989,6 +7001,18 @@ export default function App() {
                         <p>
                           <span className="font-semibold">County/Region:</span> {facilityDetailsMetrics.facility.county} /{" "}
                           {facilityDetailsMetrics.facility.region}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Latitude/Longitude:</span>{" "}
+                          {typeof facilityDetailsMetrics.facility.latitude === "number" &&
+                          Number.isFinite(facilityDetailsMetrics.facility.latitude)
+                            ? facilityDetailsMetrics.facility.latitude.toFixed(6)
+                            : "N/A"}{" "}
+                          /{" "}
+                          {typeof facilityDetailsMetrics.facility.longitude === "number" &&
+                          Number.isFinite(facilityDetailsMetrics.facility.longitude)
+                            ? facilityDetailsMetrics.facility.longitude.toFixed(6)
+                            : "N/A"}
                         </p>
                         <p>
                           <span className="font-semibold">Phone:</span> {facilityDetailsMetrics.facility.phone || "N/A"}

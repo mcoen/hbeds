@@ -1,0 +1,906 @@
+[
+  {
+    "code": "11205",
+    "name": "Adventist Health And Rideout",
+    "county": "Yuba",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12765",
+    "name": "Adventist Health Delano",
+    "county": "Kern",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10301",
+    "name": "Adventist Health Mendocino Coast",
+    "county": "Mendocino",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10778",
+    "name": "Adventist Health Sierra Vista",
+    "county": "San Luis Obispo",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "17358",
+    "name": "Adventist Health Specialty Bakersfield",
+    "county": "Kern",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13999",
+    "name": "Adventist Health Twin Cities",
+    "county": "San Luis Obispo",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12198",
+    "name": "Adventist Health White Memorial",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11441",
+    "name": "Adventist Health White Memorial Montebello",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10382",
+    "name": "AHMC Anaheim Regional Medical Center",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12678",
+    "name": "AHMC Seton Medical Center Coastside",
+    "county": "San Mateo",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10381",
+    "name": "Anaheim Community Hospital  LLC",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11399",
+    "name": "Antelope Valley Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10027",
+    "name": "California Northstate University Medical Center",
+    "county": "Sacramento",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12416",
+    "name": "California Pacific Medical Center - Davies Campus Hospital",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18188",
+    "name": "California Pacific Medical Center - Mission Bernal Campus",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18165",
+    "name": "California Pacific Medical Center - Van Ness Campus",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12744",
+    "name": "Cedars-Sinai Marina Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10820",
+    "name": "Central California Rehabilitation Hospital",
+    "county": "Kern",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10922",
+    "name": "Children's Hospital at Mission",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11527",
+    "name": "City Of Hope Helford Clinical Research Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10036",
+    "name": "City of Hope Orange County Cancer Specialty Hospital",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11169",
+    "name": "Community Memorial Hospital - Ojai",
+    "county": "Ventura",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "17662",
+    "name": "Cottage Rehabilitation Hospital",
+    "county": "Santa Barbara",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10054",
+    "name": "Dignity Health Central Coast Rehabilitation Hospital",
+    "county": "San Luis Obispo",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12024",
+    "name": "Docs Surgical Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10554",
+    "name": "Doctors Hospital Of Riverside",
+    "county": "Riverside",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10042",
+    "name": "El Camino Rehabilitation Hospital",
+    "county": "Santa Clara",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13093",
+    "name": "Emanate Health Foothill Presbyterian Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11748",
+    "name": "Emanate Health Inter-Community Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11971",
+    "name": "Emanate Health Queen Of The Valley Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18226",
+    "name": "Encompass Health Rehabilitation Hospital of Tustin",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10009",
+    "name": "Enloe Medical Center - Cohasset",
+    "county": "Butte",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12964",
+    "name": "French Hospital Medical Center",
+    "county": "San Luis Obispo",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11844",
+    "name": "Glendale Memorial Hospital and Health Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10040",
+    "name": "Harvest Medical Complex",
+    "county": "Ventura",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10075",
+    "name": "HealthBridge Central Valley Children’s Center",
+    "county": "Madera",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "17438",
+    "name": "Healthbridge Children's Hospital-Orange",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10541",
+    "name": "Hemet Global Medical Center",
+    "county": "Riverside",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "33832",
+    "name": "HH-CSHS TERRI  JERRY KOHL MEDICAL PAVIL",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18193",
+    "name": "Hoag Orthopedic Institute",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18206",
+    "name": "Kaiser Foundation Hospital - Oakland/Richmond",
+    "county": "Alameda",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13142",
+    "name": "Kaiser Foundation Hospital  Rehab Center - Vallejo",
+    "county": "Solano",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "17749",
+    "name": "Kaiser Foundation Hospital - Richmond Campus",
+    "county": "Contra Costa",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10022",
+    "name": "Kaiser Foundation Hospital Sacramento",
+    "county": "Sacramento",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12601",
+    "name": "Kaweah Health Medical Center",
+    "county": "Tulare",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18179",
+    "name": "Kaweah Health Medical Center D/P SNF",
+    "county": "Tulare",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18227",
+    "name": "Kentfield Hospital San Francisco",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10210",
+    "name": "Kern Valley Healthcare District",
+    "county": "Kern",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13225",
+    "name": "L.A. Downtown Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11809",
+    "name": "LAC/Harbor-UCLA Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "15801",
+    "name": "LAC/Olive View-UCLA Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11976",
+    "name": "LAC/Rancho Los Amigos National Rehabilitation Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12432",
+    "name": "Laguna Honda Hospital  Rehabilitation Center",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10101",
+    "name": "Loma Linda Rehabilitation Hospital",
+    "county": "San Bernardino",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11428",
+    "name": "Los Angeles Community Hospital at Bellflower",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10766",
+    "name": "Marian Regional Medical Center  Arroyo Grande",
+    "county": "San Luis Obispo",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10273",
+    "name": "Marinhealth Medical Center",
+    "county": "Marin",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11846",
+    "name": "Memorialcare Long Beach Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "17572",
+    "name": "Memorialcare Miller Children's  Women's Hospital Long Beach",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "15630",
+    "name": "Memorialcare Orange Coast Medical Center",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12755",
+    "name": "Memorialcare Saddleback Medical Center",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "15807",
+    "name": "NorthBay VacaValley Hospital",
+    "county": "Solano",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13110",
+    "name": "Oak Valley Hospital District",
+    "county": "Stanislaus",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18230",
+    "name": "Palomar Rehabilitation Institute",
+    "county": "San Diego",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11731",
+    "name": "PIH Health Good Samaritan Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12463",
+    "name": "Priscilla Chan And Mark Zuckerberg San Francisco General Hospital And Trauma Center",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12804",
+    "name": "Providence Mission Hospital",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10468",
+    "name": "Providence Mission Hospital - Laguna Beach",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10183",
+    "name": "Providence Redwood Memorial Hospital",
+    "county": "Humboldt",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11054",
+    "name": "Providence Santa Rosa Memorial Hospital",
+    "county": "Sonoma",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11059",
+    "name": "Providence Santa Rosa Memorial Hospital",
+    "county": "Sonoma",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10458",
+    "name": "Providence St. Jude Medical Center",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10695",
+    "name": "Providence St. Mary Medical Center",
+    "county": "San Bernardino",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18162",
+    "name": "Rehabilitation Hospital Of Southern California",
+    "county": "Riverside",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11326",
+    "name": "Sacramento Rehabilitation Hospital",
+    "county": "Sacramento",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "16166",
+    "name": "San Ramon Regional Medical Center South Building",
+    "county": "Contra Costa",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12033",
+    "name": "Santa Monica - UCLA Medical Center And Orthopaedic Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10848",
+    "name": "Santa Ynez Valley Cottage Hospital",
+    "county": "Santa Barbara",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "16703",
+    "name": "Select Specialty Hospital - San Diego",
+    "county": "San Diego",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10513",
+    "name": "Seneca District Hospital",
+    "county": "Plumas",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12295",
+    "name": "Sharp Coronado Hospital and Healthcare Center",
+    "county": "San Diego",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "15454",
+    "name": "Sharp Mary Birch Hospital For Women And Newborns",
+    "county": "San Diego",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11052",
+    "name": "Sonoma Specialty Hospital",
+    "county": "Sonoma",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11848",
+    "name": "Southern California Hospital At Culver City",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11718",
+    "name": "Southern California Hospital at Hollywood",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10037",
+    "name": "Southern Humboldt Community Healthcare District",
+    "county": "Humboldt",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "15749",
+    "name": "Southwest Healthcare Inland Valley Hospital",
+    "county": "Riverside",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "16681",
+    "name": "Southwest Healthcare Rancho Springs Hospital",
+    "county": "Riverside",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11172",
+    "name": "St Johns Regional Medical Center",
+    "county": "Ventura",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10750",
+    "name": "St. Joseph's Medical Center of Stockton",
+    "county": "San Joaquin",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "18232",
+    "name": "Stockton Regional Rehabilitation Hospital",
+    "county": "San Joaquin",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10321",
+    "name": "Surprise Valley Community Hospital",
+    "county": "Modoc",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13901",
+    "name": "Sutter Maternity  Surgery Center of Santa Cruz",
+    "county": "Santa Cruz",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "17669",
+    "name": "Thousand Oaks Surgical Hosp.  A Campus Of Los Robles Hosp.  Medical Ctr.",
+    "county": "Ventura",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12249",
+    "name": "Torrance Memorial Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12359",
+    "name": "UC San Diego Health Hillcrest - Hillcrest Medical Center",
+    "county": "San Diego",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11659",
+    "name": "UC San Diego Health La Jolla - Jacobs Medical Center  Sulpizio Cardiovascular Center",
+    "county": "San Diego",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10062",
+    "name": "UCI Health Rehabilitation Hospital",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "16234",
+    "name": "UCI Health-Fountain Valley",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12834",
+    "name": "UCI Health-Fountain Valley",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12831",
+    "name": "UCI Health-Lakewood",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10440",
+    "name": "UCI Health-Los Alamitos",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "13077",
+    "name": "UCI Health-Placentia Linda",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12182",
+    "name": "UCLA West Valley Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11242",
+    "name": "UCSF Benioff Children's Hospital Oakland",
+    "county": "Alameda",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12460",
+    "name": "UCSF Health - St. Mary's Hospital",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12457",
+    "name": "UCSF Health Saint Francis Hospital",
+    "county": "San Francisco",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10039",
+    "name": "University of California Irvine Medical Center - Irvine",
+    "county": "Orange",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "15179",
+    "name": "USC Kenneth Norris Jr. Cancer Hospital",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "11175",
+    "name": "Ventura County Medical Center - Santa Paula Hospital",
+    "county": "Ventura",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "16620",
+    "name": "Vibra Hospital Of Northern California",
+    "county": "Shasta",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "10631",
+    "name": "Vibra Hospital of Sacramento",
+    "county": "Sacramento",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  },
+  {
+    "code": "12201",
+    "name": "Whittier Hospital Medical Center",
+    "county": "Los Angeles",
+    "score": -1,
+    "missingCoordinates": true,
+    "missingAddress": true
+  }
+]

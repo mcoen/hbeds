@@ -209,6 +209,12 @@ export function createSeedSnapshot(): Pick<Snapshot, "facilities" | "bedStatuses
     name: string;
     county: string;
     region: string;
+    addressLine1?: unknown;
+    addressLine2?: unknown;
+    city?: unknown;
+    state?: unknown;
+    zip?: unknown;
+    phone?: unknown;
     latitude?: unknown;
     longitude?: unknown;
   };
@@ -218,10 +224,12 @@ export function createSeedSnapshot(): Pick<Snapshot, "facilities" | "bedStatuses
       code: facility.code,
       name: facility.name,
       facilityType: "general_acute_care",
-      addressLine1: "Address on file",
-      city: facility.county,
-      state: "CA",
-      zip: "00000",
+      addressLine1: normalizeText(facility.addressLine1) || "Address on file",
+      addressLine2: normalizeText(facility.addressLine2) || undefined,
+      city: normalizeText(facility.city) || facility.county,
+      state: normalizeText(facility.state) || "CA",
+      zip: normalizeText(facility.zip) || "00000",
+      phone: normalizeText(facility.phone) || undefined,
       county: facility.county,
       region: facility.region,
       latitude: normalizeFacilityCoordinate(facility.latitude, -90, 90),
