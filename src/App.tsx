@@ -5928,7 +5928,7 @@ export default function App() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="text-sm font-semibold text-slate-800">Simulation Engine</p>
-                        <p className="text-xs text-slate-600">Continuously sends FHIR updates every 15 minutes while enabled.</p>
+                        <p className="text-xs text-slate-600">Continuously sends updates across all API submission options every 15 minutes while enabled.</p>
                       </div>
                       <button
                         type="button"
