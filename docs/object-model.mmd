@@ -1,16 +1,3 @@
-# HBEDS Object Model
-
-This document captures the current object model implemented in the HBEDS app and server code.
-
-## Diagram
-
-![HBEDS Object Model](./object-model.svg)
-
-## Mermaid Source
-
-Source file: [`object-model.mmd`](./object-model.mmd)
-
-```mermaid
 classDiagram
 direction LR
 
@@ -237,13 +224,3 @@ SubmissionEvent ..> Facility : derived from
 BedStatusRecord --> BedType : bedType
 BedStatusRecord --> OperationalStatus : operationalStatus
 Facility --> FacilityType : facilityType
-```
-
-## Notes
-
-- `Facility` is the master facility record and is seeded from California acute hospital data.
-- `BedStatusRecord` is the core operational reporting entity and belongs to a facility.
-- `FacilitySubmissionCounter` is an internal analytics object that tracks submission cadence per facility.
-- `UploadJob` records the outcome of CSV/JSON bulk uploads, including rejected rows.
-- `CdcNhsnTransmission`, `SimulationStatus`, `CdcNhsnAutoSyncStatus`, and `CdcNhsnConfigView` model operational/integration state rather than core clinical entities.
-- FHIR `Location` and `Observation` resources are projections of `Facility` and `BedStatusRecord`, not separately persisted domain entities.
