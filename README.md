@@ -37,6 +37,11 @@ Set Auth0 values in `.env.local`:
 Optional:
 
 - `OPENAI_API_KEY` for AI Helper live responses.
+- NHSN outbound submission credentials (required for real CDC NHSN sync):
+  - `CDC_NHSN_CLIENT_ID`
+  - `CDC_NHSN_CLIENT_SECRET`
+  - `CDC_NHSN_USERNAME` (SAMS system username, e.g. `SYS-XXXXXX`)
+  - `CDC_NHSN_PASSWORD` (SAMS system account password)
 
 3. Bootstrap Auth0 local users and callback URLs:
 
@@ -161,6 +166,30 @@ query {
 
 - `POST /api/ai/hbeds-helper`
 - Requires `OPENAI_API_KEY` on the server
+
+### NHSN Bed Capacity Submission
+
+- `POST /api/integrations/cdc-nhsn/sync`
+- `POST /api/integrations/cdc-nhsn/bulk-upload`
+- `GET /api/integrations/cdc-nhsn/dashboard`
+- `GET /api/integrations/cdc-nhsn/auto-sync`
+- `POST /api/integrations/cdc-nhsn/auto-sync`
+- `GET /api/integrations/cdc-nhsn/config` (CDPH admin)
+- `POST /api/integrations/cdc-nhsn/config` (CDPH admin)
+- `POST /api/integrations/cdc-nhsn/config/test` (CDPH admin)
+
+NHSN configuration secrets (`clientSecret`, `password`) are write-only and never returned in API responses.
+
+Real NHSN mode is aligned to the CDC May 2025 Bed Capacity API instructions:
+
+- OAuth token request to `https://apigw.cdc.gov/auth/oauth/v2/token`
+  - Grant type: `password`
+  - Basic auth client credentials
+  - Scope: `email profileid`
+- Bed Capacity upload to `https://apigw.cdc.gov/DDID/NCEZID/l3nhsnbedcapacityapi/v1/messagerouter/upload/bedcapacity/json`
+  - Method: `POST`
+  - Headers: `Authorization: Bearer <token>` and `access_token: <token>`
+  - Body: multipart form-data with `file` (`.json`)
 
 ## Notes on Data Model
 

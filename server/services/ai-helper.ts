@@ -300,7 +300,7 @@ export function createAiHelperService(store: HBedsStore, config: AiHelperConfig)
       "1. Confirm the scope and isolate the affected facilities/bed categories in Facilities, Beds, and Statuses.",
       "2. Prioritize outreach for facilities missing 15-minute submissions and request immediate status refresh via FHIR, REST, or GraphQL ingestion.",
       "3. Review Limited/Diversion/Closed units for each affected facility and rebalance nearby capacity where possible.",
-      "4. Validate that updates are reflected in Analytics and CDC/NHSN outbound submissions, then create a notification for unresolved items."
+      "4. Validate that updates are reflected in Analytics and NHSN outbound submissions, then create a notification for unresolved items."
     ];
 
     if (nonCompliantCount === 0) {

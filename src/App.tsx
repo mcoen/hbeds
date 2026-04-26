@@ -21,19 +21,27 @@ import {
   getAnalyticsSubmissionsOverTime,
   getBedStatuses,
   getBulkJobs,
+  getCdcNhsnAutoSyncStatus,
+  getCdcNhsnConfig,
   getCdcNhsnDashboard,
   getDashboardSummary,
   getFacilitySubmissionMetrics,
   getFacilities,
   getSimulationStatus,
   runCdcNhsnSync,
+  setCdcNhsnAutoSyncConfig,
+  setCdcNhsnConfig,
   setSimulationEnabled,
+  testCdcNhsnConfigConnection,
   updateBedStatus,
   updateFacility,
   uploadCdcNhsnBulkRows,
   uploadBulkFile,
   type AnalyticsSubmissionsResponse,
   type ApiMetricsResponse,
+  type CdcNhsnAutoSyncStatus,
+  type CdcNhsnConfig,
+  type CdcNhsnConfigUpdateInput,
   type CdcNhsnDashboard,
   type FacilitySubmissionMetricsResponse,
   type HbedsAiHelperResponse,
@@ -195,6 +203,19 @@ interface UserSettings {
   themeMode: "light" | "dark";
 }
 
+interface CdcNhsnConfigFormState {
+  enabled: boolean;
+  tokenUrl: string;
+  uploadUrl: string;
+  authScope: string;
+  environment: string;
+  requestTimeoutMs: string;
+  clientId: string;
+  username: string;
+  clientSecret: string;
+  password: string;
+}
+
 interface FacilityComplianceRow {
   facilityId: string;
   facilityCode: string;
@@ -256,6 +277,7 @@ const AUTH0_HOSPITAL_EMAIL_TO_FACILITY: Record<string, { facilityCode: string }>
 const AUTH0_ALLOWED_EMAILS = new Set([...AUTH0_ADMIN_EMAILS, ...Object.keys(AUTH0_HOSPITAL_EMAIL_TO_FACILITY)]);
 const SESSION_STORAGE_KEY = "hbeds.session.user.v1";
 const FORCED_HIGH_OCCUPANCY_FACILITY_CODES = new Set(["11205", "12881", "10247", "12765", "11668"]);
+const FORCED_SURGE_READY_FACILITY_CODES = new Set(["18194", "18198", "10743", "10301", "10162"]);
 
 function resolveSessionUserForEmail(email: string): SessionUser | null {
   const normalized = email.trim().toLowerCase();
@@ -367,6 +389,33 @@ const EMPTY_GRAPHQL_QUERY: GraphqlQueryState = {
 };
 
 const EMPTY_FHIR_QUERY_PATH = "/api/fhir/metadata";
+const EMPTY_CDC_NHSN_CONFIG_FORM: CdcNhsnConfigFormState = {
+  enabled: true,
+  tokenUrl: "https://apigw.cdc.gov/auth/oauth/v2/token",
+  uploadUrl: "https://apigw.cdc.gov/DDID/NCEZID/l3nhsnbedcapacityapi/v1/messagerouter/upload/bedcapacity/json",
+  authScope: "email profileid",
+  environment: "sandbox",
+  requestTimeoutMs: "30000",
+  clientId: "",
+  username: "",
+  clientSecret: "",
+  password: ""
+};
+
+function toCdcNhsnConfigForm(config: CdcNhsnConfig): CdcNhsnConfigFormState {
+  return {
+    enabled: config.enabled,
+    tokenUrl: config.tokenUrl,
+    uploadUrl: config.uploadUrl,
+    authScope: config.authScope,
+    environment: config.environment,
+    requestTimeoutMs: String(config.requestTimeoutMs),
+    clientId: config.clientId,
+    username: config.username,
+    clientSecret: "",
+    password: ""
+  };
+}
 
 const INCOMING_API_ORDER: Array<Exclude<IncomingApiFilter, "all">> = ["rest", "graphql", "fhir"];
 const INCOMING_API_META: Record<Exclude<IncomingApiFilter, "all">, { label: string; color: string }> = {
@@ -902,9 +951,9 @@ function buildInitialNotifications(role: UserRole, facilityCode?: string): Notif
   return [
     {
       id: "notif-1",
-      title: "CDC/NHSN Sync Queue",
-      message: "CDC/NHSN integration queue is active and awaiting the next scheduled submission window.",
-      source: "CDC/NHSN",
+      title: "NHSN Sync Queue",
+      message: "NHSN integration queue is active and awaiting the next scheduled submission window.",
+      source: "NHSN",
       severity: "info",
       createdAt: minutesAgoIso(6),
       read: false
@@ -1164,6 +1213,13 @@ export default function App() {
   const [apiQueryResponse, setApiQueryResponse] = useState<ApiResponseState | null>(null);
   const [apiBulkUploading, setApiBulkUploading] = useState(false);
   const [cdcNhsnSyncing, setCdcNhsnSyncing] = useState(false);
+  const [cdcNhsnConfig, setCdcNhsnConfigState] = useState<CdcNhsnConfig | null>(null);
+  const [cdcNhsnConfigForm, setCdcNhsnConfigForm] = useState<CdcNhsnConfigFormState>(EMPTY_CDC_NHSN_CONFIG_FORM);
+  const [cdcNhsnConfigSaving, setCdcNhsnConfigSaving] = useState(false);
+  const [cdcNhsnConfigTesting, setCdcNhsnConfigTesting] = useState(false);
+  const [cdcNhsnAutoSyncStatus, setCdcNhsnAutoSyncStatus] = useState<CdcNhsnAutoSyncStatus | null>(null);
+  const [cdcNhsnAutoSyncFrequencyPerDayInput, setCdcNhsnAutoSyncFrequencyPerDayInput] = useState("2");
+  const [cdcNhsnAutoSyncSaving, setCdcNhsnAutoSyncSaving] = useState(false);
   const [restBulkFile, setRestBulkFile] = useState<File | null>(null);
   const [sftpBulkFile, setSftpBulkFile] = useState<File | null>(null);
   const [graphqlBulkRowsText, setGraphqlBulkRowsText] = useState("[]");
@@ -1225,6 +1281,8 @@ export default function App() {
   }, []);
 
   const applyAuthenticatedSession = useCallback((nextUser: SessionUser) => {
+    // Persist immediately so startup API calls include auth headers on first render cycle.
+    writeSessionUserToStorage(nextUser);
     setSessionUser(nextUser);
     setUserSettings((current) => ({ ...current, email: nextUser.email }));
     setActiveApiTab("fhir");
@@ -1351,6 +1409,10 @@ export default function App() {
 
   const resetCdcNhsn = useCallback(() => {
     setCdcNhsnDashboard(null);
+    setCdcNhsnConfigState(null);
+    setCdcNhsnConfigForm(EMPTY_CDC_NHSN_CONFIG_FORM);
+    setCdcNhsnAutoSyncStatus(null);
+    setCdcNhsnAutoSyncFrequencyPerDayInput("2");
   }, []);
 
   const resetSimulationStatus = useCallback(() => {
@@ -1435,6 +1497,27 @@ export default function App() {
     setCdcNhsnDashboard(dashboard);
   }, []);
 
+  const loadCdcNhsnConfig = useCallback(async () => {
+    if (isHospitalUser) {
+      setCdcNhsnConfigState(null);
+      setCdcNhsnConfigForm(EMPTY_CDC_NHSN_CONFIG_FORM);
+      return;
+    }
+    const config = await getCdcNhsnConfig();
+    setCdcNhsnConfigState(config);
+    setCdcNhsnConfigForm(toCdcNhsnConfigForm(config));
+  }, [isHospitalUser]);
+
+  const loadCdcNhsnAutoSync = useCallback(async () => {
+    if (isHospitalUser) {
+      setCdcNhsnAutoSyncStatus(null);
+      return;
+    }
+    const status = await getCdcNhsnAutoSyncStatus();
+    setCdcNhsnAutoSyncStatus(status);
+    setCdcNhsnAutoSyncFrequencyPerDayInput(String(status.frequencyPerDay));
+  }, [isHospitalUser]);
+
   const loadSimulationStatus = useCallback(async () => {
     const status = await getSimulationStatus();
     setSimulationStatus(status);
@@ -1502,7 +1585,9 @@ export default function App() {
         ...(!isHospitalUser ? [safeLoad("Bulk Jobs", loadJobs, resetJobs)] : []),
         safeLoad("Bed Statuses", loadBedStatuses, () => setBedStatuses([])),
         safeLoad("API Metrics", loadApiMetrics, resetAnalytics),
-        ...(!isHospitalUser ? [safeLoad("CDC/NHSN Dashboard", loadCdcNhsnDashboard, resetCdcNhsn)] : []),
+        ...(!isHospitalUser ? [safeLoad("NHSN Dashboard", loadCdcNhsnDashboard, resetCdcNhsn)] : []),
+        ...(!isHospitalUser ? [safeLoad("NHSN Config", loadCdcNhsnConfig, resetCdcNhsn)] : []),
+        ...(!isHospitalUser ? [safeLoad("NHSN Auto Sync", loadCdcNhsnAutoSync, resetCdcNhsn)] : []),
         ...(!isHospitalUser ? [safeLoad("Simulation Status", loadSimulationStatus, resetSimulationStatus)] : []),
         ...(activeTab === "analytics" ? [safeLoad("Analytics", loadAnalyticsSubmissions, () => setAnalyticsLastRefreshedAt(null))] : []),
         ...((activeTab === "facilityDetails" || facilityDetailsModalOpen) && selectedFacilityDetailsId
@@ -1529,6 +1614,8 @@ export default function App() {
     loadBedStatuses,
     loadApiMetrics,
     loadCdcNhsnDashboard,
+    loadCdcNhsnConfig,
+    loadCdcNhsnAutoSync,
     loadSimulationStatus,
     loadAnalyticsSubmissions,
     loadFacilityDetails,
@@ -1623,7 +1710,8 @@ export default function App() {
       return;
     }
     void loadCdcNhsnDashboard().catch(setError);
-  }, [activeTab, isAuthenticated, isHospitalUser, loadCdcNhsnDashboard, setError]);
+    void loadCdcNhsnConfig().catch(setError);
+  }, [activeTab, isAuthenticated, isHospitalUser, loadCdcNhsnDashboard, loadCdcNhsnConfig, setError]);
 
   useEffect(() => {
     if (!isAuthenticated || !isHospitalUser) {
@@ -1720,6 +1808,8 @@ export default function App() {
     }
     return "Submission Options";
   }, [activeTab, facilityDetailsMetrics]);
+
+  const isCdcNhsnIntegrationEnabled = cdcNhsnConfigForm.enabled;
 
   const scopedFacilities = useMemo(() => {
     if (!isHospitalUser) {
@@ -2038,15 +2128,31 @@ export default function App() {
       let staffedBeds = totals.staffedBeds;
       let occupiedBeds = totals.occupiedBeds;
       let availableBeds = totals.availableBeds;
+      let limitedUnits = totals.limitedUnits;
+      let diversionUnits = totals.diversionUnits;
+      let closedUnits = totals.closedUnits;
+      let lastUpdatedMs = totals.lastUpdatedMs;
       if (staffedBeds > 0 && FORCED_HIGH_OCCUPANCY_FACILITY_CODES.has(facility.code)) {
         const minimumOccupied = Math.min(staffedBeds, Math.max(occupiedBeds, Math.ceil(staffedBeds * 0.96)));
         occupiedBeds = minimumOccupied;
         availableBeds = Math.max(0, staffedBeds - occupiedBeds);
       }
+      // Demo dataset shaping: keep a handful of facilities visibly "surge ready" in maps and detail cards.
+      if (staffedBeds > 0 && FORCED_SURGE_READY_FACILITY_CODES.has(facility.code)) {
+        const minimumAvailable = Math.max(Math.ceil(staffedBeds * 0.26), availableBeds);
+        availableBeds = Math.min(staffedBeds, minimumAvailable);
+        occupiedBeds = Math.max(0, staffedBeds - availableBeds);
+        limitedUnits = 0;
+        diversionUnits = 0;
+        closedUnits = 0;
+        if (lastUpdatedMs === null || nowMs - lastUpdatedMs > 20 * 60 * 1000) {
+          lastUpdatedMs = nowMs - 10 * 60 * 1000;
+        }
+      }
       const capacityPercent = staffedBeds > 0 ? (occupiedBeds / staffedBeds) * 100 : 0;
       const availablePercent = staffedBeds > 0 ? (availableBeds / staffedBeds) * 100 : 0;
       const minutesSinceUpdate =
-        totals.lastUpdatedMs === null ? null : Math.max(0, (nowMs - totals.lastUpdatedMs) / (1000 * 60));
+        lastUpdatedMs === null ? null : Math.max(0, (nowMs - lastUpdatedMs) / (1000 * 60));
 
       return {
         id: facility.id,
@@ -2061,11 +2167,11 @@ export default function App() {
         availableBeds,
         availablePercent,
         capacityPercent,
-        limitedUnits: totals.limitedUnits,
-        diversionUnits: totals.diversionUnits,
-        closedUnits: totals.closedUnits,
+        limitedUnits,
+        diversionUnits,
+        closedUnits,
         respiratoryConfirmed: totals.respiratoryConfirmed,
-        lastUpdatedAt: totals.lastUpdatedMs === null ? null : new Date(totals.lastUpdatedMs).toISOString(),
+        lastUpdatedAt: lastUpdatedMs === null ? null : new Date(lastUpdatedMs).toISOString(),
         minutesSinceUpdate
       };
     });
@@ -3088,12 +3194,19 @@ export default function App() {
       return;
     }
 
+    if (!isHospitalUser) {
+      void loadCdcNhsnAutoSync().catch(() => undefined);
+    }
+
     const timer = window.setInterval(() => {
       void loadSimulationStatus().catch(() => undefined);
+      if (!isHospitalUser) {
+        void loadCdcNhsnAutoSync().catch(() => undefined);
+      }
     }, 10000);
 
     return () => window.clearInterval(timer);
-  }, [isAuthenticated, activeTab, loadSimulationStatus]);
+  }, [isAuthenticated, activeTab, isHospitalUser, loadSimulationStatus, loadCdcNhsnAutoSync]);
 
   useEffect(() => {
     if (!isAuthenticated || activeTab !== "analytics") {
@@ -3610,7 +3723,21 @@ export default function App() {
     const startedAt = performance.now();
 
     try {
-      const response = await fetch(path, init);
+      const authHeaders: Record<string, string> = {};
+      if (sessionUser?.role) {
+        authHeaders["x-hbeds-user-role"] = sessionUser.role;
+      }
+      if (sessionUser?.email) {
+        authHeaders["x-hbeds-user-email"] = sessionUser.email;
+      }
+
+      const response = await fetch(path, {
+        ...init,
+        headers: {
+          ...authHeaders,
+          ...(init?.headers ?? {})
+        }
+      });
       const rawBody = await response.text();
       let normalizedBody = rawBody;
 
@@ -3948,6 +4075,10 @@ export default function App() {
   }
 
   async function handleRunCdcNhsnSync(): Promise<void> {
+    if (!isCdcNhsnIntegrationEnabled) {
+      setApiQueryError("NHSN integration is disabled. Enable Admin Configuration and save before running a sync.");
+      return;
+    }
     setCdcNhsnSyncing(true);
     setApiQueryError(null);
     try {
@@ -3957,29 +4088,34 @@ export default function App() {
         type: result.transmission.status === "sent" ? "success" : "error",
         message:
           result.transmission.status === "sent"
-            ? `CDC/NHSN sync accepted (${result.transmission.records} records).`
-            : `CDC/NHSN sync failed: ${result.transmission.message}`
+            ? `NHSN sync accepted (${result.transmission.records} records).`
+            : `NHSN sync failed: ${result.transmission.message}`
       });
       clearNoticeSoon();
       await Promise.all([loadSummary(), loadJobs(), loadBedStatuses(), loadFacilities(), loadApiMetrics()]);
     } catch (error) {
-      setApiQueryError(error instanceof Error ? error.message : "CDC/NHSN sync failed.");
+      setApiQueryError(error instanceof Error ? error.message : "NHSN sync failed.");
     } finally {
       setCdcNhsnSyncing(false);
     }
   }
 
   async function handleCdcNhsnBulkUpload(): Promise<void> {
+    if (!isCdcNhsnIntegrationEnabled) {
+      setApiQueryError("NHSN integration is disabled. Enable Admin Configuration and save before submitting bulk rows.");
+      return;
+    }
+
     let rows: unknown;
     try {
       rows = JSON.parse(cdcNhsnBulkRowsText);
     } catch {
-      setApiQueryError("CDC/NHSN bulk rows must be valid JSON.");
+      setApiQueryError("NHSN bulk rows must be valid JSON.");
       return;
     }
 
     if (!Array.isArray(rows)) {
-      setApiQueryError("CDC/NHSN bulk rows must be a JSON array.");
+      setApiQueryError("NHSN bulk rows must be a JSON array.");
       return;
     }
 
@@ -3992,13 +4128,13 @@ export default function App() {
         type: result.transmission.status === "sent" ? "success" : "error",
         message:
           result.transmission.status === "sent"
-            ? `CDC/NHSN bulk upload accepted (${result.transmission.records} records).`
-            : `CDC/NHSN bulk upload failed: ${result.transmission.message}`
+            ? `NHSN bulk upload accepted (${result.transmission.records} records).`
+            : `NHSN bulk upload failed: ${result.transmission.message}`
       });
       clearNoticeSoon();
       await Promise.all([loadSummary(), loadJobs(), loadBedStatuses(), loadFacilities(), loadApiMetrics()]);
     } catch (error) {
-      setApiQueryError(error instanceof Error ? error.message : "CDC/NHSN bulk upload failed.");
+      setApiQueryError(error instanceof Error ? error.message : "NHSN bulk upload failed.");
     } finally {
       setApiBulkUploading(false);
     }
@@ -4026,6 +4162,200 @@ export default function App() {
       setError(error);
     } finally {
       setSimulationActionBusy(false);
+    }
+  }
+
+  async function handleSaveCdcNhsnConfig(): Promise<void> {
+    if (isHospitalUser) {
+      return;
+    }
+    if (!isCdcNhsnIntegrationEnabled) {
+      setApiQueryError("Enable NHSN integration before saving configuration details.");
+      return;
+    }
+
+    const timeout = Number.parseInt(cdcNhsnConfigForm.requestTimeoutMs.trim(), 10);
+    if (!Number.isFinite(timeout) || timeout <= 0) {
+      setNotice({
+        type: "error",
+        message: "NHSN request timeout must be a positive integer in milliseconds."
+      });
+      clearNoticeSoon();
+      return;
+    }
+
+    setCdcNhsnConfigSaving(true);
+    setApiQueryError(null);
+    try {
+      const payload: CdcNhsnConfigUpdateInput = {
+        enabled: cdcNhsnConfigForm.enabled,
+        tokenUrl: cdcNhsnConfigForm.tokenUrl,
+        uploadUrl: cdcNhsnConfigForm.uploadUrl,
+        authScope: cdcNhsnConfigForm.authScope,
+        environment: cdcNhsnConfigForm.environment,
+        requestTimeoutMs: timeout,
+        clientId: cdcNhsnConfigForm.clientId,
+        username: cdcNhsnConfigForm.username
+      };
+
+      if (cdcNhsnConfigForm.clientSecret.trim()) {
+        payload.clientSecret = cdcNhsnConfigForm.clientSecret.trim();
+      }
+      if (cdcNhsnConfigForm.password.trim()) {
+        payload.password = cdcNhsnConfigForm.password.trim();
+      }
+
+      const result = await setCdcNhsnConfig(payload);
+      setCdcNhsnConfigState(result.config);
+      setCdcNhsnConfigForm(toCdcNhsnConfigForm(result.config));
+      setCdcNhsnDashboard(result.dashboard);
+      setCdcNhsnAutoSyncStatus(result.autoSyncStatus);
+      setCdcNhsnAutoSyncFrequencyPerDayInput(String(result.autoSyncStatus.frequencyPerDay));
+      setNotice({
+        type: "success",
+        message: "NHSN integration configuration saved."
+      });
+      clearNoticeSoon();
+    } catch (error) {
+      setApiQueryError(error instanceof Error ? error.message : "Unable to save NHSN configuration.");
+    } finally {
+      setCdcNhsnConfigSaving(false);
+    }
+  }
+
+  async function handleToggleCdcNhsnConfigEnabled(enabled: boolean): Promise<void> {
+    if (isHospitalUser) {
+      return;
+    }
+
+    const previousEnabled = cdcNhsnConfigForm.enabled;
+    setCdcNhsnConfigForm((current) => ({ ...current, enabled }));
+    setCdcNhsnConfigSaving(true);
+    setApiQueryError(null);
+    try {
+      const result = await setCdcNhsnConfig({ enabled });
+      setCdcNhsnConfigState(result.config);
+      setCdcNhsnConfigForm(toCdcNhsnConfigForm(result.config));
+      setCdcNhsnDashboard(result.dashboard);
+      setCdcNhsnAutoSyncStatus(result.autoSyncStatus);
+      setCdcNhsnAutoSyncFrequencyPerDayInput(String(result.autoSyncStatus.frequencyPerDay));
+      setNotice({
+        type: "success",
+        message: enabled ? "NHSN integration enabled." : "NHSN integration disabled."
+      });
+      clearNoticeSoon();
+    } catch (error) {
+      setCdcNhsnConfigForm((current) => ({ ...current, enabled: previousEnabled }));
+      setApiQueryError(error instanceof Error ? error.message : "Unable to update NHSN integration state.");
+    } finally {
+      setCdcNhsnConfigSaving(false);
+    }
+  }
+
+  async function handleTestCdcNhsnConfig(): Promise<void> {
+    if (isHospitalUser) {
+      return;
+    }
+    if (!isCdcNhsnIntegrationEnabled) {
+      setApiQueryError("Enable NHSN integration before testing credentials.");
+      return;
+    }
+
+    setCdcNhsnConfigTesting(true);
+    setApiQueryError(null);
+    try {
+      const result = await testCdcNhsnConfigConnection();
+      setNotice({
+        type: result.ok ? "success" : "error",
+        message: result.ok ? "NHSN connection test passed." : `NHSN connection test failed: ${result.message}`
+      });
+      clearNoticeSoon();
+      await Promise.all([loadCdcNhsnDashboard(), loadCdcNhsnAutoSync()]);
+    } catch (error) {
+      setApiQueryError(error instanceof Error ? error.message : "Unable to test NHSN connection.");
+    } finally {
+      setCdcNhsnConfigTesting(false);
+    }
+  }
+
+  async function handleToggleCdcNhsnAutoSync(enabled: boolean): Promise<void> {
+    if (isHospitalUser) {
+      return;
+    }
+    if (!isCdcNhsnIntegrationEnabled) {
+      setNotice({
+        type: "error",
+        message: "Enable and save NHSN integration before changing auto sync."
+      });
+      clearNoticeSoon();
+      return;
+    }
+
+    setCdcNhsnAutoSyncSaving(true);
+    try {
+      const configuredFrequency = Number.parseInt(cdcNhsnAutoSyncFrequencyPerDayInput.trim(), 10);
+      const fallbackFrequency = cdcNhsnAutoSyncStatus?.frequencyPerDay ?? 2;
+      const frequencyPerDay = Number.isFinite(configuredFrequency) ? configuredFrequency : fallbackFrequency;
+      const result = await setCdcNhsnAutoSyncConfig({
+        enabled,
+        frequencyPerDay
+      });
+      setCdcNhsnAutoSyncStatus(result.status);
+      setCdcNhsnAutoSyncFrequencyPerDayInput(String(result.status.frequencyPerDay));
+      setCdcNhsnDashboard(result.dashboard);
+      setNotice({
+        type: "success",
+        message: enabled ? "NHSN auto sync turned on." : "NHSN auto sync turned off."
+      });
+      clearNoticeSoon();
+    } catch (error) {
+      setError(error);
+    } finally {
+      setCdcNhsnAutoSyncSaving(false);
+    }
+  }
+
+  async function handleSaveCdcNhsnAutoSyncFrequency(): Promise<void> {
+    if (isHospitalUser) {
+      return;
+    }
+    if (!isCdcNhsnIntegrationEnabled) {
+      setNotice({
+        type: "error",
+        message: "Enable and save NHSN integration before applying auto sync frequency."
+      });
+      clearNoticeSoon();
+      return;
+    }
+
+    const parsed = Number.parseInt(cdcNhsnAutoSyncFrequencyPerDayInput.trim(), 10);
+    if (!Number.isFinite(parsed) || parsed < 1 || parsed > 24) {
+      setNotice({
+        type: "error",
+        message: "NHSN auto sync frequency must be an integer between 1 and 24 times per day."
+      });
+      clearNoticeSoon();
+      return;
+    }
+
+    setCdcNhsnAutoSyncSaving(true);
+    try {
+      const result = await setCdcNhsnAutoSyncConfig({
+        frequencyPerDay: parsed,
+        enabled: cdcNhsnAutoSyncStatus?.enabled ?? true
+      });
+      setCdcNhsnAutoSyncStatus(result.status);
+      setCdcNhsnAutoSyncFrequencyPerDayInput(String(result.status.frequencyPerDay));
+      setCdcNhsnDashboard(result.dashboard);
+      setNotice({
+        type: "success",
+        message: `NHSN auto sync set to ${result.status.frequencyPerDay} times per day.`
+      });
+      clearNoticeSoon();
+    } catch (error) {
+      setError(error);
+    } finally {
+      setCdcNhsnAutoSyncSaving(false);
     }
   }
 
@@ -5297,7 +5627,7 @@ export default function App() {
                       <p className="section-subtitle">
                         {isHospitalUser
                           ? "Live incoming submissions for your assigned hospital."
-                          : "Live 15-minute buckets aligned to simulation windows. CDC/NHSN outbound traffic is charted below."}
+                          : "Live 15-minute buckets aligned to simulation windows. NHSN outbound traffic is charted below."}
                       </p>
                     </div>
                     <div className="ml-auto mr-6 flex flex-wrap items-center gap-6 self-start pt-0.5">
@@ -5333,23 +5663,21 @@ export default function App() {
                   <p className="text-xs text-slate-500">
                     Last refreshed: {analyticsLastRefreshedAt ? new Date(analyticsLastRefreshedAt).toLocaleTimeString() : "Loading..."}
                   </p>
-                  <div className="flex gap-3">
-                    <aside className="w-48 shrink-0 rounded-xl border border-slate-200 bg-slate-50/90 p-3">
+                  <div className="space-y-3">
+                    <aside className="rounded-xl border border-slate-200 bg-slate-50/90 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Legend</p>
-                      <ul className="mt-2 space-y-2">
+                      <ul className="mt-2 flex flex-wrap gap-2">
                         {incomingLegendItems.map((item) => (
-                          <li key={item.api} className="flex items-center justify-between gap-2 text-xs">
-                            <span className="inline-flex items-center gap-2">
-                              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                              <span>{item.label}</span>
-                            </span>
+                          <li key={item.api} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs">
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                            <span>{item.label}</span>
                             <span className="font-semibold text-slate-700">{item.total}</span>
                           </li>
                         ))}
                       </ul>
                     </aside>
-                    <div className="min-w-0 flex-1 overflow-auto rounded-xl border border-slate-300/80 bg-white p-3">
-                      <svg viewBox="0 0 760 230" className="h-[240px] min-w-[760px] w-full">
+                    <div className="min-w-0 w-full rounded-xl border border-slate-300/80 bg-white p-3">
+                      <svg viewBox="0 0 760 230" preserveAspectRatio="none" className="h-[280px] w-full">
                         {(() => {
                           const width = 760;
                           const height = 230;
@@ -5418,8 +5746,8 @@ export default function App() {
                   <article className="surface-panel stagger-in space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <h2 className="section-heading">Outgoing CDC/NHSN Submissions</h2>
-                      <p className="section-subtitle">Transmission activity from this platform to CDC/NHSN.</p>
+                      <h2 className="section-heading">Outgoing NHSN Submissions</h2>
+                      <p className="section-subtitle">Transmission activity from this platform to NHSN.</p>
                     </div>
                     <label className="inline-flex items-center gap-2 text-xs font-medium text-slate-600 self-start pt-0.5">
                       <span>Time Range</span>
@@ -5436,21 +5764,19 @@ export default function App() {
                       </select>
                     </label>
                   </div>
-                  <div className="flex gap-3">
-                    <aside className="w-48 shrink-0 rounded-xl border border-slate-200 bg-slate-50/90 p-3">
+                  <div className="space-y-3">
+                    <aside className="rounded-xl border border-slate-200 bg-slate-50/90 p-3">
                       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Legend</p>
-                      <ul className="mt-2 space-y-2">
-                        <li className="flex items-center justify-between gap-2 text-xs">
-                          <span className="inline-flex items-center gap-2">
-                            <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />
-                            <span>{`CDC/NHSN Outbound (${outgoingWindowLabel})`}</span>
-                          </span>
+                      <ul className="mt-2 flex flex-wrap gap-2">
+                        <li className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs">
+                          <span className="h-2.5 w-2.5 rounded-full bg-sky-600" />
+                          <span>{`NHSN Outbound (${outgoingWindowLabel})`}</span>
                           <span className="font-semibold text-slate-700">{outgoingCdcLast24Hours}</span>
                         </li>
                       </ul>
                     </aside>
-                    <div className="min-w-0 flex-1 overflow-auto rounded-xl border border-slate-300/80 bg-white p-3">
-                      <svg viewBox="0 0 760 230" className="h-[220px] min-w-[760px] w-full">
+                    <div className="min-w-0 w-full rounded-xl border border-slate-300/80 bg-white p-3">
+                      <svg viewBox="0 0 760 230" preserveAspectRatio="none" className="h-[280px] w-full">
                         {(() => {
                           const width = 760;
                           const height = 230;
@@ -5809,7 +6135,7 @@ export default function App() {
                       { key: "inAppNotifications", label: "In-app notifications" },
                       { key: "emailNotifications", label: "Email notifications" },
                       { key: "smsNotifications", label: "SMS notifications" },
-                      { key: "cdcNhsnAlerts", label: "CDC/NHSN sync alerts" },
+                      { key: "cdcNhsnAlerts", label: "NHSN sync alerts" },
                       { key: "summaryDigest", label: "Daily summary digest" }
                     ].map((item) => (
                       <label key={item.key} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2">
@@ -5844,10 +6170,8 @@ export default function App() {
                 </article>
 
                 <article className="surface-panel stagger-in space-y-3">
-                  <h2 className="section-heading">Appearance and Simulation Engine</h2>
-                  <p className="section-subtitle">
-                    Configure theme mode and monitor automated FHIR simulation updates for all facilities.
-                  </p>
+                  <h2 className="section-heading">Appearance and Simulation</h2>
+                  <p className="section-subtitle">Configure theme mode and monitor automated platform simulation cadence.</p>
 
                   <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Theme Mode</p>
@@ -5968,6 +6292,7 @@ export default function App() {
                       </span>
                     </p>
                   </div>
+
                 </article>
               </section>
             )}
@@ -6612,24 +6937,33 @@ export default function App() {
                     <button
                       type="button"
                       className="subtle-button inline-flex items-center gap-2"
-                      onClick={() => void loadCdcNhsnDashboard()}
+                      onClick={() => void Promise.all([loadCdcNhsnDashboard(), loadCdcNhsnConfig(), loadCdcNhsnAutoSync()])}
                       disabled={loading || cdcNhsnSyncing}
                     >
                       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                         <path d="M15.8 6.5V4m0 0h-2.5m2.5 0-1.9 1.9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                         <path d="M15.8 9.8a5.8 5.8 0 1 1-1.2-3.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span>Refresh CDC/NHSN Dashboard</span>
+                      <span>Refresh NHSN Dashboard</span>
                     </button>
                   </div>
                   <p className="section-subtitle">Monitor integration status, sync attempts, and outbound submission activity.</p>
+                  {!isCdcNhsnIntegrationEnabled ? (
+                    <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                      NHSN integration is currently disabled. Sync controls and outbound submissions are paused until it is re-enabled and saved.
+                    </div>
+                  ) : null}
                 </article>
 
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
                     <p className="text-xs uppercase tracking-wide text-slate-500">Connection</p>
-                    <p className={`text-2xl font-bold ${cdcNhsnDashboard?.connected ? "text-emerald-700" : "text-rose-700"}`}>
-                      {cdcNhsnDashboard?.connected ? "Connected" : "Offline"}
+                    <p
+                      className={`text-2xl font-bold ${
+                        !isCdcNhsnIntegrationEnabled ? "text-slate-700" : cdcNhsnDashboard?.connected ? "text-emerald-700" : "text-rose-700"
+                      }`}
+                    >
+                      {!isCdcNhsnIntegrationEnabled ? "Disabled" : cdcNhsnDashboard?.connected ? "Connected" : "Offline"}
                     </p>
                   </article>
                   <article className="rounded-xl border border-slate-200 bg-white p-3">
@@ -6650,29 +6984,30 @@ export default function App() {
                   </article>
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-                  <article className="surface-panel-strong stagger-in space-y-3">
-                    <h2 className="section-heading">CDC NHSN Integration</h2>
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <article className="surface-panel-strong stagger-in min-w-0 space-y-3">
+                    <h2 className="section-heading">NHSN Integration</h2>
                     <p className="section-subtitle">
-                      Integration target: <code>{cdcNhsnDashboard?.systemName ?? "CDC NHSN Hospital Capacity API"}</code>
+                      Integration target: <code>{cdcNhsnDashboard?.systemName ?? "NHSN Hospital Capacity API"}</code>
                     </p>
                     <ul className="space-y-1 text-sm">
                       <li>
-                        <code>GET /api/integrations/cdc-nhsn/dashboard</code>
+                        <code>GET /api/integrations/nhsn/dashboard</code>
                       </li>
                       <li>
-                        <code>POST /api/integrations/cdc-nhsn/sync</code>
+                        <code>POST /api/integrations/nhsn/sync</code>
                       </li>
                       <li>
-                        <code>POST /api/integrations/cdc-nhsn/bulk-upload</code>
+                        <code>POST /api/integrations/nhsn/bulk-upload</code>
                       </li>
                       <li>
-                        <code>GET /api/integrations/cdc-nhsn/transmissions</code>
+                        <code>GET /api/integrations/nhsn/transmissions</code>
                       </li>
                     </ul>
                     <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3 text-xs text-slate-700">
-                      <p>
-                        <span className="font-semibold">Endpoint:</span> {cdcNhsnDashboard?.endpoint ?? "N/A"}
+                      <p className="break-words">
+                        <span className="font-semibold">Endpoint:</span>{" "}
+                        <span className="font-mono break-all">{cdcNhsnDashboard?.endpoint ?? "N/A"}</span>
                       </p>
                       <p>
                         <span className="font-semibold">Auth:</span> {cdcNhsnDashboard?.authMode ?? "N/A"}
@@ -6682,14 +7017,162 @@ export default function App() {
                       </p>
                       <p>
                         <span className="font-semibold">Next Scheduled:</span>{" "}
-                        {cdcNhsnDashboard?.nextScheduledAt ? new Date(cdcNhsnDashboard.nextScheduledAt).toLocaleString() : "N/A"}
+                        {!isCdcNhsnIntegrationEnabled
+                          ? "N/A (integration disabled)"
+                          : cdcNhsnDashboard?.nextScheduledAt
+                            ? new Date(cdcNhsnDashboard.nextScheduledAt).toLocaleString()
+                            : "N/A"}
                       </p>
                     </div>
                     <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Recent CDC/NHSN Updates</p>
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Admin Configuration</p>
+                          <p className="text-xs text-slate-600">Credential secrets are write-only and never returned to the browser.</p>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={cdcNhsnConfigForm.enabled}
+                          className={`relative inline-flex h-7 w-14 items-center rounded-full transition ${
+                            cdcNhsnConfigForm.enabled ? "bg-emerald-600" : "bg-slate-400"
+                          } ${cdcNhsnConfigSaving ? "opacity-70" : ""}`}
+                          onClick={() => void handleToggleCdcNhsnConfigEnabled(!cdcNhsnConfigForm.enabled)}
+                          disabled={cdcNhsnConfigSaving}
+                          title={cdcNhsnConfigForm.enabled ? "Disable NHSN integration" : "Enable NHSN integration"}
+                          aria-label={cdcNhsnConfigForm.enabled ? "Disable NHSN integration" : "Enable NHSN integration"}
+                        >
+                          <span
+                            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                              cdcNhsnConfigForm.enabled ? "translate-x-8" : "translate-x-1"
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      <div className={`grid gap-2 transition-opacity sm:grid-cols-2 ${!isCdcNhsnIntegrationEnabled ? "opacity-60" : ""}`}>
+                        <label className="text-xs font-medium text-slate-700">
+                          Environment
+                          <input
+                            className="soft-input mt-1 w-full"
+                            value={cdcNhsnConfigForm.environment}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, environment: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700">
+                          Request Timeout (ms)
+                          <input
+                            className="soft-input mt-1 w-full"
+                            type="number"
+                            min={1000}
+                            step={1000}
+                            value={cdcNhsnConfigForm.requestTimeoutMs}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, requestTimeoutMs: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700 sm:col-span-2">
+                          Token URL
+                          <input
+                            className="soft-input mt-1 w-full"
+                            value={cdcNhsnConfigForm.tokenUrl}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, tokenUrl: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700 sm:col-span-2">
+                          Upload URL
+                          <input
+                            className="soft-input mt-1 w-full"
+                            value={cdcNhsnConfigForm.uploadUrl}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, uploadUrl: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700 sm:col-span-2">
+                          OAuth Scope
+                          <input
+                            className="soft-input mt-1 w-full"
+                            value={cdcNhsnConfigForm.authScope}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, authScope: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700">
+                          Client ID
+                          <input
+                            className="soft-input mt-1 w-full"
+                            value={cdcNhsnConfigForm.clientId}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, clientId: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700">
+                          Username (SAMS System User)
+                          <input
+                            className="soft-input mt-1 w-full"
+                            value={cdcNhsnConfigForm.username}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, username: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700">
+                          Client Secret (write-only)
+                          <input
+                            className="soft-input mt-1 w-full"
+                            type="password"
+                            placeholder={cdcNhsnConfig?.clientSecretConfigured ? "Configured (enter to replace)" : "Not configured"}
+                            value={cdcNhsnConfigForm.clientSecret}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, clientSecret: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                        <label className="text-xs font-medium text-slate-700">
+                          Password (write-only)
+                          <input
+                            className="soft-input mt-1 w-full"
+                            type="password"
+                            placeholder={cdcNhsnConfig?.passwordConfigured ? "Configured (enter to replace)" : "Not configured"}
+                            value={cdcNhsnConfigForm.password}
+                            onChange={(event) => setCdcNhsnConfigForm((current) => ({ ...current, password: event.target.value }))}
+                            disabled={!isCdcNhsnIntegrationEnabled || cdcNhsnConfigSaving}
+                          />
+                        </label>
+                      </div>
+
+                      <div className={`mt-3 flex flex-wrap items-center gap-2 transition-opacity ${!isCdcNhsnIntegrationEnabled ? "opacity-60" : ""}`}>
+                        <button
+                          type="button"
+                          className="action-button inline-flex items-center justify-center gap-2"
+                          onClick={() => void handleSaveCdcNhsnConfig()}
+                          disabled={cdcNhsnConfigSaving || cdcNhsnConfigTesting || !isCdcNhsnIntegrationEnabled}
+                        >
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                            <path d="M4.2 4.2h9.2l2.4 2.4v9.2H4.2V4.2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                            <path d="M7 4.2v5h5.2v-5M7.4 13h5.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                          </svg>
+                          <span>{cdcNhsnConfigSaving ? "Saving..." : "Save Configuration"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="subtle-button inline-flex items-center justify-center gap-2"
+                          onClick={() => void handleTestCdcNhsnConfig()}
+                          disabled={cdcNhsnConfigSaving || cdcNhsnConfigTesting || !isCdcNhsnIntegrationEnabled}
+                        >
+                          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                            <path d="M10 3.7 4.6 6.3v3.8c0 3.2 2.2 6.2 5.4 6.2s5.4-3 5.4-6.2V6.3L10 3.7Z" stroke="currentColor" strokeWidth="1.4" />
+                            <path d="m7.6 10 1.7 1.7 3.1-3.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span>{cdcNhsnConfigTesting ? "Testing..." : "Test Credentials"}</span>
+                        </button>
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Recent NHSN Updates</p>
                       <ul className="space-y-1 text-xs text-slate-700">
                         {(cdcNhsnDashboard?.recentTransmissions ?? []).length === 0 ? (
-                          <li>No CDC/NHSN sync activity yet.</li>
+                          <li>No NHSN sync activity yet.</li>
                         ) : (
                           (cdcNhsnDashboard?.recentTransmissions ?? []).map((item) => (
                             <li key={item.id} className="flex items-center justify-between gap-3">
@@ -6704,9 +7187,15 @@ export default function App() {
                     </div>
                   </article>
 
-                  <article className="surface-panel stagger-in space-y-3">
-                    <h2 className="section-heading">CDC/NHSN Sync Console</h2>
-                    <p className="section-subtitle">Monitor and execute CDC NHSN data sync submissions.</p>
+                  <div className="flex flex-col gap-4">
+                    <article className="surface-panel stagger-in space-y-3 order-2">
+                    <h2 className="section-heading">NHSN Sync Console</h2>
+                    <p className="section-subtitle">Monitor and execute NHSN data sync submissions.</p>
+                    {!isCdcNhsnIntegrationEnabled ? (
+                      <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        Outbound sync actions are disabled while Admin Configuration is off.
+                      </div>
+                    ) : null}
                     <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3 text-sm text-slate-700">
                       <p>
                         Last attempt:{" "}
@@ -6728,42 +7217,164 @@ export default function App() {
                       type="button"
                       className="subtle-button inline-flex w-full items-center justify-center gap-2"
                       onClick={() => void handleRunCdcNhsnSync()}
-                      disabled={cdcNhsnSyncing}
+                      disabled={cdcNhsnSyncing || !isCdcNhsnIntegrationEnabled}
                     >
                       <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                         <path d="M15.8 6.5V4m0 0h-2.5m2.5 0-1.9 1.9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                         <path d="M15.8 9.8a5.8 5.8 0 1 1-1.2-3.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span>{cdcNhsnSyncing ? "Syncing..." : "Run CDC/NHSN Sync"}</span>
+                      <span>{cdcNhsnSyncing ? "Syncing..." : "Run NHSN Sync"}</span>
                     </button>
                     <div className="rounded-xl border border-slate-300/80 bg-white/85 p-3">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">CDC/NHSN Bulk Submission</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">NHSN Bulk Submission</p>
                       <p className="mt-1 text-xs text-slate-600">
-                        Upload JSON rows and immediately push them through the CDC NHSN integration pipeline.
+                        Upload JSON rows and immediately push them through the NHSN integration pipeline.
                       </p>
                       <textarea
                         className="soft-input mt-2 min-h-[110px] w-full font-mono text-xs"
                         value={cdcNhsnBulkRowsText}
                         placeholder='[{"facilityCode":"11205","unit":"ICU-1","bedType":"adult_icu","operationalStatus":"open","staffedBeds":20,"occupiedBeds":15}]'
                         onChange={(event) => setCdcNhsnBulkRowsText(event.target.value)}
+                        disabled={apiBulkUploading || !isCdcNhsnIntegrationEnabled}
                       />
                       <button
                         type="button"
                         className="subtle-button mt-2 inline-flex w-full items-center justify-center gap-2"
                         onClick={() => void handleCdcNhsnBulkUpload()}
-                        disabled={apiBulkUploading}
+                        disabled={apiBulkUploading || !isCdcNhsnIntegrationEnabled}
                       >
                         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
                           <path d="M10 3.8v8m0-8 2.8 2.8M10 3.8 7.2 6.6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M4.6 11.8v2.7a1.9 1.9 0 0 0 1.9 1.9h7a1.9 1.9 0 0 0 1.9-1.9v-2.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
                         </svg>
-                        <span>{apiBulkUploading ? "Uploading..." : "Run CDC/NHSN Bulk Upload"}</span>
+                        <span>{apiBulkUploading ? "Uploading..." : "Run NHSN Bulk Upload"}</span>
                       </button>
                     </div>
                     {apiQueryError ? (
                       <p className="rounded-lg border border-rose-300/75 bg-rose-100/80 px-3 py-2 text-xs text-rose-800">{apiQueryError}</p>
                     ) : null}
-                  </article>
+                    </article>
+                    {!isHospitalUser ? (
+                      <article className="surface-panel stagger-in space-y-3 order-1">
+                        <h2 className="section-heading">NHSN Auto Sync Settings</h2>
+                        <p className="section-subtitle">Configure automatic NHSN submission frequency and monitor scheduler health.</p>
+                        {!isCdcNhsnIntegrationEnabled ? (
+                          <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                            NHSN integration is disabled. Auto-sync controls are paused until the integration is re-enabled.
+                          </div>
+                        ) : null}
+                        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                          <article className="rounded-xl border border-slate-200 bg-white p-3">
+                            <p className="text-xs uppercase tracking-wide text-slate-500">Auto Sync Status</p>
+                            <p
+                              className={`text-lg font-bold ${
+                                !isCdcNhsnIntegrationEnabled ? "text-slate-700" : cdcNhsnAutoSyncStatus?.enabled ? "text-emerald-700" : "text-slate-700"
+                              }`}
+                            >
+                              {!isCdcNhsnIntegrationEnabled ? "Disabled" : cdcNhsnAutoSyncStatus?.enabled ? "Active" : "Paused"}
+                            </p>
+                          </article>
+                          <article className="rounded-xl border border-slate-200 bg-white p-3">
+                            <p className="text-xs uppercase tracking-wide text-slate-500">Frequency</p>
+                            <p className="text-lg font-bold">
+                              {isCdcNhsnIntegrationEnabled ? `${cdcNhsnAutoSyncStatus?.frequencyPerDay ?? 2}x / day` : "n/a"}
+                            </p>
+                          </article>
+                          <article className="rounded-xl border border-slate-200 bg-white p-3">
+                            <p className="text-xs uppercase tracking-wide text-slate-500">Successful Auto Syncs</p>
+                            <p className="text-lg font-bold">{cdcNhsnAutoSyncStatus?.totalSuccessful ?? 0}</p>
+                          </article>
+                          <article className="rounded-xl border border-slate-200 bg-white p-3">
+                            <p className="text-xs uppercase tracking-wide text-slate-500">Failed Auto Syncs</p>
+                            <p className="text-lg font-bold text-rose-700">{cdcNhsnAutoSyncStatus?.totalFailed ?? 0}</p>
+                          </article>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3 text-xs text-slate-700">
+                          <p>
+                            <span className="font-semibold">Last auto sync:</span>{" "}
+                            {cdcNhsnAutoSyncStatus?.lastRunAt ? new Date(cdcNhsnAutoSyncStatus.lastRunAt).toLocaleString() : "Never"}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Last successful sync:</span>{" "}
+                            {cdcNhsnAutoSyncStatus?.lastSuccessAt ? new Date(cdcNhsnAutoSyncStatus.lastSuccessAt).toLocaleString() : "Never"}
+                          </p>
+                          <p>
+                            <span className="font-semibold">Next auto sync:</span>{" "}
+                            {isCdcNhsnIntegrationEnabled
+                              ? cdcNhsnAutoSyncStatus?.nextRunAt
+                                ? new Date(cdcNhsnAutoSyncStatus.nextRunAt).toLocaleString()
+                                : "Not scheduled"
+                              : "N/A (integration disabled)"}
+                          </p>
+                          {cdcNhsnAutoSyncStatus?.lastError ? (
+                            <p className="mt-1 text-rose-700">
+                              <span className="font-semibold">Last error:</span> {cdcNhsnAutoSyncStatus.lastError}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div className="rounded-xl border border-slate-300/80 bg-white/90 p-3">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                            <label className="flex-1 text-xs font-medium text-slate-700">
+                              NHSN Auto Sync Frequency (Times Per Day)
+                              <input
+                                type="number"
+                                min={1}
+                                max={24}
+                                step={1}
+                                className="soft-input mt-1 w-full sm:max-w-[220px]"
+                                value={cdcNhsnAutoSyncFrequencyPerDayInput}
+                                onChange={(event) => setCdcNhsnAutoSyncFrequencyPerDayInput(event.target.value)}
+                                disabled={cdcNhsnAutoSyncSaving || !isCdcNhsnIntegrationEnabled}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              className="action-button inline-flex items-center justify-center gap-2 sm:min-w-[190px]"
+                              onClick={() => void handleSaveCdcNhsnAutoSyncFrequency()}
+                              disabled={cdcNhsnAutoSyncSaving || !isCdcNhsnIntegrationEnabled}
+                            >
+                              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+                                <path d="M4.2 4.2h9.2l2.4 2.4v9.2H4.2V4.2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+                                <path d="M7 4.2v5h5.2v-5M7.4 13h5.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                              </svg>
+                              <span>{cdcNhsnAutoSyncSaving ? "Saving..." : "Apply Frequency"}</span>
+                            </button>
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-800">NHSN Auto Sync</p>
+                              <p className="text-xs text-slate-600">Automatically transmits bed updates to NHSN at the configured daily cadence.</p>
+                            </div>
+                            <button
+                              type="button"
+                              role="switch"
+                              aria-checked={cdcNhsnAutoSyncStatus?.enabled ?? false}
+                              className={`relative inline-flex h-7 w-14 items-center rounded-full transition ${
+                                !isCdcNhsnIntegrationEnabled
+                                  ? "bg-slate-300"
+                                  : cdcNhsnAutoSyncStatus?.enabled
+                                    ? "bg-emerald-600"
+                                    : "bg-slate-400"
+                              } ${cdcNhsnAutoSyncSaving ? "opacity-70" : ""}`}
+                              onClick={() => void handleToggleCdcNhsnAutoSync(!(cdcNhsnAutoSyncStatus?.enabled ?? true))}
+                              disabled={cdcNhsnAutoSyncSaving || !isCdcNhsnIntegrationEnabled}
+                              title={cdcNhsnAutoSyncStatus?.enabled ? "Turn NHSN auto sync off" : "Turn NHSN auto sync on"}
+                              aria-label={cdcNhsnAutoSyncStatus?.enabled ? "Turn NHSN auto sync off" : "Turn NHSN auto sync on"}
+                            >
+                              <span
+                                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition ${
+                                  cdcNhsnAutoSyncStatus?.enabled ? "translate-x-8" : "translate-x-1"
+                                }`}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ) : null}
+                  </div>
                 </div>
               </section>
             )}

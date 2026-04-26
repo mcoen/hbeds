@@ -200,6 +200,17 @@ function mergeClientBrandingConfig(client, logoUrl) {
   return { logo_uri: normalizedLogoUrl };
 }
 
+function mergeClientNameConfig(client, appDisplayName) {
+  const normalized = String(appDisplayName || "").trim();
+  if (!normalized) {
+    return {};
+  }
+  if (String(client.name || "").trim() === normalized) {
+    return {};
+  }
+  return { name: normalized };
+}
+
 async function ensureTenantBranding({ domain, token, logoUrl }) {
   const normalizedLogoUrl = String(logoUrl || "").trim();
   if (!normalizedLogoUrl) {
@@ -227,6 +238,29 @@ async function ensureTenantBranding({ domain, token, logoUrl }) {
   });
 
   return `updated to ${normalizedLogoUrl}`;
+}
+
+async function ensureLoginPromptText({ domain, token, language = "en", description = " " }) {
+  const normalizedDescription = String(description ?? "").replace(/\r\n/g, "\n");
+  const body = {
+    login: {
+      description: normalizedDescription
+    }
+  };
+
+  try {
+    await managementRequest({
+      domain,
+      token,
+      path: `/api/v2/prompts/login/custom-text/${encodeURIComponent(language)}`,
+      method: "PUT",
+      body
+    });
+    return `updated login.description for ${language}`;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return `skipped (${message})`;
+  }
 }
 
 async function ensureDatabaseUsers({ domain, token, connection, localPassword, syncLocalPasswords }) {
@@ -378,6 +412,8 @@ async function main() {
   const extraOriginUrls = parseCsv(readEnv("AUTH0_EXTRA_ORIGIN_URLS", ""));
   const printCallbacks = readEnv("AUTH0_PRINT_CALLBACKS", "").toLowerCase() === "true";
   const brandingLogoUrl = readEnv("AUTH0_BRANDING_LOGO_URL", "https://www.michaelcoen.com/images/CDPH-Logo.png");
+  const appDisplayName = readEnv("AUTH0_APP_DISPLAY_NAME", "CDPH HBEDS");
+  const loginPromptDescription = readEnv("AUTH0_LOGIN_PROMPT_DESCRIPTION", " ");
 
   const defaultCallbackUrls = [
     "http://localhost:4110/",
@@ -410,7 +446,8 @@ async function main() {
 
   const urlPatch = mergeClientUrlConfig(client, callbackUrls, originUrls);
   const clientBrandingPatch = mergeClientBrandingConfig(client, brandingLogoUrl);
-  const clientPatch = { ...urlPatch, ...clientBrandingPatch };
+  const clientNamePatch = mergeClientNameConfig(client, appDisplayName);
+  const clientPatch = { ...urlPatch, ...clientBrandingPatch, ...clientNamePatch };
   if (Object.keys(clientPatch).length > 0) {
     await managementRequest({
       domain,
@@ -430,6 +467,14 @@ async function main() {
     logoUrl: brandingLogoUrl
   });
   console.log(`Auth0 tenant branding logo: ${brandingSummary}`);
+
+  const loginPromptSummary = await ensureLoginPromptText({
+    domain,
+    token,
+    language: "en",
+    description: loginPromptDescription
+  });
+  console.log(`Auth0 login prompt text: ${loginPromptSummary}`);
 
   if (printCallbacks) {
     const refreshedClient = await managementRequest({

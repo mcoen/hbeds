@@ -56,8 +56,49 @@ export interface CdcNhsnDashboard {
   totalFailed: number;
   pendingRevisions: number;
   pendingRecords: number;
-  nextScheduledAt: string;
+  nextScheduledAt: string | null;
   recentTransmissions: CdcNhsnTransmission[];
+}
+
+export interface CdcNhsnAutoSyncStatus {
+  enabled: boolean;
+  frequencyPerDay: number;
+  intervalMinutes: number;
+  totalRuns: number;
+  totalSuccessful: number;
+  totalFailed: number;
+  lastRunAt: string | null;
+  lastSuccessAt: string | null;
+  nextRunAt: string | null;
+  lastError: string | null;
+}
+
+export interface CdcNhsnConfig {
+  enabled: boolean;
+  tokenUrl: string;
+  uploadUrl: string;
+  authScope: string;
+  environment: string;
+  requestTimeoutMs: number;
+  clientId: string;
+  username: string;
+  clientSecretConfigured: boolean;
+  passwordConfigured: boolean;
+}
+
+export interface CdcNhsnConfigUpdateInput {
+  enabled?: boolean;
+  tokenUrl?: string;
+  uploadUrl?: string;
+  authScope?: string;
+  environment?: string;
+  requestTimeoutMs?: number;
+  clientId?: string;
+  username?: string;
+  clientSecret?: string;
+  password?: string;
+  clearClientSecret?: boolean;
+  clearPassword?: boolean;
 }
 
 export interface SimulationStatus {
@@ -123,10 +164,43 @@ export interface HbedsAiHelperResponse {
   model?: string;
 }
 
+interface StoredSessionUser {
+  email?: string;
+  role?: "cdph" | "hospital";
+}
+
+const SESSION_STORAGE_KEY = "hbeds.session.user.v1";
+
+function readSessionHeaders(): Record<string, string> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) {
+      return {};
+    }
+    const parsed = JSON.parse(raw) as StoredSessionUser;
+    const headers: Record<string, string> = {};
+    if (parsed.role === "cdph" || parsed.role === "hospital") {
+      headers["x-hbeds-user-role"] = parsed.role;
+    }
+    if (typeof parsed.email === "string" && parsed.email.trim()) {
+      headers["x-hbeds-user-email"] = parsed.email.trim().toLowerCase();
+    }
+    return headers;
+  } catch {
+    return {};
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const sessionHeaders = readSessionHeaders();
   const response = await fetch(path, {
     ...init,
     headers: {
+      ...sessionHeaders,
       "Content-Type": "application/json",
       ...(init?.headers ?? {})
     }
@@ -269,6 +343,9 @@ export async function uploadBulkFile(file: File, source?: string): Promise<{ job
 
   const response = await fetch("/api/bulk/upload", {
     method: "POST",
+    headers: {
+      ...readSessionHeaders()
+    },
     body: formData
   });
 
@@ -292,6 +369,45 @@ export function runCdcNhsnSync(source = "manual"): Promise<{ transmission: CdcNh
   return request<{ transmission: CdcNhsnTransmission; dashboard: CdcNhsnDashboard }>("/api/integrations/cdc-nhsn/sync", {
     method: "POST",
     body: JSON.stringify({ source })
+  });
+}
+
+export function getCdcNhsnAutoSyncStatus(): Promise<CdcNhsnAutoSyncStatus> {
+  return request<CdcNhsnAutoSyncStatus>("/api/integrations/cdc-nhsn/auto-sync");
+}
+
+export function setCdcNhsnAutoSyncConfig(input: {
+  enabled?: boolean;
+  frequencyPerDay?: number;
+}): Promise<{ status: CdcNhsnAutoSyncStatus; dashboard: CdcNhsnDashboard }> {
+  return request<{ status: CdcNhsnAutoSyncStatus; dashboard: CdcNhsnDashboard }>("/api/integrations/cdc-nhsn/auto-sync", {
+    method: "POST",
+    body: JSON.stringify(input)
+  });
+}
+
+export function getCdcNhsnConfig(): Promise<CdcNhsnConfig> {
+  return request<CdcNhsnConfig>("/api/integrations/cdc-nhsn/config");
+}
+
+export function setCdcNhsnConfig(input: CdcNhsnConfigUpdateInput): Promise<{
+  config: CdcNhsnConfig;
+  dashboard: CdcNhsnDashboard;
+  autoSyncStatus: CdcNhsnAutoSyncStatus;
+}> {
+  return request<{
+    config: CdcNhsnConfig;
+    dashboard: CdcNhsnDashboard;
+    autoSyncStatus: CdcNhsnAutoSyncStatus;
+  }>("/api/integrations/cdc-nhsn/config", {
+    method: "POST",
+    body: JSON.stringify(input)
+  });
+}
+
+export function testCdcNhsnConfigConnection(): Promise<{ ok: boolean; checkedAt: string; message: string }> {
+  return request<{ ok: boolean; checkedAt: string; message: string }>("/api/integrations/cdc-nhsn/config/test", {
+    method: "POST"
   });
 }
 
