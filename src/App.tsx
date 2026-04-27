@@ -4516,7 +4516,7 @@ export default function App() {
                       type="button"
                       className={`w-full rounded-xl border px-3 py-2 text-left text-sm font-medium transition ${
                         isActive
-                          ? "border-blue-500 bg-blue-50 text-blue-800 shadow-sm"
+                          ? "border-transparent bg-blue-100/75 text-blue-900 shadow-[inset_0_0_0_2px_rgba(37,99,235,0.95)]"
                           : "border-slate-300 bg-white text-slate-700 hover:border-blue-400 hover:text-blue-700"
                       }`}
                       onClick={() => setActiveTab(item.id as TabId)}
@@ -4667,7 +4667,9 @@ export default function App() {
                         key={item.id}
                         type="button"
                         className={`rounded-lg border px-2 py-1.5 text-xs font-semibold transition ${
-                          isActive ? "border-blue-500 bg-blue-50 text-blue-800" : "border-slate-300 bg-white text-slate-700"
+                          isActive
+                            ? "border-transparent bg-blue-100/75 text-blue-900 shadow-[inset_0_0_0_2px_rgba(37,99,235,0.95)]"
+                            : "border-slate-300 bg-white text-slate-700"
                         }`}
                         onClick={() => setActiveTab(item.id as TabId)}
                       >
