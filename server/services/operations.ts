@@ -369,9 +369,13 @@ function persistOperationsSettings(settingsPath: string, status: CdcNhsnAutoSync
 function buildSimulationPayload(facilityCode: string, cycleNumber: number, index: number, runAt: string): BedStatusInput {
   const numericCode = Number.parseInt(facilityCode.replace(/[^0-9]/g, ""), 10);
   const seed = Number.isFinite(numericCode) ? numericCode : index + 1000;
-  const staffedBeds = 12 + ((seed + cycleNumber * 3) % 28);
-  const occupancyOffset = (seed + cycleNumber * 5) % 6;
-  const occupiedBeds = Math.max(0, Math.min(staffedBeds, staffedBeds - occupancyOffset));
+  // Simulate licensed capacity and variable staffing so staffed beds are not a fixed share of total beds.
+  const licensedBeds = 22 + ((seed + cycleNumber * 7) % 46);
+  const staffedRatio = 0.52 + (((seed + cycleNumber * 11) % 35) / 100);
+  const staffedBeds = Math.max(6, Math.min(licensedBeds, Math.round(licensedBeds * staffedRatio)));
+  const occupancyRatio = 0.48 + (((seed + cycleNumber * 5) % 38) / 100);
+  const occupiedBeds = Math.max(0, Math.min(staffedBeds, Math.round(staffedBeds * occupancyRatio)));
+  const availableBeds = Math.max(0, licensedBeds - occupiedBeds);
   const statusRoll = (seed + cycleNumber) % 100;
   const operationalStatus =
     statusRoll < 72 ? "open" : statusRoll < 88 ? "limited" : statusRoll < 96 ? "diversion" : "closed";
@@ -383,7 +387,7 @@ function buildSimulationPayload(facilityCode: string, cycleNumber: number, index
     operationalStatus,
     staffedBeds,
     occupiedBeds,
-    availableBeds: staffedBeds - occupiedBeds,
+    availableBeds,
     covidConfirmed: (seed + cycleNumber) % 7,
     influenzaConfirmed: (seed + cycleNumber * 2) % 6,
     rsvConfirmed: (seed + cycleNumber * 3) % 5,

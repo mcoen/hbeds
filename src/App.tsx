@@ -4901,11 +4901,20 @@ export default function App() {
                           filteredFacilities.map((facility) => {
                             const isSelected = selectedFacilityDetailsId === facility.id;
                             const surgeCapability = facilitySurgeCapabilityById.get(facility.id);
+                            const selectedMiddleCellClass = isSelected
+                              ? "bg-blue-100/75 shadow-[inset_0_2px_0_0_rgba(37,99,235,0.95),inset_0_-2px_0_0_rgba(37,99,235,0.95)]"
+                              : "";
+                            const selectedFirstCellClass = isSelected
+                              ? "bg-blue-100/75 shadow-[inset_2px_0_0_0_rgba(37,99,235,0.95),inset_0_2px_0_0_rgba(37,99,235,0.95),inset_0_-2px_0_0_rgba(37,99,235,0.95)]"
+                              : "";
+                            const selectedLastCellClass = isSelected
+                              ? "bg-blue-100/75 shadow-[inset_-2px_0_0_0_rgba(37,99,235,0.95),inset_0_2px_0_0_rgba(37,99,235,0.95),inset_0_-2px_0_0_rgba(37,99,235,0.95)]"
+                              : "";
                             return (
                               <tr
                                 key={facility.id}
                                 className={`cursor-pointer border-t border-slate-100 align-top transition ${
-                                  isSelected ? "bg-blue-100/75 ring-1 ring-inset ring-blue-300" : "hover:bg-blue-50/55"
+                                  isSelected ? "bg-blue-100/75" : "hover:bg-blue-50/55"
                                 }`}
                                 onClick={() => openFacilityDetails(facility.id)}
                                 onKeyDown={(event) => {
@@ -4918,16 +4927,16 @@ export default function App() {
                                 tabIndex={0}
                                 aria-selected={isSelected}
                               >
-                                <td className="px-3 py-2">
+                                <td className={`px-3 py-2 ${selectedFirstCellClass}`}>
                                   <p className={`font-semibold ${isSelected ? "text-blue-900" : "text-slate-900"}`}>{facility.name}</p>
                                   <p className={`text-xs ${isSelected ? "text-blue-700" : "text-slate-500"}`}>Facility ID {facility.code}</p>
                                 </td>
-                                <td className="px-3 py-2 text-xs">{facilityTypeLabel(facility.facilityType)}</td>
-                                <td className="px-3 py-2 text-xs text-slate-700">
+                                <td className={`px-3 py-2 text-xs ${selectedMiddleCellClass}`}>{facilityTypeLabel(facility.facilityType)}</td>
+                                <td className={`px-3 py-2 text-xs text-slate-700 ${selectedMiddleCellClass}`}>
                                   <p>{facility.addressLine1}</p>
                                   {facility.addressLine2 ? <p>{facility.addressLine2}</p> : null}
                                 </td>
-                                <td className="px-3 py-2 text-xs text-slate-700">
+                                <td className={`px-3 py-2 text-xs text-slate-700 ${selectedMiddleCellClass}`}>
                                   <p>
                                     {facility.city}, {facility.state} {facility.zip}
                                   </p>
@@ -4935,7 +4944,7 @@ export default function App() {
                                     {facility.county} • {facility.region}
                                   </p>
                                 </td>
-                                <td className="px-3 py-2">
+                                <td className={`px-3 py-2 ${selectedMiddleCellClass}`}>
                                   <span
                                     className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-xs font-semibold ${
                                       surgeCapability?.markerStatus === "good"
@@ -4961,10 +4970,12 @@ export default function App() {
                                     <span>{surgeCapability?.label ?? "Low"}</span>
                                   </span>
                                 </td>
-                                <td className="px-3 py-2 text-xs text-slate-700">{facility.phone || "N/A"}</td>
-                                <td className="px-3 py-2 text-xs text-slate-600">{new Date(facility.updatedAt).toLocaleString()}</td>
+                                <td className={`px-3 py-2 text-xs text-slate-700 ${selectedMiddleCellClass}`}>{facility.phone || "N/A"}</td>
+                                <td className={`px-3 py-2 text-xs text-slate-600 ${isHospitalUser ? selectedLastCellClass : selectedMiddleCellClass}`}>
+                                  {new Date(facility.updatedAt).toLocaleString()}
+                                </td>
                                 {!isHospitalUser && (
-                                  <td className="px-3 py-2">
+                                  <td className={`px-3 py-2 ${selectedLastCellClass}`}>
                                     <div className="flex items-center gap-2">
                                       <button
                                         type="button"
@@ -5175,11 +5186,20 @@ export default function App() {
                         {hasRows ? (
                           filteredBedStatuses.map((row) => {
                             const isSelected = selectedBedStatusId === row.id;
+                            const selectedMiddleCellClass = isSelected
+                              ? "bg-blue-100/75 shadow-[inset_0_2px_0_0_rgba(37,99,235,0.95),inset_0_-2px_0_0_rgba(37,99,235,0.95)]"
+                              : "";
+                            const selectedFirstCellClass = isSelected
+                              ? "bg-blue-100/75 shadow-[inset_2px_0_0_0_rgba(37,99,235,0.95),inset_0_2px_0_0_rgba(37,99,235,0.95),inset_0_-2px_0_0_rgba(37,99,235,0.95)]"
+                              : "";
+                            const selectedLastCellClass = isSelected
+                              ? "bg-blue-100/75 shadow-[inset_-2px_0_0_0_rgba(37,99,235,0.95),inset_0_2px_0_0_rgba(37,99,235,0.95),inset_0_-2px_0_0_rgba(37,99,235,0.95)]"
+                              : "";
                             return (
                             <tr
                               key={row.id}
                               className={`cursor-pointer border-t border-slate-100 align-top transition ${
-                                isSelected ? "bg-blue-100/75 ring-1 ring-inset ring-blue-300" : "hover:bg-blue-50/55"
+                                isSelected ? "bg-blue-100/75" : "hover:bg-blue-50/55"
                               }`}
                               onClick={() => openBedStatusDetailsModal(row)}
                               onKeyDown={(event) => {
@@ -5192,22 +5212,22 @@ export default function App() {
                               tabIndex={0}
                               aria-selected={isSelected}
                             >
-                              <td className="px-3 py-2">
+                              <td className={`px-3 py-2 ${selectedFirstCellClass}`}>
                                 <p className={`font-semibold ${isSelected ? "text-blue-900" : "text-slate-900"}`}>{row.facilityName}</p>
                                 <p className={`text-xs ${isSelected ? "text-blue-700" : "text-slate-500"}`}>Facility ID {row.facilityCode}</p>
                               </td>
-                              <td className="px-3 py-2 font-medium">{row.unit}</td>
-                              <td className="px-3 py-2 text-xs">{bedTypeLabel(row.bedType)}</td>
-                              <td className="px-3 py-2">
+                              <td className={`px-3 py-2 font-medium ${selectedMiddleCellClass}`}>{row.unit}</td>
+                              <td className={`px-3 py-2 text-xs ${selectedMiddleCellClass}`}>{bedTypeLabel(row.bedType)}</td>
+                              <td className={`px-3 py-2 ${selectedMiddleCellClass}`}>
                                 <span className={`status-badge ${statusSelectTone(row.operationalStatus)}`}>
                                   {statusLabel(row.operationalStatus)}
                                 </span>
                               </td>
-                              <td className="px-3 py-2 font-mono text-sm">{row.staffedBeds}</td>
-                              <td className="px-3 py-2 font-mono text-sm">{row.occupiedBeds}</td>
-                              <td className="px-3 py-2 font-mono text-sm">{row.availableBeds}</td>
-                              <td className="px-3 py-2 text-xs text-slate-600">{new Date(row.lastUpdatedAt).toLocaleString()}</td>
-                              <td className="px-3 py-2">
+                              <td className={`px-3 py-2 font-mono text-sm ${selectedMiddleCellClass}`}>{row.staffedBeds}</td>
+                              <td className={`px-3 py-2 font-mono text-sm ${selectedMiddleCellClass}`}>{row.occupiedBeds}</td>
+                              <td className={`px-3 py-2 font-mono text-sm ${selectedMiddleCellClass}`}>{row.availableBeds}</td>
+                              <td className={`px-3 py-2 text-xs text-slate-600 ${selectedMiddleCellClass}`}>{new Date(row.lastUpdatedAt).toLocaleString()}</td>
+                              <td className={`px-3 py-2 ${selectedLastCellClass}`}>
                                 <div className="flex items-center gap-2">
                                   <button
                                     type="button"
