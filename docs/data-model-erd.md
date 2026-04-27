@@ -30,7 +30,7 @@ erDiagram
     datetime updated_at
   }
 
-  BED_STATUS_RECORD {
+  BED_STATUS {
     string id PK
     string facility_id FK
     string facility_code
@@ -98,7 +98,7 @@ erDiagram
     datetime last_changed_at
   }
 
-  CDC_NHSN_TRANSMISSION {
+  NHSN_TRANSMISSION {
     string id PK
     string system
     string status
@@ -111,7 +111,7 @@ erDiagram
     string message
   }
 
-  CDC_NHSN_CONFIG {
+  NHSN_CONFIG {
     boolean enabled
     string token_url
     string upload_url
@@ -124,7 +124,7 @@ erDiagram
     boolean password_configured
   }
 
-  CDC_NHSN_AUTO_SYNC_STATUS {
+  NHSN_AUTO_SYNC_STATUS {
     boolean enabled
     int frequency_per_day
     int interval_minutes
@@ -168,14 +168,14 @@ erDiagram
 The file-backed repository currently persists these top-level collections:
 
 - `facilities`
-- `bedStatuses`
+- `bedStatuses` (modeled as `BED_STATUS`)
 - `uploadJobs`
 - `facilitySubmissions`
 - store metadata: `startedAt`, `revision`, `lastChangedAt`
 
 ### Important denormalizations
 
-`BED_STATUS_RECORD` duplicates facility attributes for operational convenience:
+`BED_STATUS` duplicates facility attributes for operational convenience:
 
 - `facility_code`
 - `facility_name`

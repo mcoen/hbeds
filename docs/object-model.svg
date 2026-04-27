@@ -30,7 +30,7 @@
   <text x="60" y="288" class="small">updatedAt</text>
 
   <rect class="box" x="410" y="90" width="340" height="300" />
-  <text x="430" y="120" class="text">BedStatusRecord</text>
+  <text x="430" y="120" class="text">BedStatus</text>
   <text x="430" y="148" class="small">id, facilityId</text>
   <text x="430" y="168" class="small">facilityCode, facilityName</text>
   <text x="430" y="188" class="small">county, region, unit</text>
@@ -102,7 +102,7 @@
   <text x="460" y="798" class="small">facilityName, submittedAt, source</text>
 
   <rect class="box" x="760" y="830" width="300" height="150" />
-  <text x="780" y="860" class="text">CdcNhsnTransmission</text>
+  <text x="780" y="860" class="text">NhsnTransmission</text>
   <text x="780" y="888" class="small">id, system, status, source</text>
   <text x="780" y="908" class="small">revision, records</text>
   <text x="780" y="928" class="small">submittedAt, acknowledgedAt</text>
@@ -117,7 +117,7 @@
   <text x="1130" y="698" class="small">lastError</text>
 
   <rect class="box" x="1110" y="760" width="300" height="180" />
-  <text x="1130" y="790" class="text">CdcNhsnAutoSyncStatus</text>
+  <text x="1130" y="790" class="text">NhsnAutoSyncStatus</text>
   <text x="1130" y="818" class="small">enabled, frequencyPerDay</text>
   <text x="1130" y="838" class="small">intervalMinutes</text>
   <text x="1130" y="858" class="small">totalRuns, totalSuccessful, totalFailed</text>
@@ -125,7 +125,7 @@
   <text x="1130" y="898" class="small">nextRunAt, lastError</text>
 
   <rect class="box" x="1110" y="960" width="300" height="150" />
-  <text x="1130" y="990" class="text">CdcNhsnConfigView</text>
+  <text x="1130" y="990" class="text">NhsnConfigView</text>
   <text x="1130" y="1018" class="small">enabled, tokenUrl, uploadUrl</text>
   <text x="1130" y="1038" class="small">authScope, environment</text>
   <text x="1130" y="1058" class="small">clientId, username</text>

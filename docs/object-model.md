@@ -32,7 +32,7 @@ class Facility {
   +string updatedAt
 }
 
-class BedStatusRecord {
+class BedStatus {
   +string id
   +string facilityId
   +string facilityCode
@@ -106,7 +106,7 @@ class DashboardSummary {
 
 class Snapshot {
   +Facility[] facilities
-  +BedStatusRecord[] bedStatuses
+  +BedStatus[] bedStatuses
   +UploadJob[] uploadJobs
   +string lastChangedAt
   +number revision
@@ -135,7 +135,7 @@ class SubmissionEvent {
   +string source
 }
 
-class CdcNhsnTransmission {
+class NhsnTransmission {
   +string id
   +string system
   +string status
@@ -162,7 +162,7 @@ class SimulationStatus {
   +string? lastError
 }
 
-class CdcNhsnAutoSyncStatus {
+class NhsnAutoSyncStatus {
   +boolean enabled
   +number frequencyPerDay
   +number intervalMinutes
@@ -175,7 +175,7 @@ class CdcNhsnAutoSyncStatus {
   +string? lastError
 }
 
-class CdcNhsnConfigView {
+class NhsnConfigView {
   +boolean enabled
   +string tokenUrl
   +string uploadUrl
@@ -222,28 +222,28 @@ class FacilityType {
   other
 }
 
-Facility "1" --> "0..*" BedStatusRecord : reports
+Facility "1" --> "0..*" BedStatus : reports
 Facility "1" --> "1" FacilitySubmissionCounter : tracks cadence
 FacilitySubmissionCounter "1" o-- "0..*" SubmissionEntry : recentSubmissions
 UploadJob "1" o-- "0..*" UploadError : errors
 Snapshot "1" o-- "0..*" Facility : facilities
-Snapshot "1" o-- "0..*" BedStatusRecord : bedStatuses
+Snapshot "1" o-- "0..*" BedStatus : bedStatuses
 Snapshot "1" o-- "0..*" UploadJob : uploadJobs
 DashboardSummary "1" o-- "0..*" AggregateCount : statusCounts
 DashboardSummary "1" o-- "0..*" AggregateCount : bedTypeCounts
 FacilitySubmissionReport "1" --> "1" Facility : facility
 FacilitySubmissionReport "1" o-- "0..*" SubmissionEntry : recentSubmissions
 SubmissionEvent ..> Facility : derived from
-BedStatusRecord --> BedType : bedType
-BedStatusRecord --> OperationalStatus : operationalStatus
+BedStatus --> BedType : bedType
+BedStatus --> OperationalStatus : operationalStatus
 Facility --> FacilityType : facilityType
 ```
 
 ## Notes
 
 - `Facility` is the master facility record and is seeded from California acute hospital data.
-- `BedStatusRecord` is the core operational reporting entity and belongs to a facility.
+- `BedStatus` is the core operational reporting entity and belongs to a facility.
 - `FacilitySubmissionCounter` is an internal analytics object that tracks submission cadence per facility.
 - `UploadJob` records the outcome of CSV/JSON bulk uploads, including rejected rows.
-- `CdcNhsnTransmission`, `SimulationStatus`, `CdcNhsnAutoSyncStatus`, and `CdcNhsnConfigView` model operational/integration state rather than core clinical entities.
-- FHIR `Location` and `Observation` resources are projections of `Facility` and `BedStatusRecord`, not separately persisted domain entities.
+- `NhsnTransmission`, `SimulationStatus`, `NhsnAutoSyncStatus`, and `NhsnConfigView` model operational/integration state rather than core clinical entities.
+- FHIR `Location` and `Observation` resources are projections of `Facility` and `BedStatus`, not separately persisted domain entities.

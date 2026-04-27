@@ -31,7 +31,7 @@
   <text x="60" y="348" class="field">updated_at</text>
 
   <rect class="table" x="390" y="90" width="330" height="320" />
-  <text x="410" y="120" class="header">BED_STATUS_RECORD</text>
+  <text x="410" y="120" class="header">BED_STATUS</text>
   <text x="410" y="148" class="field">PK id</text>
   <text x="410" y="168" class="field">FK facility_id</text>
   <text x="410" y="188" class="field">facility_code, facility_name</text>
@@ -88,7 +88,7 @@
   <text x="780" y="428" class="field">last_changed_at</text>
 
   <rect class="table" x="760" y="500" width="300" height="180" />
-  <text x="780" y="530" class="header">CDC_NHSN_TRANSMISSION</text>
+  <text x="780" y="530" class="header">NHSN_TRANSMISSION</text>
   <text x="780" y="558" class="field">PK id</text>
   <text x="780" y="578" class="field">system, status, source</text>
   <text x="780" y="598" class="field">revision, records</text>
@@ -97,7 +97,7 @@
   <text x="780" y="658" class="field">message</text>
 
   <rect class="table" x="1120" y="360" width="300" height="180" />
-  <text x="1140" y="390" class="header">CDC_NHSN_CONFIG</text>
+  <text x="1140" y="390" class="header">NHSN_CONFIG</text>
   <text x="1140" y="418" class="field">enabled</text>
   <text x="1140" y="438" class="field">token_url, upload_url</text>
   <text x="1140" y="458" class="field">auth_scope</text>
@@ -106,7 +106,7 @@
   <text x="1140" y="518" class="field">request_timeout_ms</text>
 
   <rect class="table" x="1120" y="580" width="300" height="190" />
-  <text x="1140" y="610" class="header">CDC_NHSN_AUTO_SYNC_STATUS</text>
+  <text x="1140" y="610" class="header">NHSN_AUTO_SYNC_STATUS</text>
   <text x="1140" y="638" class="field">enabled</text>
   <text x="1140" y="658" class="field">frequency_per_day, interval_minutes</text>
   <text x="1140" y="678" class="field">total_runs, total_successful</text>
