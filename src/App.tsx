@@ -311,17 +311,26 @@ function readSessionUserFromStorage(): SessionUser | null {
   }
 
   try {
-    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    const rawFromSession = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const rawFromLocal = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = rawFromSession ?? rawFromLocal;
     if (!raw) {
       return null;
     }
     const parsed = parseSessionUser(JSON.parse(raw));
     if (!parsed) {
+      window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
       window.localStorage.removeItem(SESSION_STORAGE_KEY);
       return null;
     }
+    if (!rawFromSession && rawFromLocal) {
+      // Migrate legacy localStorage session into tab-scoped sessionStorage.
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(parsed));
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    }
     return parsed;
   } catch {
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
     return null;
   }
@@ -333,11 +342,13 @@ function writeSessionUserToStorage(user: SessionUser | null): void {
   }
 
   if (!user) {
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
     return;
   }
 
-  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+  window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(user));
+  window.localStorage.removeItem(SESSION_STORAGE_KEY);
 }
 
 const EMPTY_FACILITY_FORM: FacilityFormState = {

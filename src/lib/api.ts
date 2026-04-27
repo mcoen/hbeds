@@ -177,11 +177,18 @@ function readSessionHeaders(): Record<string, string> {
   }
 
   try {
-    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    const rawFromSession = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const rawFromLocal = window.localStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = rawFromSession ?? rawFromLocal;
     if (!raw) {
       return {};
     }
     const parsed = JSON.parse(raw) as StoredSessionUser;
+    if (!rawFromSession && rawFromLocal) {
+      // Migrate legacy localStorage session into tab-scoped sessionStorage.
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(parsed));
+      window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    }
     const headers: Record<string, string> = {};
     if (parsed.role === "cdph" || parsed.role === "hospital") {
       headers["x-hbeds-user-role"] = parsed.role;
