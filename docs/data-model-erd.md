@@ -152,9 +152,9 @@ erDiagram
   }
 
   STORE_SNAPSHOT ||--o{ FACILITY : contains
-  STORE_SNAPSHOT ||--o{ BED_STATUS_RECORD : contains
+  STORE_SNAPSHOT ||--o{ BED_STATUS : contains
   STORE_SNAPSHOT ||--o{ UPLOAD_JOB : contains
-  FACILITY ||--o{ BED_STATUS_RECORD : reports
+  FACILITY ||--o{ BED_STATUS : reports
   FACILITY ||--|| FACILITY_SUBMISSION_COUNTER : tracks
   FACILITY_SUBMISSION_COUNTER ||--o{ FACILITY_SUBMISSION_SOURCE_COUNT : source_breakdown
   FACILITY_SUBMISSION_COUNTER ||--o{ FACILITY_SUBMISSION_RECENT_EVENT : recent_submissions
@@ -188,9 +188,9 @@ That makes read paths simpler, but it means facility updates must fan out to rel
 
 These are operational runtime records rather than core store entities:
 
-- `CDC_NHSN_TRANSMISSION`
-- `CDC_NHSN_CONFIG`
-- `CDC_NHSN_AUTO_SYNC_STATUS`
+- `NHSN_TRANSMISSION`
+- `NHSN_CONFIG`
+- `NHSN_AUTO_SYNC_STATUS`
 - `SIMULATION_STATUS`
 
 They matter architecturally, even though they are managed separately from the primary HBEDS snapshot.
