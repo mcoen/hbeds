@@ -50,7 +50,18 @@ import {
 import { getAuthProviderWarning, initializeAuth0Session, loginWithAuth0, logoutFromAuth0 } from "./lib/auth0";
 import { CALIFORNIA_CENTER, getCountyCoordinate } from "./lib/caCountyCoordinates";
 
-type TabId = "manual" | "bulk" | "analytics" | "notifications" | "settings" | "apis" | "cdcNhsn" | "facilityDetails" | "aiHelper" | "heatMap";
+type TabId =
+  | "manual"
+  | "bulk"
+  | "analytics"
+  | "notifications"
+  | "settings"
+  | "apis"
+  | "cdcNhsn"
+  | "facilityDetails"
+  | "aiHelper"
+  | "heatMap"
+  | "emergencyNotification";
 type ApiTabId = "rest" | "graphql" | "fhir" | "sftp" | "bulk";
 type IncomingApiFilter = "all" | "rest" | "graphql" | "fhir";
 type IncomingWindowId = "1m" | "15m" | "60m" | "12h" | "24h" | "7d" | "30d";
@@ -59,7 +70,7 @@ type UnitTrendRangeId = "12h" | "24h" | "7d" | "30d" | "1y";
 type ManualViewMode = "facilities" | "beds";
 type FacilityModalMode = "create" | "edit";
 type BedModalMode = "create" | "edit";
-type UserRole = "cdph" | "hospital";
+type UserRole = "cdph" | "hospital" | "countyEms";
 type SortDirection = "asc" | "desc";
 type FacilityGridSortKey = "name" | "facilityType" | "county" | "updatedAt";
 type BedGridSortKey = "facilityName" | "unit" | "bedType" | "operationalStatus" | "staffedBeds" | "occupiedBeds" | "availableBeds" | "lastUpdatedAt";
@@ -116,6 +127,8 @@ interface SessionUser {
   facilityId?: string;
   facilityCode?: string;
   facilityName?: string;
+  county?: string;
+  agencyName?: string;
 }
 
 function parseSessionUser(value: unknown): SessionUser | null {
@@ -127,13 +140,15 @@ function parseSessionUser(value: unknown): SessionUser | null {
   const email = typeof raw.email === "string" ? raw.email.trim() : "";
   const role = raw.role;
 
-  if (!email || (role !== "cdph" && role !== "hospital")) {
+  if (!email || (role !== "cdph" && role !== "hospital" && role !== "countyEms")) {
     return null;
   }
 
   const facilityId = typeof raw.facilityId === "string" ? raw.facilityId.trim() : undefined;
   const facilityCode = typeof raw.facilityCode === "string" ? raw.facilityCode.trim() : undefined;
   const facilityName = typeof raw.facilityName === "string" ? raw.facilityName.trim() : undefined;
+  const county = typeof raw.county === "string" ? raw.county.trim() : undefined;
+  const agencyName = typeof raw.agencyName === "string" ? raw.agencyName.trim() : undefined;
 
   if (role === "hospital") {
     return {
@@ -145,10 +160,27 @@ function parseSessionUser(value: unknown): SessionUser | null {
     };
   }
 
-  return {
-    email,
-    role
-  };
+  if (role === "countyEms") {
+    return {
+      email,
+      role,
+      county: county || "Los Angeles",
+      agencyName: agencyName || "Los Angeles County EMS Agency"
+    };
+  }
+
+  return { email, role };
+}
+
+interface EmergencyNotificationFormState {
+  incidentType: string;
+  county: string;
+  affectedRegion: string;
+  severity: "warning" | "critical";
+  expectedDiversionNeed: string;
+  message: string;
+  contactName: string;
+  contactPhone: string;
 }
 
 interface RestQueryState {
@@ -190,6 +222,7 @@ interface NotificationItem {
   severity: "info" | "warning" | "critical" | "success";
   createdAt: string;
   read: boolean;
+  active?: boolean;
 }
 
 interface UserSettings {
@@ -270,12 +303,24 @@ const HOSPITAL_BACKDROP_URL = "https://www.michaelcoen.com/images/HBEDS-Backgrou
 const DEMO_HOSPITAL_FACILITY_CODE = "11205";
 const DEMO_HOSPITAL_FACILITY_ID = `fac-${DEMO_HOSPITAL_FACILITY_CODE}`;
 const DEFAULT_ADMIN_EMAIL = "cdph.admin@cdph.ca.gov";
+const DEFAULT_COUNTY_EMS_EMAIL = "county.ems@ca-hbeds.org";
 const AUTH0_ADMIN_EMAILS = new Set(["cdph.admin@cdph.ca.gov", "michael.coen@gmail.com"]);
 const AUTH0_HOSPITAL_EMAIL_TO_FACILITY: Record<string, { facilityCode: string }> = {
   "hospital.user.11205@ca-hbeds.org": { facilityCode: DEMO_HOSPITAL_FACILITY_CODE }
 };
-const AUTH0_ALLOWED_EMAILS = new Set([...AUTH0_ADMIN_EMAILS, ...Object.keys(AUTH0_HOSPITAL_EMAIL_TO_FACILITY)]);
+const AUTH0_COUNTY_EMS_EMAIL_TO_AGENCY: Record<string, { county: string; agencyName: string }> = {
+  [DEFAULT_COUNTY_EMS_EMAIL]: {
+    county: "Los Angeles",
+    agencyName: "Los Angeles County EMS Agency"
+  }
+};
+const AUTH0_ALLOWED_EMAILS = new Set([
+  ...AUTH0_ADMIN_EMAILS,
+  ...Object.keys(AUTH0_HOSPITAL_EMAIL_TO_FACILITY),
+  ...Object.keys(AUTH0_COUNTY_EMS_EMAIL_TO_AGENCY)
+]);
 const SESSION_STORAGE_KEY = "hbeds.session.user.v1";
+const STATE_ADMIN_ALERTS_STORAGE_KEY = "hbeds.state-admin-alerts.v1";
 const FORCED_HIGH_OCCUPANCY_FACILITY_CODES = new Set(["11205", "12881", "10247", "12765", "11668"]);
 const FORCED_SURGE_READY_FACILITY_CODES = new Set(["18194", "18198", "10743", "10301", "10162"]);
 
@@ -299,6 +344,16 @@ function resolveSessionUserForEmail(email: string): SessionUser | null {
     return {
       email: normalized,
       role: "cdph"
+    };
+  }
+
+  const countyEmsMapping = AUTH0_COUNTY_EMS_EMAIL_TO_AGENCY[normalized];
+  if (countyEmsMapping) {
+    return {
+      email: normalized,
+      role: "countyEms",
+      county: countyEmsMapping.county,
+      agencyName: countyEmsMapping.agencyName
     };
   }
 
@@ -413,6 +468,17 @@ const EMPTY_CDC_NHSN_CONFIG_FORM: CdcNhsnConfigFormState = {
   password: ""
 };
 
+const EMPTY_EMERGENCY_NOTIFICATION_FORM: EmergencyNotificationFormState = {
+  incidentType: "Mass casualty incident",
+  county: "Los Angeles",
+  affectedRegion: "Los Angeles County Operational Area",
+  severity: "critical",
+  expectedDiversionNeed: "Immediate regional diversion support required",
+  message: "",
+  contactName: "County EMS Duty Officer",
+  contactPhone: "+1"
+};
+
 function toCdcNhsnConfigForm(config: CdcNhsnConfig): CdcNhsnConfigFormState {
   return {
     enabled: config.enabled,
@@ -495,6 +561,14 @@ const CDPH_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
   { id: "analytics", label: "Metrics" },
   { id: "aiHelper", label: "AI" },
   { id: "notifications", label: "Alerts" }
+];
+
+const COUNTY_EMS_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
+  { id: "manual", label: "Facilities, Beds, and Statuses" },
+  { id: "emergencyNotification", label: "Create Alert" },
+  { id: "heatMap", label: "Geospatial Analysis" },
+  { id: "aiHelper", label: "AI Helper" },
+  { id: "notifications", label: "Sent Alerts" }
 ];
 
 const HOSPITAL_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
@@ -590,6 +664,14 @@ const HEAT_MAP_VIEW_OPTIONS: Array<{ id: HeatMapViewId; label: string; descripti
     countLabel: "Surge Profiles",
     emptyMessage: "No facilities are currently available for surge capability evaluation."
   }
+];
+
+const COUNTY_EMS_MOBILE_NAV_ITEMS: Array<{ id: TabId; label: string }> = [
+  { id: "manual", label: "Facilities" },
+  { id: "emergencyNotification", label: "Alert" },
+  { id: "heatMap", label: "Map" },
+  { id: "aiHelper", label: "AI" },
+  { id: "notifications", label: "Alerts" }
 ];
 const LEAFLET_SCRIPT_ID = "leaflet-script";
 const LEAFLET_CSS_ID = "leaflet-style";
@@ -944,6 +1026,108 @@ function severityLabel(severity: NotificationItem["severity"]): string {
   return "Info";
 }
 
+function isComplianceNotification(item: NotificationItem): boolean {
+  return item.id.startsWith("notif-compliance-") || item.title.toLowerCase().includes("compliance");
+}
+
+function isActiveAlert(item: NotificationItem): boolean {
+  return item.active === true;
+}
+
+function parseStoredNotification(value: unknown): NotificationItem | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+  const raw = value as Record<string, unknown>;
+  const id = typeof raw.id === "string" ? raw.id.trim() : "";
+  const title = typeof raw.title === "string" ? raw.title.trim() : "";
+  const message = typeof raw.message === "string" ? raw.message.trim() : "";
+  const source = typeof raw.source === "string" ? raw.source.trim() : "";
+  const severity = raw.severity;
+  const createdAt = typeof raw.createdAt === "string" ? raw.createdAt.trim() : "";
+  const read = typeof raw.read === "boolean" ? raw.read : false;
+  const active = typeof raw.active === "boolean" ? raw.active : id.startsWith("county-ems-");
+  if (!id || !title || !message || !source || !createdAt) {
+    return null;
+  }
+  if (severity !== "info" && severity !== "warning" && severity !== "critical" && severity !== "success") {
+    return null;
+  }
+  return { id, title, message, source, severity, createdAt, read, active };
+}
+
+function readStoredStateAdminAlerts(): NotificationItem[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+  try {
+    const raw = window.localStorage.getItem(STATE_ADMIN_ALERTS_STORAGE_KEY);
+    if (!raw) {
+      return [];
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.map(parseStoredNotification).filter((item): item is NotificationItem => Boolean(item));
+  } catch {
+    return [];
+  }
+}
+
+function storeStateAdminAlert(notification: NotificationItem): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const existing = readStoredStateAdminAlerts().filter((item) => item.id !== notification.id);
+  window.localStorage.setItem(STATE_ADMIN_ALERTS_STORAGE_KEY, JSON.stringify([{ ...notification, active: true, read: false }, ...existing].slice(0, 50)));
+}
+
+function buildCountyEmsStatewideAlerts(): NotificationItem[] {
+  return [
+    {
+      id: "statewide-alert-active-la-fire",
+      title: "Los Angeles County Fire Surge",
+      message: "Active wildfire evacuations are increasing ED arrival pressure across the Los Angeles operational area. Regional diversion coordination is active.",
+      source: "Cal OES / County EMS",
+      severity: "critical",
+      createdAt: minutesAgoIso(18),
+      read: false,
+      active: true
+    },
+    {
+      id: "statewide-alert-active-bay-earthquake",
+      title: "Bay Area Earthquake Monitoring",
+      message: "Moderate earthquake response monitoring is active for Alameda, Contra Costa, San Francisco, and San Mateo counties. Hospitals are reporting intermittent transport delays.",
+      source: "State Operations Center",
+      severity: "warning",
+      createdAt: minutesAgoIso(44),
+      read: false,
+      active: true
+    },
+    {
+      id: "statewide-alert-historical-san-diego-mci",
+      title: "San Diego MCI Diversion Resolved",
+      message: "Historical mass casualty diversion notice from San Diego County. Regional routing returned to normal after the incident command demobilized.",
+      source: "San Diego County EMS",
+      severity: "info",
+      createdAt: minutesAgoIso(18 * 60),
+      read: true,
+      active: false
+    },
+    {
+      id: "statewide-alert-historical-monterey-storm",
+      title: "Central Coast Storm Impact Closed",
+      message: "Historical severe weather alert for Monterey and Santa Cruz counties. EMS transport delays and flood-related access issues have been cleared.",
+      source: "Regional Medical Health Coordinator",
+      severity: "success",
+      createdAt: minutesAgoIso(52 * 60),
+      read: true,
+      active: false
+    }
+  ];
+}
+
 function buildInitialNotifications(role: UserRole, facilityCode?: string): NotificationItem[] {
   if (role === "hospital") {
     return [
@@ -959,7 +1143,13 @@ function buildInitialNotifications(role: UserRole, facilityCode?: string): Notif
     ];
   }
 
+  if (role === "countyEms") {
+    const storedAlerts = readStoredStateAdminAlerts().filter((item) => !isComplianceNotification(item));
+    return [...storedAlerts, ...buildCountyEmsStatewideAlerts()];
+  }
+
   return [
+    ...readStoredStateAdminAlerts(),
     {
       id: "notif-1",
       title: "NHSN Sync Queue",
@@ -1033,6 +1223,14 @@ function mainTabIcon(tabId: TabId) {
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
+      </svg>
+    );
+  }
+  if (tabId === "emergencyNotification") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5">
+        <path d="M4.2 9.6v-2a2 2 0 0 1 2-2h3l4.2-2.1v13l-4.2-2.1h-3a2 2 0 0 1-2-2v-2" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M3 9.6h3.2M15.8 7.2a3.4 3.4 0 0 1 0 5.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       </svg>
     );
   }
@@ -1164,7 +1362,9 @@ export default function App() {
   const [notifications, setNotifications] = useState<NotificationItem[]>(() =>
     initialSessionUser?.role === "hospital"
       ? buildInitialNotifications("hospital", initialSessionUser.facilityCode ?? DEMO_HOSPITAL_FACILITY_CODE)
-      : buildInitialNotifications("cdph")
+      : initialSessionUser?.role === "countyEms"
+        ? buildInitialNotifications("countyEms")
+        : buildInitialNotifications("cdph")
   );
   const [apiMetrics, setApiMetrics] = useState<ApiMetricsResponse | null>(null);
   const [cdcNhsnDashboard, setCdcNhsnDashboard] = useState<CdcNhsnDashboard | null>(null);
@@ -1236,6 +1436,14 @@ export default function App() {
   const [graphqlBulkRowsText, setGraphqlBulkRowsText] = useState("[]");
   const [fhirBulkRowsText, setFhirBulkRowsText] = useState("[]");
   const [cdcNhsnBulkRowsText, setCdcNhsnBulkRowsText] = useState("[]");
+  const [emergencyNotificationForm, setEmergencyNotificationForm] = useState<EmergencyNotificationFormState>(() => ({
+    ...EMPTY_EMERGENCY_NOTIFICATION_FORM,
+    county: initialSessionUser?.role === "countyEms" ? (initialSessionUser.county ?? EMPTY_EMERGENCY_NOTIFICATION_FORM.county) : EMPTY_EMERGENCY_NOTIFICATION_FORM.county,
+    affectedRegion:
+      initialSessionUser?.role === "countyEms"
+        ? `${initialSessionUser.county ?? EMPTY_EMERGENCY_NOTIFICATION_FORM.county} County Operational Area`
+        : EMPTY_EMERGENCY_NOTIFICATION_FORM.affectedRegion
+  }));
   const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
   const [notificationModalOpen, setNotificationModalOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -1273,6 +1481,8 @@ export default function App() {
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const isHospitalUser = sessionUser?.role === "hospital";
+  const isCountyEmsUser = sessionUser?.role === "countyEms";
+  const isStateAdminUser = sessionUser?.role === "cdph";
   const hospitalFacilityId = sessionUser?.facilityId ?? "";
   const hospitalFacilityCode = sessionUser?.facilityCode ?? "";
   const hospitalScopeLabel = sessionUser?.facilityName
@@ -1280,8 +1490,9 @@ export default function App() {
     : hospitalFacilityCode
       ? `Facility ID ${hospitalFacilityCode}`
       : "Assigned Facility";
-  const desktopNavItems = isHospitalUser ? HOSPITAL_NAV_ITEMS : CDPH_NAV_ITEMS;
-  const mobileNavItems = isHospitalUser ? HOSPITAL_MOBILE_NAV_ITEMS : CDPH_MOBILE_NAV_ITEMS;
+  const countyEmsScopeLabel = sessionUser?.agencyName ?? "County EMS";
+  const desktopNavItems = isCountyEmsUser ? COUNTY_EMS_NAV_ITEMS : isHospitalUser ? HOSPITAL_NAV_ITEMS : CDPH_NAV_ITEMS;
+  const mobileNavItems = isCountyEmsUser ? COUNTY_EMS_MOBILE_NAV_ITEMS : isHospitalUser ? HOSPITAL_MOBILE_NAV_ITEMS : CDPH_MOBILE_NAV_ITEMS;
   const apiTabs = isHospitalUser ? HOSPITAL_API_TABS : CDPH_API_TABS;
 
   const setError = useCallback((error: unknown) => {
@@ -1306,6 +1517,22 @@ export default function App() {
       setFilters((current) => ({ ...current, facilityId: resolvedFacilityId }));
       setBedModalForm({ ...EMPTY_BED_MODAL_FORM, facilityId: resolvedFacilityId });
       setAiScopeFacilityId(resolvedFacilityId);
+      setIsAuthenticated(true);
+      return;
+    }
+
+    if (nextUser.role === "countyEms") {
+      const county = nextUser.county ?? EMPTY_EMERGENCY_NOTIFICATION_FORM.county;
+      setActiveTab("emergencyNotification");
+      setNotifications(buildInitialNotifications("countyEms"));
+      setEmergencyNotificationForm({
+        ...EMPTY_EMERGENCY_NOTIFICATION_FORM,
+        county,
+        affectedRegion: `${county} County Operational Area`
+      });
+      setFilters((current) => ({ ...current, facilityId: "" }));
+      setBedModalForm(EMPTY_BED_MODAL_FORM);
+      setAiScopeFacilityId("all");
       setIsAuthenticated(true);
       return;
     }
@@ -1509,7 +1736,7 @@ export default function App() {
   }, []);
 
   const loadCdcNhsnConfig = useCallback(async () => {
-    if (isHospitalUser) {
+    if (!isStateAdminUser) {
       setCdcNhsnConfigState(null);
       setCdcNhsnConfigForm(EMPTY_CDC_NHSN_CONFIG_FORM);
       return;
@@ -1517,17 +1744,17 @@ export default function App() {
     const config = await getCdcNhsnConfig();
     setCdcNhsnConfigState(config);
     setCdcNhsnConfigForm(toCdcNhsnConfigForm(config));
-  }, [isHospitalUser]);
+  }, [isStateAdminUser]);
 
   const loadCdcNhsnAutoSync = useCallback(async () => {
-    if (isHospitalUser) {
+    if (!isStateAdminUser) {
       setCdcNhsnAutoSyncStatus(null);
       return;
     }
     const status = await getCdcNhsnAutoSyncStatus();
     setCdcNhsnAutoSyncStatus(status);
     setCdcNhsnAutoSyncFrequencyPerDayInput(String(status.frequencyPerDay));
-  }, [isHospitalUser]);
+  }, [isStateAdminUser]);
 
   const loadSimulationStatus = useCallback(async () => {
     const status = await getSimulationStatus();
@@ -1559,13 +1786,13 @@ export default function App() {
       })
     ]);
 
-    const cdcNhsn = isHospitalUser
-      ? null
-      : await getAnalyticsSubmissionsOverTime({
+    const cdcNhsn = isStateAdminUser
+      ? await getAnalyticsSubmissionsOverTime({
           api: "cdcNhsn",
           durationMinutes: outgoingWindow.durationMinutes,
           bucketSeconds: outgoingWindow.bucketSeconds
-        });
+        })
+      : null;
 
     setIncomingSubmissionsByApi({
       rest,
@@ -1574,7 +1801,7 @@ export default function App() {
     });
     setOutgoingCdcSubmissions(cdcNhsn);
     setAnalyticsLastRefreshedAt(new Date().toISOString());
-  }, [hospitalFacilityId, incomingWindowId, isHospitalUser, outgoingWindowId]);
+  }, [hospitalFacilityId, incomingWindowId, isHospitalUser, isStateAdminUser, outgoingWindowId]);
 
   const loadBedStatuses = useCallback(async () => {
     const scopedFacilityId = isHospitalUser ? hospitalFacilityId : filters.facilityId;
@@ -1593,12 +1820,12 @@ export default function App() {
       const failures = await Promise.all([
         safeLoad("Facilities", loadFacilities, resetFacilityData),
         safeLoad("Summary", loadSummary, resetSummary),
-        ...(!isHospitalUser ? [safeLoad("Bulk Jobs", loadJobs, resetJobs)] : []),
+        ...(isStateAdminUser ? [safeLoad("Bulk Jobs", loadJobs, resetJobs)] : []),
         safeLoad("Bed Statuses", loadBedStatuses, () => setBedStatuses([])),
         safeLoad("API Metrics", loadApiMetrics, resetAnalytics),
-        ...(!isHospitalUser ? [safeLoad("NHSN Dashboard", loadCdcNhsnDashboard, resetCdcNhsn)] : []),
-        ...(!isHospitalUser ? [safeLoad("NHSN Auto Sync", loadCdcNhsnAutoSync, resetCdcNhsn)] : []),
-        ...(!isHospitalUser ? [safeLoad("Simulation Status", loadSimulationStatus, resetSimulationStatus)] : []),
+        ...(isStateAdminUser ? [safeLoad("NHSN Dashboard", loadCdcNhsnDashboard, resetCdcNhsn)] : []),
+        ...(isStateAdminUser ? [safeLoad("NHSN Auto Sync", loadCdcNhsnAutoSync, resetCdcNhsn)] : []),
+        ...(isStateAdminUser ? [safeLoad("Simulation Status", loadSimulationStatus, resetSimulationStatus)] : []),
         ...(activeTab === "analytics" ? [safeLoad("Analytics", loadAnalyticsSubmissions, () => setAnalyticsLastRefreshedAt(null))] : []),
         ...((activeTab === "facilityDetails" || facilityDetailsModalOpen) && selectedFacilityDetailsId
           ? [safeLoad("Facility Details", () => loadFacilityDetails(selectedFacilityDetailsId))]
@@ -1639,6 +1866,7 @@ export default function App() {
     setNotice,
     facilityDetailsModalOpen,
     isHospitalUser,
+    isStateAdminUser,
     selectedFacilityDetailsId
   ]);
 
@@ -1715,12 +1943,12 @@ export default function App() {
   }, [activeTab, facilityDetailsModalOpen, isAuthenticated, loadFacilityDetails, selectedFacilityDetailsId]);
 
   useEffect(() => {
-    if (!isAuthenticated || isHospitalUser || activeTab !== "cdcNhsn") {
+    if (!isAuthenticated || !isStateAdminUser || activeTab !== "cdcNhsn") {
       return;
     }
     void loadCdcNhsnDashboard().catch(setError);
     void loadCdcNhsnConfig().catch(setError);
-  }, [activeTab, isAuthenticated, isHospitalUser, loadCdcNhsnDashboard, loadCdcNhsnConfig, setError]);
+  }, [activeTab, isAuthenticated, isStateAdminUser, loadCdcNhsnDashboard, loadCdcNhsnConfig, setError]);
 
   useEffect(() => {
     if (!isAuthenticated || !isHospitalUser) {
@@ -1731,6 +1959,24 @@ export default function App() {
       setActiveTab("manual");
     }
   }, [activeTab, isAuthenticated, isHospitalUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !isCountyEmsUser) {
+      return;
+    }
+    const countyEmsAllowedTabs = new Set<TabId>([
+      "manual",
+      "facilityDetails",
+      "emergencyNotification",
+      "heatMap",
+      "aiHelper",
+      "notifications",
+      "settings"
+    ]);
+    if (!countyEmsAllowedTabs.has(activeTab)) {
+      setActiveTab("emergencyNotification");
+    }
+  }, [activeTab, isAuthenticated, isCountyEmsUser]);
 
   useEffect(() => {
     if (!isAuthenticated || !isHospitalUser) {
@@ -1805,6 +2051,9 @@ export default function App() {
     }
     if (activeTab === "notifications") {
       return "Notifications and Alerts";
+    }
+    if (activeTab === "emergencyNotification") {
+      return "Create State Alert";
     }
     if (activeTab === "settings") {
       return "Profile & Settings";
@@ -2049,9 +2298,20 @@ export default function App() {
     [scopedFacilities, selectedFacilityDetailsId]
   );
 
+  const visibleNotifications = useMemo(
+    () => (isCountyEmsUser ? notifications.filter((item) => !isComplianceNotification(item)) : notifications),
+    [isCountyEmsUser, notifications]
+  );
   const sortedNotifications = useMemo(
-    () => [...notifications].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-    [notifications]
+    () =>
+      [...visibleNotifications].sort((a, b) => {
+        const activePriority = Number(isActiveAlert(b)) - Number(isActiveAlert(a));
+        if (activePriority !== 0) {
+          return activePriority;
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }),
+    [visibleNotifications]
   );
   const selectedNotification = useMemo(() => {
     if (sortedNotifications.length === 0) {
@@ -2063,12 +2323,16 @@ export default function App() {
     return sortedNotifications.find((item) => item.id === selectedNotificationId) ?? sortedNotifications[0];
   }, [selectedNotificationId, sortedNotifications]);
   const unreadNotificationCount = useMemo(
-    () => notifications.reduce((count, item) => count + (item.read ? 0 : 1), 0),
-    [notifications]
+    () => visibleNotifications.reduce((count, item) => count + (item.read ? 0 : 1), 0),
+    [visibleNotifications]
   );
   const criticalNotificationCount = useMemo(
-    () => notifications.reduce((count, item) => count + (item.severity === "critical" ? 1 : 0), 0),
-    [notifications]
+    () => visibleNotifications.reduce((count, item) => count + (item.severity === "critical" ? 1 : 0), 0),
+    [visibleNotifications]
+  );
+  const activeNotificationCount = useMemo(
+    () => visibleNotifications.reduce((count, item) => count + (isActiveAlert(item) ? 1 : 0), 0),
+    [visibleNotifications]
   );
   const facilityHeatMapAggregates = useMemo<HeatMapFacilityAggregate[]>(() => {
     const nowMs = Date.now();
@@ -3203,19 +3467,19 @@ export default function App() {
       return;
     }
 
-    if (!isHospitalUser) {
+    if (isStateAdminUser) {
       void loadCdcNhsnAutoSync().catch(() => undefined);
     }
 
     const timer = window.setInterval(() => {
-      void loadSimulationStatus().catch(() => undefined);
-      if (!isHospitalUser) {
+      if (isStateAdminUser) {
+        void loadSimulationStatus().catch(() => undefined);
         void loadCdcNhsnAutoSync().catch(() => undefined);
       }
     }, 10000);
 
     return () => window.clearInterval(timer);
-  }, [isAuthenticated, activeTab, isHospitalUser, loadSimulationStatus, loadCdcNhsnAutoSync]);
+  }, [isAuthenticated, activeTab, isStateAdminUser, loadSimulationStatus, loadCdcNhsnAutoSync]);
 
   useEffect(() => {
     if (!isAuthenticated || activeTab !== "analytics") {
@@ -3264,7 +3528,7 @@ export default function App() {
   }, [activeTab, heatMapAoiPolygon, isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated || !complianceAlertSignature) {
+    if (!isAuthenticated || isCountyEmsUser || !complianceAlertSignature) {
       return;
     }
     if (complianceAlertSignature === lastComplianceAlertSignature) {
@@ -3293,7 +3557,7 @@ export default function App() {
       ...current
     ].slice(0, 200));
     setLastComplianceAlertSignature(complianceAlertSignature);
-  }, [complianceAlertSignature, isAuthenticated, isHospitalUser, lastComplianceAlertSignature, nonCompliantFacilities]);
+  }, [complianceAlertSignature, isAuthenticated, isCountyEmsUser, isHospitalUser, lastComplianceAlertSignature, nonCompliantFacilities]);
 
   useEffect(() => {
     return () => {
@@ -3530,6 +3794,51 @@ export default function App() {
         message: error instanceof Error ? error.message : "Unable to complete Auth0 logout."
       });
     }
+  }
+
+  function handleSendEmergencyNotification(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    if (!isCountyEmsUser) {
+      setNotice({ type: "error", message: "County EMS access is required to create state alerts." });
+      clearNoticeSoon();
+      return;
+    }
+
+    const county = emergencyNotificationForm.county.trim();
+    const affectedRegion = emergencyNotificationForm.affectedRegion.trim();
+    const expectedDiversionNeed = emergencyNotificationForm.expectedDiversionNeed.trim();
+    const message = emergencyNotificationForm.message.trim();
+    const contactName = emergencyNotificationForm.contactName.trim();
+    const contactPhone = emergencyNotificationForm.contactPhone.trim();
+
+    if (!county || !affectedRegion || !expectedDiversionNeed || !message || !contactName || !contactPhone) {
+      setNotice({ type: "error", message: "Complete the incident details, diversion need, message, and contact fields before sending." });
+      clearNoticeSoon();
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    const notification: NotificationItem = {
+      id: `county-ems-${Date.now()}`,
+      title: `${county} County ${emergencyNotificationForm.incidentType} Alert`,
+      message: `${message} Diversion need: ${expectedDiversionNeed}. Affected area: ${affectedRegion}. Contact: ${contactName}, ${contactPhone}.`,
+      source: `${county} County EMS`,
+      severity: emergencyNotificationForm.severity,
+      createdAt,
+      read: false,
+      active: true
+    };
+
+    storeStateAdminAlert(notification);
+    setNotifications((current) => [notification, ...current.filter((item) => item.id !== notification.id)]);
+    setSelectedNotificationId(notification.id);
+    setNotice({ type: "success", message: "Alert sent to state administrators." });
+    clearNoticeSoon();
+    setEmergencyNotificationForm((current) => ({
+      ...current,
+      message: "",
+      expectedDiversionNeed: "Immediate regional diversion support required"
+    }));
   }
 
   async function handleSaveFacility(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -4471,7 +4780,6 @@ export default function App() {
       </main>
     );
   }
-
   return (
     <div
       className={`relative min-h-screen overflow-hidden ${
@@ -4510,7 +4818,8 @@ export default function App() {
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm font-bold tracking-tight">{isHospitalUser ? "Hospital HBEDS" : "CDPH HBEDS"}</p>
+              <p className="text-sm font-bold tracking-tight">{isCountyEmsUser ? "County EMS HBEDS" : isHospitalUser ? "Hospital HBEDS" : "CDPH HBEDS"}</p>
+              {isCountyEmsUser ? <p className="text-[11px] text-slate-500">{countyEmsScopeLabel}</p> : null}
               {isHospitalUser ? <p className="text-[11px] text-slate-500">{hospitalScopeLabel}</p> : null}
             </div>
 
@@ -4571,7 +4880,9 @@ export default function App() {
                 <div>
                   <h1 className="text-lg font-bold tracking-tight md:text-2xl">{tabTitle}</h1>
                   <p className="text-xs text-slate-600">
-                    {isHospitalUser
+                    {isCountyEmsUser
+                      ? `County EMS alert workflow for ${countyEmsScopeLabel}.`
+                      : isHospitalUser
                       ? `Hospital-scoped HBEDS workflow for ${hospitalScopeLabel}.`
                       : "Providing accurate statuses for all hospital beds in the state of California. Enabling real-time reporting and compliance for both state and federal use."}
                   </p>
@@ -4667,7 +4978,7 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              <nav className={`mt-3 grid gap-2 lg:hidden ${isHospitalUser ? "grid-cols-5" : "grid-cols-4"}`}>
+              <nav className={`mt-3 grid gap-2 lg:hidden ${isCountyEmsUser || isHospitalUser ? "grid-cols-5" : "grid-cols-4"}`}>
                 {mobileNavItems.map((item) => (
                   (() => {
                     const isActive = activeTab === item.id || (item.id === "manual" && activeTab === "facilityDetails");
@@ -6038,6 +6349,126 @@ export default function App() {
               </section>
             )}
 
+            {activeTab === "emergencyNotification" && (
+              <section className="space-y-4">
+                <article className="surface-panel-strong stagger-in space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h2 className="section-heading">Create State Alert</h2>
+                      <p className="section-subtitle">Send an urgent county EMS incident alert to CDPH state administrators.</p>
+                    </div>
+                    <span className="status-badge border-rose-300 bg-rose-100 text-rose-800">State Admin Route</span>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Sender</p>
+                      <p className="text-sm font-semibold text-slate-900">{countyEmsScopeLabel}</p>
+                    </article>
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Audience</p>
+                      <p className="text-sm font-semibold text-slate-900">CDPH State Administrators</p>
+                    </article>
+                    <article className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-xs uppercase tracking-wide text-slate-500">Purpose</p>
+                      <p className="text-sm font-semibold text-slate-900">Regional diversion coordination</p>
+                    </article>
+                  </div>
+                </article>
+
+                <form className="surface-panel stagger-in space-y-4" onSubmit={handleSendEmergencyNotification}>
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <label className="block text-sm font-medium text-slate-700">
+                      Incident Type
+                      <select
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.incidentType}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, incidentType: event.target.value }))}
+                      >
+                        {["Mass casualty incident", "Earthquake", "Fire", "Mudslide", "Terrorist attack", "Severe weather", "Infrastructure failure", "Other emergency"].map((incidentType) => (
+                          <option key={incidentType} value={incidentType}>
+                            {incidentType}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Severity
+                      <select
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.severity}
+                        onChange={(event) =>
+                          setEmergencyNotificationForm((current) => ({
+                            ...current,
+                            severity: event.target.value === "warning" ? "warning" : "critical"
+                          }))
+                        }
+                      >
+                        <option value="critical">Critical</option>
+                        <option value="warning">Warning</option>
+                      </select>
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700">
+                      County
+                      <input
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.county}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, county: event.target.value }))}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Affected Region
+                      <input
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.affectedRegion}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, affectedRegion: event.target.value }))}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700 lg:col-span-2">
+                      Diversion Need
+                      <input
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.expectedDiversionNeed}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, expectedDiversionNeed: event.target.value }))}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700 lg:col-span-2">
+                      Message to State Administrators
+                      <textarea
+                        className="soft-input mt-1 min-h-32 w-full"
+                        value={emergencyNotificationForm.message}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, message: event.target.value }))}
+                        placeholder="Describe the incident, current EMS impact, anticipated hospital diversion needs, and operational constraints."
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Contact Name
+                      <input
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.contactName}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, contactName: event.target.value }))}
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-slate-700">
+                      Contact Phone
+                      <input
+                        className="soft-input mt-1 w-full"
+                        value={emergencyNotificationForm.contactPhone}
+                        onChange={(event) => setEmergencyNotificationForm((current) => ({ ...current, contactPhone: event.target.value }))}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4">
+                    <p className="text-xs text-slate-600">The alert will appear as unread and urgent for CDPH state administrator users.</p>
+                    <button type="submit" className="action-button inline-flex items-center gap-2">
+                      {mainTabIcon("emergencyNotification")}
+                      <span>Send to State Administrators</span>
+                    </button>
+                  </div>
+                </form>
+              </section>
+            )}
+
             {activeTab === "notifications" && (
               <section className="space-y-4">
                 <article className="surface-panel-strong stagger-in space-y-3">
@@ -6055,11 +6486,15 @@ export default function App() {
                       <span>Mark All Read</span>
                     </button>
                   </div>
-                  <p className="section-subtitle">Operational alerts, integration status changes, and data workflow notifications.</p>
+                  <p className="section-subtitle">
+                    {isCountyEmsUser
+                      ? "Active and historical operational alerts across California."
+                      : "Operational alerts, integration status changes, and data workflow notifications."}
+                  </p>
                   <div className="grid gap-2 sm:grid-cols-3">
                     <article className="rounded-xl border border-slate-200 bg-white p-3">
-                      <p className="text-xs uppercase tracking-wide text-slate-500">Unread</p>
-                      <p className="text-2xl font-bold">{unreadNotificationCount}</p>
+                      <p className="text-xs uppercase tracking-wide text-slate-500">{isCountyEmsUser ? "Active" : "Unread"}</p>
+                      <p className="text-2xl font-bold">{isCountyEmsUser ? activeNotificationCount : unreadNotificationCount}</p>
                     </article>
                     <article className="rounded-xl border border-slate-200 bg-white p-3">
                       <p className="text-xs uppercase tracking-wide text-slate-500">Critical</p>
@@ -6067,20 +6502,22 @@ export default function App() {
                     </article>
                     <article className="rounded-xl border border-slate-200 bg-white p-3">
                       <p className="text-xs uppercase tracking-wide text-slate-500">Total</p>
-                      <p className="text-2xl font-bold">{notifications.length}</p>
+                      <p className="text-2xl font-bold">{visibleNotifications.length}</p>
                     </article>
                   </div>
                   <div className="rounded-xl border border-slate-300/80 bg-white/85 p-3 text-xs text-slate-700">
                     <p className="font-semibold">Alert Routing</p>
                     <p className="mt-1">
-                      Active channels: In-app dashboard alerts, API integration audit trail, and operator handoff review queue.
+                      {isCountyEmsUser
+                        ? "Active statewide alerts are pinned above historical notices for faster situational awareness."
+                        : "Active channels: In-app dashboard alerts, API integration audit trail, and operator handoff review queue."}
                     </p>
                   </div>
                 </article>
 
                 <article className="surface-panel stagger-in">
                   <h2 className="section-heading">Notifications</h2>
-                  <p className="section-subtitle">Newest notifications first.</p>
+                  <p className="section-subtitle">{isCountyEmsUser ? "Active alerts first, then historical notices." : "Newest notifications first."}</p>
                   <div className="mt-3 max-h-[62dvh] space-y-2 overflow-auto pr-1">
                     {sortedNotifications.length === 0 ? (
                       <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">No notifications.</div>
@@ -6109,6 +6546,7 @@ export default function App() {
                               </p>
                             </div>
                             <div className="flex items-center gap-2">
+                              {isActiveAlert(item) && <span className="status-badge border-rose-300 bg-rose-50 text-rose-800">Active</span>}
                               <span className={`status-badge ${notificationTone(item.severity)}`}>{severityLabel(item.severity)}</span>
                               {!item.read && (
                                 <button
@@ -7796,6 +8234,9 @@ export default function App() {
                 </p>
                 <p>
                   <span className="font-semibold text-slate-800">Status:</span> {selectedNotification.read ? "Read" : "Unread"}
+                </p>
+                <p>
+                  <span className="font-semibold text-slate-800">Alert State:</span> {isActiveAlert(selectedNotification) ? "Active" : "Historical"}
                 </p>
                 <p>
                   <span className="font-semibold text-slate-800">Notification ID:</span> {selectedNotification.id}

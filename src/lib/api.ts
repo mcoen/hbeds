@@ -166,7 +166,7 @@ export interface HbedsAiHelperResponse {
 
 interface StoredSessionUser {
   email?: string;
-  role?: "cdph" | "hospital";
+  role?: "cdph" | "hospital" | "countyEms";
 }
 
 const SESSION_STORAGE_KEY = "hbeds.session.user.v1";
@@ -190,7 +190,7 @@ function readSessionHeaders(): Record<string, string> {
       window.localStorage.removeItem(SESSION_STORAGE_KEY);
     }
     const headers: Record<string, string> = {};
-    if (parsed.role === "cdph" || parsed.role === "hospital") {
+    if (parsed.role === "cdph" || parsed.role === "hospital" || parsed.role === "countyEms") {
       headers["x-hbeds-user-role"] = parsed.role;
     }
     if (typeof parsed.email === "string" && parsed.email.trim()) {

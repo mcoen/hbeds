@@ -282,6 +282,16 @@ async function ensureDatabaseUsers({ domain, token, connection, localPassword, s
         hbedsRole: "hospital",
         hbedsFacilityCode: "11205"
       }
+    },
+    {
+      email: "county.ems@ca-hbeds.org",
+      firstName: "County EMS",
+      lastName: "User",
+      appMetadata: {
+        hbedsRole: "countyEms",
+        hbedsCounty: "Los Angeles",
+        hbedsAgencyName: "Los Angeles County EMS Agency"
+      }
     }
   ];
 

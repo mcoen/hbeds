@@ -53,6 +53,7 @@ This bootstraps:
 
 - `cdph.admin@cdph.ca.gov` (CDPH admin, password login)
 - `hospital.user.11205@ca-hbeds.org` (hospital-scoped user, password login)
+- `county.ems@ca-hbeds.org` (county EMS user, password login)
 - `michael.coen@gmail.com` (admin metadata if the social user already exists)
 
 4. Start web + API servers:
