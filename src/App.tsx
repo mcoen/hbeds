@@ -48,7 +48,7 @@ import {
   type SimulationStatus
 } from "./lib/api";
 import { getAuthProviderWarning, initializeAuth0Session, loginWithAuth0, logoutFromAuth0 } from "./lib/auth0";
-import { CALIFORNIA_CENTER, getCountyCoordinate } from "./lib/caCountyCoordinates";
+import { CALIFORNIA_CENTER, CALIFORNIA_COUNTY_COORDINATES, getCountyCoordinate } from "./lib/caCountyCoordinates";
 
 type TabId =
   | "manual"
@@ -82,7 +82,8 @@ type HeatMapViewId =
   | "lowAvailability"
   | "operationalRisk"
   | "respiratoryPressure"
-  | "surgeReadiness";
+  | "surgeReadiness"
+  | "activeAlerts";
 
 interface Notice {
   type: "success" | "error";
@@ -289,6 +290,12 @@ type HeatMapFacilityAggregate = Omit<HeatMapFacility, "markerStatus" | "primaryM
 interface HeatMapAoiPoint {
   lat: number;
   lng: number;
+}
+
+interface HeatMapAlert extends NotificationItem {
+  lat: number;
+  lng: number;
+  locationLabel: string;
 }
 
 interface SurgeCapabilityAssessment {
@@ -663,6 +670,13 @@ const HEAT_MAP_VIEW_OPTIONS: Array<{ id: HeatMapViewId; label: string; descripti
     description: "Facility readiness to absorb an emergent surge based on occupancy, availability, disruptions, and data recency.",
     countLabel: "Surge Profiles",
     emptyMessage: "No facilities are currently available for surge capability evaluation."
+  },
+  {
+    id: "activeAlerts",
+    label: "Active Alerts",
+    description: "Active statewide emergency alerts with location context.",
+    countLabel: "Active Alerts",
+    emptyMessage: "No active statewide alerts are currently mapped."
   }
 ];
 
@@ -946,6 +960,31 @@ function hospitalIconHtml(color: string): string {
       <path d="M10 21v-3.2c0-.44.36-.8.8-.8h2.4c.44 0 .8.36.8.8V21" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
     </svg>
   </div>`;
+}
+
+function activeAlertIconHtml(): string {
+  return `<div style="width:34px;height:32px;filter:drop-shadow(0 3px 7px rgba(127,29,29,0.35));">
+    <svg viewBox="0 0 34 32" width="34" height="32" fill="none" aria-hidden="true">
+      <path d="M17 2.4 32 29.2H2L17 2.4Z" fill="#dc2626" stroke="#7f1d1d" stroke-width="1.8" stroke-linejoin="round"></path>
+      <path d="M17 10.2v8.5" stroke="#ffffff" stroke-width="3" stroke-linecap="round"></path>
+      <circle cx="17" cy="24.1" r="1.9" fill="#ffffff"></circle>
+    </svg>
+  </div>`;
+}
+
+const COUNTY_ALERT_LOCATION_NAMES = Object.keys(CALIFORNIA_COUNTY_COORDINATES).sort((a, b) => b.length - a.length);
+
+function resolveAlertLocation(alert: NotificationItem, index: number): HeatMapAlert {
+  const searchable = `${alert.title} ${alert.message} ${alert.source}`.toLowerCase();
+  const county = COUNTY_ALERT_LOCATION_NAMES.find((name) => searchable.includes(name.toLowerCase()));
+  const coordinate = county ? getCountyCoordinate(county) : null;
+  const seed = `${alert.id}-${index}`;
+  return {
+    ...alert,
+    lat: (coordinate ?? CALIFORNIA_CENTER).lat + jitterOffset(seed, "lat"),
+    lng: (coordinate ?? CALIFORNIA_CENTER).lng + jitterOffset(seed, "lng"),
+    locationLabel: county ? `${county} County` : "Statewide"
+  };
 }
 
 function bedTypeLabel(type: BedType): string {
@@ -2334,6 +2373,10 @@ export default function App() {
     () => visibleNotifications.reduce((count, item) => count + (isActiveAlert(item) ? 1 : 0), 0),
     [visibleNotifications]
   );
+  const activeHeatMapAlerts = useMemo<HeatMapAlert[]>(
+    () => visibleNotifications.filter(isActiveAlert).map((alert, index) => resolveAlertLocation(alert, index)),
+    [visibleNotifications]
+  );
   const facilityHeatMapAggregates = useMemo<HeatMapFacilityAggregate[]>(() => {
     const nowMs = Date.now();
     const aggregateByFacility = new Map<
@@ -2618,6 +2661,21 @@ export default function App() {
       )
     );
   }, [heatMapAoiPolygon, heatMapFacilities]);
+  const activeHeatMapAlertsInAoi = useMemo(() => {
+    if (!heatMapAoiPolygon || heatMapAoiPolygon.length < 3) {
+      return activeHeatMapAlerts;
+    }
+    return activeHeatMapAlerts.filter((alert) =>
+      isPointInHeatMapPolygon(
+        {
+          lat: alert.lat,
+          lng: alert.lng
+        },
+        heatMapAoiPolygon
+      )
+    );
+  }, [activeHeatMapAlerts, heatMapAoiPolygon]);
+  const heatMapDisplayCount = heatMapViewId === "activeAlerts" ? activeHeatMapAlertsInAoi.length : heatMapFacilitiesInAoi.length;
   const heatMapAoiLabel = useMemo(() => {
     if (!heatMapAoiPolygon || heatMapAoiPolygon.length < 3) {
       return "No AOI selected";
@@ -2631,6 +2689,9 @@ export default function App() {
     )}, ${bounds[1][1].toFixed(2)})`;
   }, [heatMapAoiPolygon]);
   const heatMapLegendItems = useMemo<Array<{ status: HeatMapFacility["markerStatus"]; label: string }>>(() => {
+    if (heatMapViewId === "activeAlerts") {
+      return [{ status: "critical", label: "Active emergency alert" }];
+    }
     if (heatMapViewId === "occupancy") {
       return [
         { status: "good", label: "Under 90% Occupancy" },
@@ -2681,6 +2742,9 @@ export default function App() {
     ];
   }, [heatMapViewId]);
   const heatMapSubtitle = useMemo(() => {
+    if (heatMapViewId === "activeAlerts") {
+      return "Live map showing active statewide emergency alerts.";
+    }
     if (heatMapViewId === "occupancy") {
       return `Live county-level map showing facilities currently above ${heatMapCapacityThreshold}% occupied.`;
     }
@@ -3196,7 +3260,10 @@ export default function App() {
       tileLayer: (url: string, options: Record<string, unknown>) => { addTo: (map: unknown) => void };
       layerGroup: (layers?: unknown[]) => { addTo: (map: unknown) => void; clearLayers: () => void; remove: () => void; eachLayer?: (callback: (layer: unknown) => void) => void };
       divIcon: (options: Record<string, unknown>) => unknown;
-      marker: (position: [number, number], options: Record<string, unknown>) => { bindPopup: (content: string) => void; addTo: (layer: unknown) => void };
+      marker: (
+        position: [number, number],
+        options: Record<string, unknown>
+      ) => { bindPopup: (content: string) => void; addTo: (layer: unknown) => void; on?: (event: string, handler: () => void) => void };
       polygon: (latLngs: [number, number][], options: Record<string, unknown>) => unknown;
       polyline: (latLngs: [number, number][], options: Record<string, unknown>) => unknown;
     };
@@ -3362,31 +3429,63 @@ export default function App() {
       addTo: (mapInstance: unknown) => void;
       clearLayers: () => void;
     };
-    for (const facility of heatMapFacilitiesInAoi) {
-      const markerIcon = Leaflet.divIcon({
-        className: "",
-        html: hospitalIconHtml(heatMapFillColor(facility.markerStatus)),
-        iconSize: [26, 26],
-        iconAnchor: [13, 13],
-        popupAnchor: [0, -12]
-      });
-      const marker = Leaflet.marker([facility.lat, facility.lng], { icon: markerIcon });
-      const lastSubmissionLabel = facility.lastUpdatedAt ? new Date(facility.lastUpdatedAt).toLocaleString() : "No submissions yet";
-      marker.bindPopup(
-        `<div class="text-xs"><p><strong>${facility.name}</strong></p><p>Facility ID ${facility.code}</p><p>County: ${
-          facility.county
-        }</p><p>${facility.primaryMetricLabel}</p>${
-          facility.secondaryMetricLabel ? `<p>${facility.secondaryMetricLabel}</p>` : ""
-        }<p>Last Submission: ${lastSubmissionLabel}</p><p>Staffed: ${facility.staffedBeds}</p><p>Occupied: ${
-          facility.occupiedBeds
-        }</p><p>Available: ${facility.availableBeds}</p></div>`
-      );
-      layerGroup.addLayer(marker as never);
+    if (heatMapViewId === "activeAlerts") {
+      for (const alert of activeHeatMapAlertsInAoi) {
+        const markerIcon = Leaflet.divIcon({
+          className: "",
+          html: activeAlertIconHtml(),
+          iconSize: [34, 32],
+          iconAnchor: [17, 28],
+          popupAnchor: [0, -24]
+        });
+        const marker = Leaflet.marker([alert.lat, alert.lng], { icon: markerIcon, title: alert.title });
+        marker.bindPopup(
+          `<div class="text-xs"><p><strong>${alert.title}</strong></p><p>${alert.locationLabel}</p><p>${alert.source}</p><p>${new Date(
+            alert.createdAt
+          ).toLocaleString()}</p><p>Click marker for full alert details.</p></div>`
+        );
+        marker.on?.("click", () => {
+          setSelectedNotificationId(alert.id);
+          setNotificationModalOpen(true);
+        });
+        layerGroup.addLayer(marker as never);
+      }
+    } else {
+      for (const facility of heatMapFacilitiesInAoi) {
+        const markerIcon = Leaflet.divIcon({
+          className: "",
+          html: hospitalIconHtml(heatMapFillColor(facility.markerStatus)),
+          iconSize: [26, 26],
+          iconAnchor: [13, 13],
+          popupAnchor: [0, -12]
+        });
+        const marker = Leaflet.marker([facility.lat, facility.lng], { icon: markerIcon });
+        const lastSubmissionLabel = facility.lastUpdatedAt ? new Date(facility.lastUpdatedAt).toLocaleString() : "No submissions yet";
+        marker.bindPopup(
+          `<div class="text-xs"><p><strong>${facility.name}</strong></p><p>Facility ID ${facility.code}</p><p>County: ${
+            facility.county
+          }</p><p>${facility.primaryMetricLabel}</p>${
+            facility.secondaryMetricLabel ? `<p>${facility.secondaryMetricLabel}</p>` : ""
+          }<p>Last Submission: ${lastSubmissionLabel}</p><p>Staffed: ${facility.staffedBeds}</p><p>Occupied: ${
+            facility.occupiedBeds
+          }</p><p>Available: ${facility.availableBeds}</p></div>`
+        );
+        layerGroup.addLayer(marker as never);
+      }
     }
 
     map.addLayer(layerGroup as never);
     heatMapLayerRef.current = layerGroup;
-  }, [activeTab, heatMapAoiDrawMode, heatMapAoiPolygon, heatMapFacilitiesInAoi, isAuthenticated, loadLeafletAssets]);
+  }, [
+    activeHeatMapAlertsInAoi,
+    activeTab,
+    heatMapAoiDrawMode,
+    heatMapAoiPolygon,
+    heatMapFacilitiesInAoi,
+    heatMapViewId,
+    isAuthenticated,
+    loadLeafletAssets
+  ]);
 
   useEffect(() => {
     heatMapAoiDrawModeRef.current = heatMapAoiDrawMode;
@@ -5633,7 +5732,7 @@ export default function App() {
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       <article className="rounded-xl border border-slate-200 bg-white p-2.5">
                         <p className="text-xs uppercase tracking-wide text-slate-500">{selectedHeatMapView.countLabel}</p>
-                        <p className="text-2xl font-bold text-rose-700">{heatMapFacilitiesInAoi.length}</p>
+                        <p className="text-2xl font-bold text-rose-700">{heatMapDisplayCount}</p>
                       </article>
                       <article className="rounded-xl border border-slate-200 bg-white p-2.5">
                         <p className="text-xs uppercase tracking-wide text-slate-500">Selected View</p>
@@ -5732,7 +5831,7 @@ export default function App() {
                     <div className="absolute left-3 top-3 z-40 rounded-lg border border-slate-200/95 bg-white/95 px-2.5 py-1.5 text-xs text-slate-700 shadow-sm backdrop-blur-sm">
                       {heatMapAoiDrawMode ? "Drawing AOI: click and drag on map" : heatMapAoiLabel}
                     </div>
-                    {heatMapFacilitiesInAoi.length === 0 && !leafletLoadError ? (
+                    {heatMapDisplayCount === 0 && !leafletLoadError ? (
                       <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-white/75 text-sm text-slate-700 backdrop-blur-sm">
                         {selectedHeatMapView.emptyMessage}
                       </div>
@@ -5748,7 +5847,13 @@ export default function App() {
                     <div className="mt-2 flex flex-wrap gap-4 text-xs">
                       {heatMapLegendItems.map((item) => (
                         <span key={`${heatMapViewId}-${item.status}-${item.label}`} className="inline-flex items-center gap-2">
-                          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: heatMapFillColor(item.status) }} />
+                          {heatMapViewId === "activeAlerts" ? (
+                            <span className="relative inline-flex h-0 w-0 border-x-[7px] border-b-[13px] border-x-transparent border-b-red-600">
+                              <span className="absolute -left-[1px] top-[3px] text-[9px] font-black leading-none text-white">!</span>
+                            </span>
+                          ) : (
+                            <span className="h-3 w-3 rounded-full" style={{ backgroundColor: heatMapFillColor(item.status) }} />
+                          )}
                           {item.label}
                         </span>
                       ))}
