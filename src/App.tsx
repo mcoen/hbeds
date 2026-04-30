@@ -5828,7 +5828,7 @@ export default function App() {
                         </svg>
                       </button>
                     </div>
-                    <div className="absolute left-3 top-3 z-40 rounded-lg border border-slate-200/95 bg-white/95 px-2.5 py-1.5 text-xs text-slate-700 shadow-sm backdrop-blur-sm">
+                    <div className="absolute left-14 top-3 z-40 rounded-lg border border-slate-200/95 bg-white/95 px-2.5 py-1.5 text-xs text-slate-700 shadow-sm backdrop-blur-sm">
                       {heatMapAoiDrawMode ? "Drawing AOI: click and drag on map" : heatMapAoiLabel}
                     </div>
                     {heatMapDisplayCount === 0 && !leafletLoadError ? (
